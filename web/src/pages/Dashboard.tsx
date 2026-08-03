@@ -7,25 +7,30 @@ import SectionCard from '../components/SectionCard';
 import StatusPill from '../components/StatusPill';
 import { bnStrings as S } from '../i18n';
 import { bn } from '../utils/bnNum';
-import { appointments, complaints, slides, type ListEntry } from '../data/sample';
+import { appointments, complaints, slides, heroSlide, type ListEntry } from '../data/sample';
 
+// One row of a dashboard list card: title + who on the left, short date + kebab on the
+// right (concept_ui/Dashboard.png — no status pills on the dashboard rows).
 function ListRow({ entry, last }: { entry: ListEntry; last: boolean }) {
   return (
-    <Box sx={{ py: 1.5, borderBottom: last ? 'none' : '1px solid', borderColor: 'divider' }}>
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1 }}>
+    <Box
+      sx={{
+        py: 1.5,
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 1.5,
+        borderBottom: last ? 'none' : '1px solid',
+        borderColor: 'divider',
+      }}
+    >
+      <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography sx={{ fontSize: 15, fontWeight: 600 }}>{entry.title}</Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
-          <StatusPill label={entry.status.label} tone={entry.status.tone} />
-          <MoreVertRoundedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-        </Box>
+        <Typography sx={{ fontSize: 13.5, color: 'text.secondary', mt: 0.5 }}>{entry.who}</Typography>
       </Box>
-      <Typography sx={{ fontSize: 13.5, color: 'text.secondary', mt: 0.5 }}>{entry.who}</Typography>
-      {entry.liveLocation ? (
-        <Typography sx={{ fontSize: 13, color: 'primary.main', mt: 0.25, fontWeight: 600 }}>
-          {S.common.liveLocation}
-        </Typography>
-      ) : null}
-      <Typography sx={{ fontSize: 13, color: 'text.secondary', mt: 0.5 }}>{entry.date}</Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0, pt: 0.25 }}>
+        <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{entry.date}</Typography>
+        <MoreVertRoundedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+      </Box>
     </Box>
   );
 }
@@ -33,7 +38,12 @@ function ListRow({ entry, last }: { entry: ListEntry; last: boolean }) {
 export default function Dashboard() {
   const theme = useTheme();
   const outlinedAction = (label: string) => (
-    <Button size="small" variant="outlined" color="inherit" sx={{ borderColor: 'divider', color: 'text.secondary', px: 2 }}>
+    <Button
+      size="small"
+      variant="outlined"
+      color="inherit"
+      sx={{ borderRadius: '8px', borderColor: 'divider', color: 'text.secondary', px: 2 }}
+    >
       {label}
     </Button>
   );
@@ -48,7 +58,7 @@ export default function Dashboard() {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
           gap: 2.5,
           mb: 2.5,
         }}
@@ -70,7 +80,7 @@ export default function Dashboard() {
           tiles={[
             { label: S.dashboard.pregnancy.todayNew, value: bn(1), unit: S.common.person, full: true },
             { label: S.dashboard.pregnancy.total, value: bn(10), unit: S.common.person },
-            { label: S.dashboard.pregnancy.totalDelivery, value: bn(15), unit: S.common.person },
+            { label: S.dashboard.pregnancy.totalDelivery, value: bn(11), unit: S.common.person },
           ]}
         />
         <ModuleSummaryCard
@@ -78,9 +88,9 @@ export default function Dashboard() {
           accent={theme.suraha.module.birth}
           actionLabel={S.common.details}
           tiles={[
-            { label: S.dashboard.birth.todayNew, value: bn(1), unit: S.common.count, full: true },
-            { label: S.dashboard.birth.total, value: bn(15), unit: S.common.count },
-            { label: S.dashboard.birth.pendingEntry, value: bn(10), unit: S.common.count },
+            { label: S.dashboard.birth.todayNew, value: bn(7), unit: S.common.person, full: true },
+            { label: S.dashboard.birth.total, value: bn(1), unit: S.common.count },
+            { label: S.dashboard.birth.pendingEntry, value: bn(11), unit: S.common.person },
           ]}
         />
       </Box>
@@ -89,31 +99,19 @@ export default function Dashboard() {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
           gap: 2.5,
         }}
       >
-        <SectionCard title={S.dashboard.appointment.title} action={outlinedAction(S.common.all)}>
-          <Typography sx={{ fontSize: 13.5, color: 'text.secondary' }}>
-            {S.dashboard.appointment.requests}
-          </Typography>
-          <Typography sx={{ fontSize: 22, fontWeight: 700, mb: 1 }}>
-            {bn(2)} {S.common.count}
-          </Typography>
+        <SectionCard title={S.dashboard.appointment.title} count={10} action={outlinedAction(S.common.all)}>
           {appointments.map((e, i) => (
-            <ListRow key={e.title} entry={e} last={i === appointments.length - 1} />
+            <ListRow key={`${e.title}-${i}`} entry={e} last={i === appointments.length - 1} />
           ))}
         </SectionCard>
 
-        <SectionCard title={S.dashboard.complaint.title} action={outlinedAction(S.common.all)}>
-          <Typography sx={{ fontSize: 13.5, color: 'text.secondary' }}>
-            {S.dashboard.complaint.requests}
-          </Typography>
-          <Typography sx={{ fontSize: 22, fontWeight: 700, mb: 1 }}>
-            {bn(2)} {S.common.count}
-          </Typography>
+        <SectionCard title={S.dashboard.complaint.title} count={10} action={outlinedAction(S.common.all)}>
           {complaints.map((e, i) => (
-            <ListRow key={e.title} entry={e} last={i === complaints.length - 1} />
+            <ListRow key={`${e.title}-${i}`} entry={e} last={i === complaints.length - 1} />
           ))}
         </SectionCard>
 
@@ -126,25 +124,20 @@ export default function Dashboard() {
           }
         >
           <Box
-            sx={{
-              borderRadius: 2,
-              overflow: 'hidden',
-              mb: 2,
-              aspectRatio: '16 / 7',
-              background: 'linear-gradient(135deg, #7C4DFF 0%, #B388FF 100%)',
-              display: 'flex',
-              alignItems: 'flex-end',
-              p: 1.5,
-            }}
-          >
-            <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>
-              ১২ অক্টোবর থেকে দেশব্যাপী টাইফয়েড টিকাদান ক্যাম্প…
-            </Typography>
-          </Box>
+            component="img"
+            src={heroSlide.image}
+            alt={heroSlide.title}
+            sx={{ width: '100%', borderRadius: '10px', mb: 2, display: 'block' }}
+          />
           {slides.map((s, i) => (
-            <Box key={s.title}>
+            <Box key={`${s.title}-${i}`}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
-                <Box sx={{ width: 46, height: 46, borderRadius: 1.5, bgcolor: 'action.hover', flexShrink: 0 }} />
+                <Box
+                  component="img"
+                  src={s.thumb}
+                  alt=""
+                  sx={{ width: 46, height: 46, borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }}
+                />
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography sx={{ fontSize: 14, fontWeight: 600 }} noWrap>
                     {s.title}
@@ -157,6 +150,7 @@ export default function Dashboard() {
                   label={s.running ? S.status.running : S.status.stopped}
                   tone={s.running ? 'success' : 'pending'}
                 />
+                <MoreVertRoundedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
               </Box>
               {i < slides.length - 1 ? <Divider /> : null}
             </Box>

@@ -18,11 +18,14 @@ export const palette = {
   onSecondaryContainer: '#1D192B',
   error: '#B3261E', // destructive action "জন্ম নিবন্ধন তৈরি করুন"
 
-  // Per-module accent header bands (dashboard summary cards) — measured from Layout.png.
-  moduleOfficer: '#5F2F81', // কর্মকর্তা — purple
-  modulePregnancy: '#475467', // প্রসূতি কল্যাণ — charcoal
-  moduleBirth: '#039855', // জন্ম সনদ — green
-  moduleBirthAlt: '#B3261E', // maroon/red variant
+  // Per-module accent header bands (dashboard summary cards) — measured from Dashboard.png.
+  moduleOfficer: '#4F378B', // কর্মকর্তা — purple
+  modulePregnancy: '#1D192B', // প্রসূতি কল্যাণ — near-black navy
+  moduleBirth: '#633B48', // জন্ম সনদ — maroon
+  moduleBirthAlt: '#B3261E', // M3 error red (destructive)
+
+  // Small count badge on list-card titles (measured).
+  countBadge: '#C3534C',
 
   // Semantic status pills (bg / fg).
   status: {
@@ -32,19 +35,24 @@ export const palette = {
     info: { bg: '#E6DFEC', fg: '#6750A4' }, // শিডিউল করা হয়েছে (bg measured)
   },
 
-  // Surfaces (measured).
+  // Surfaces (measured from Dashboard.png). The sidebar + top bar are lavender; the main
+  // content is a white panel; summary-card bodies are lavender with white tiles.
   light: {
-    pageBg: '#F7F2FA', // lavender canvas (measured)
-    surface: '#FFFFFF', // white cards
-    sidebar: '#FFFFFF',
-    border: '#ECE6F0', // M3 outline-variant family
+    pageBg: '#F7F2FA', // lavender base (sidebar + top bar)
+    surface: '#FFFFFF', // white content panel + list/stat cards
+    sidebar: '#F7F2FA', // lavender (matches page)
+    cardBody: '#F7F2FA', // summary-card body behind tiles
+    switcher: '#E6E0E9', // top-bar upazila switcher (M3 surfaceVariant)
+    border: '#E7E2EB', // subtle tile/card outline (measured)
     textPrimary: '#1D1B20', // M3 onSurface
     textSecondary: '#49454F', // M3 onSurfaceVariant
   },
   dark: {
     pageBg: '#141218', // M3 dark surface
-    surface: '#1D1B20',
-    sidebar: '#1D1B20',
+    surface: '#211F26', // slightly raised content panel
+    sidebar: '#141218',
+    cardBody: '#1D1B20',
+    switcher: '#2B2930',
     border: '#49454F',
     textPrimary: '#E6E0E9', // M3 dark onSurface
     textSecondary: '#CAC4D0', // M3 dark onSurfaceVariant

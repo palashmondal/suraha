@@ -110,8 +110,6 @@ export default function Sidebar() {
         height: '100%',
         overflowY: 'auto',
         bgcolor: theme.suraha.sidebarBg,
-        borderRight: '1px solid',
-        borderColor: 'divider',
       }}
     >
       {/* Brand header */}

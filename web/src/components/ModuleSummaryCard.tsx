@@ -59,7 +59,7 @@ export default function ModuleSummaryCard({
           display: 'flex',
           flexWrap: 'wrap',
           gap: 1.5,
-          bgcolor: (t) => (t.palette.mode === 'light' ? `${accent}0D` : 'rgba(255,255,255,0.03)'),
+          bgcolor: (t) => t.suraha.cardBody,
         }}
       >
         {tiles.map((tile) => (
