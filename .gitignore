@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+web/node_modules/
+api/vendor/
+
+# Build output
+web/dist/
+web/dev-dist/
+
+# Env & secrets
+.env
+api/.env
+infra/.env
+web/.env
+*.local
+
+# Laravel runtime
+api/storage/framework/cache/*
+api/storage/logs/*.log
+api/bootstrap/cache/*.php
+
+### macOS
+# Finder metadata
+.DS_Store
+
+# Thumbnails
+._*
+
+# Custom folder icons
+Icon
+
+# Volume root files
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent

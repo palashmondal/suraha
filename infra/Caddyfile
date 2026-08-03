@@ -1,0 +1,12 @@
+# Wildcard TLS for every upazila subdomain (SURAHA_BUILD_PROMPT §12.2).
+# Requires a DNS-01 challenge — configure your DNS provider's Caddy module and an API token.
+# The tenant (upazila) is resolved by the Laravel app from the Host header (stancl/tenancy).
+
+*.suraha.com.bd, suraha.com.bd {
+	# tls { dns <provider> {env.DNS_API_TOKEN} }   # enable for wildcard issuance
+
+	# API under /api → Laravel; everything else → React web app.
+	@api path /api/*
+	reverse_proxy @api app:8080
+	reverse_proxy web:80
+}
