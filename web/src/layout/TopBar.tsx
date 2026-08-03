@@ -2,7 +2,9 @@ import {
   Avatar,
   Badge,
   Box,
+  Divider,
   IconButton,
+  ListItemIcon,
   Menu,
   MenuItem,
   Tooltip,
@@ -15,8 +17,13 @@ import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneR
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
+import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
+import LockResetRoundedIcon from '@mui/icons-material/LockResetRounded';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import { bnStrings as S } from '../i18n';
 import { useColorMode } from '../theme/ColorModeContext';
+import NotificationMenu from '../components/NotificationMenu';
+import { unreadCount } from '../data/notifications';
 
 // Sample upazilas for the switcher (real list comes from the shared registry, §4).
 const upazilas = ['গলাচিপা উপজেলা, বরিশাল', 'দুমুরিয়া উপজেলা, খুলনা', 'মিরপুর উপজেলা, কুষ্টিয়া'];
@@ -26,6 +33,8 @@ export default function TopBar() {
   const { mode, toggle } = useColorMode();
   const [current, setCurrent] = useState(upazilas[0]);
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
+  const [notifAnchor, setNotifAnchor] = useState<null | HTMLElement>(null);
 
   return (
     <Box
@@ -35,9 +44,7 @@ export default function TopBar() {
         display: 'flex',
         alignItems: 'center',
         gap: 2,
-        borderBottom: '1px solid',
-        borderColor: 'divider',
-        bgcolor: 'background.paper',
+        bgcolor: 'background.default',
       }}
     >
       {/* Upazila switcher */}
@@ -52,9 +59,7 @@ export default function TopBar() {
           minWidth: 300,
           borderRadius: 999,
           cursor: 'pointer',
-          border: '1px solid',
-          borderColor: 'divider',
-          bgcolor: theme.palette.mode === 'light' ? '#F4F1FA' : 'rgba(255,255,255,0.04)',
+          bgcolor: theme.suraha.switcher,
         }}
       >
         <LocationOnOutlinedIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
@@ -86,22 +91,90 @@ export default function TopBar() {
       </Tooltip>
 
       {/* Notification bell (in-app notifications, §9) */}
-      <IconButton>
-        <Badge color="error" variant="dot" overlap="circular">
+      <IconButton onClick={(e) => setNotifAnchor(e.currentTarget)}>
+        <Badge badgeContent={unreadCount} color="error" overlap="circular">
           <NotificationsNoneRoundedIcon />
         </Badge>
       </IconButton>
+      <NotificationMenu anchorEl={notifAnchor} onClose={() => setNotifAnchor(null)} />
 
-      {/* Profile: avatar + name + role */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, pl: 1 }}>
-        <Avatar sx={{ width: 38, height: 38, bgcolor: 'primary.main', fontSize: 15 }}>মু</Avatar>
-        <Box sx={{ display: { xs: 'none', sm: 'block' }, lineHeight: 1.2 }}>
-          <Typography sx={{ fontSize: 14.5, fontWeight: 600 }}>মুহাম্মাদুল্লাহ</Typography>
+      {/* Profile: name (bigger) + designation on the left, picture rightmost; opens menu */}
+      <Box
+        onClick={(e) => setProfileAnchor(e.currentTarget)}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.25,
+          pl: 1.25,
+          pr: 0.75,
+          py: 0.5,
+          ml: 0.5,
+          cursor: 'pointer',
+          borderRadius: 999,
+          transition: 'background-color 120ms ease',
+          '&:hover': { bgcolor: 'action.hover' },
+          '&:hover .profile-name': { color: 'primary.main' },
+          '&:hover .profile-caret': { color: 'primary.main', transform: 'translateY(1px)' },
+          '&:hover .MuiAvatar-root': {
+            boxShadow: (t) => `0 0 0 2px ${t.palette.primary.main}`,
+          },
+        }}
+      >
+        <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'right', lineHeight: 1.25 }}>
+          <Typography
+            className="profile-name"
+            sx={{ fontSize: 16.5, fontWeight: 700, transition: 'color 120ms ease' }}
+          >
+            {S.profile.name}
+          </Typography>
           <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>
-            {S.common.role.admin}
+            {S.profile.designation}
           </Typography>
         </Box>
+        <Avatar
+          src="/bd_logo_bn.png"
+          alt={S.profile.name}
+          sx={{
+            width: 42,
+            height: 42,
+            bgcolor: 'transparent',
+            transition: 'box-shadow 120ms ease',
+            '& img': { objectFit: 'contain' },
+          }}
+        />
+        <KeyboardArrowDownRoundedIcon
+          className="profile-caret"
+          sx={{ color: 'text.secondary', fontSize: 20, transition: 'color 120ms ease, transform 120ms ease' }}
+        />
       </Box>
+      <Menu
+        anchorEl={profileAnchor}
+        open={Boolean(profileAnchor)}
+        onClose={() => setProfileAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{ paper: { sx: { minWidth: 210, borderRadius: '12px', mt: 1 } } }}
+      >
+        <MenuItem onClick={() => setProfileAnchor(null)}>
+          <ListItemIcon>
+            <PersonOutlineRoundedIcon fontSize="small" />
+          </ListItemIcon>
+          {S.profile.view}
+        </MenuItem>
+        <MenuItem onClick={() => setProfileAnchor(null)}>
+          <ListItemIcon>
+            <LockResetRoundedIcon fontSize="small" />
+          </ListItemIcon>
+          {S.profile.changePassword}
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => setProfileAnchor(null)} sx={{ color: 'error.main' }}>
+          <ListItemIcon>
+            <LogoutRoundedIcon fontSize="small" sx={{ color: 'error.main' }} />
+          </ListItemIcon>
+          {S.profile.logout}
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }

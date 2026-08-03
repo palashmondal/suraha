@@ -9,6 +9,9 @@ declare module '@mui/material/styles' {
       module: { officer: string; pregnancy: string; birth: string; birthAlt: string };
       status: typeof palette.status;
       sidebarBg: string;
+      cardBody: string;
+      switcher: string;
+      countBadge: string;
       activePillBg: string;
       activePillText: string;
     };
@@ -48,6 +51,9 @@ export function buildTheme(mode: 'light' | 'dark'): Theme {
       },
       status: palette.status,
       sidebarBg: c.sidebar,
+      cardBody: c.cardBody,
+      switcher: c.switcher,
+      countBadge: palette.countBadge,
       activePillBg: mode === 'light' ? palette.secondaryContainer : '#4A4458',
       activePillText: mode === 'light' ? palette.onSecondaryContainer : '#E8DEF8',
     },

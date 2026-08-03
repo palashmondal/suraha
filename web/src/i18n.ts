@@ -35,9 +35,22 @@ export const bnStrings = {
     noDataHelp: 'কোনো তথ্য পাওয়া যায়নি। নতুন তথ্য যুক্ত করুন',
     person: 'জন',
     count: 'টি',
-    role: {
-      admin: 'অ্যাডমিন',
-    },
+  },
+
+  profile: {
+    name: 'মহিউদ্দিন আল হেলাল',
+    designation: 'উপজেলা নির্বাহী অফিসার, গলাচিপা',
+    view: 'প্রোফাইল',
+    changePassword: 'পাসওয়ার্ড পরিবর্তন',
+    logout: 'লগ আউট',
+  },
+
+  notifications: {
+    title: 'নোটিফিকেশন',
+    unreadSuffix: 'টি নতুন',
+    markAll: 'সব পড়া হয়েছে',
+    viewAll: 'সকল নোটিফিকেশন দেখুন',
+    empty: 'কোনো নোটিফিকেশন নেই',
   },
 
   dashboard: {
