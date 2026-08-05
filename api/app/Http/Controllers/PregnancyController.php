@@ -65,6 +65,15 @@ class PregnancyController extends Controller
 
         $pregnancy = Pregnancy::create($data);
 
+        // Notify the Sochib that a new mother was added for review (§8.1).
+        \App\Models\Notification::emit(
+            'pregnancy',
+            \App\Enums\Role::UP_SOCHIB,
+            'নতুন প্রসূতি তথ্য যুক্ত হয়েছে',
+            $pregnancy->mother_name_bn,
+            '/pregnancy/'.$pregnancy->id,
+        );
+
         return new PregnancyResource($pregnancy->load('union'));
     }
 

@@ -1,20 +1,17 @@
 import { Box, Typography, useTheme } from '@mui/material';
-import StarRoundedIcon from '@mui/icons-material/StarRounded';
-import { bnStrings as S } from '../i18n';
 import { bn } from '../utils/bnNum';
 import type { StatusTone } from './StatusPill';
 
 export interface TableTab {
   key: string;
   label: string;
-  total?: number; // shown as "মোট N"
-  newCount?: number; // shown as an "N new" badge
-  newTone?: StatusTone; // badge colour (default pending/amber)
+  total?: number; // kept for API compatibility; no longer rendered inline
+  newCount?: number; // shown as a small circular count badge next to the label
+  newTone?: StatusTone; // badge colour (default danger/red)
 }
 
-// Tab bar above a list table (concept_ui/Frame 1171277087.png & 1321316786.png): each tab has a
-// leading icon, a Bangla label, a "মোট N" count, and an optional "N new" pill. The active tab
-// gets a soft lavender top and a purple bottom border.
+// Tab bar above a list table. Each tab is a Bangla label with an optional circular count badge;
+// the active tab gets bold text and a purple underline (see প্রসূতি তালিকা design reference).
 export default function TableTabs({
   tabs,
   active,
@@ -30,14 +27,14 @@ export default function TableTabs({
     <Box
       sx={{
         display: 'flex',
-        gap: 1,
+        gap: 3,
         borderBottom: `1px solid ${theme.palette.divider}`,
         overflowX: 'auto',
       }}
     >
       {tabs.map((t) => {
         const isActive = t.key === active;
-        const badge = t.newTone ? theme.suraha.status[t.newTone] : theme.suraha.status.pending;
+        const badge = t.newTone ? theme.suraha.status[t.newTone] : theme.suraha.status.danger;
         return (
           <Box
             key={t.key}
@@ -46,41 +43,35 @@ export default function TableTabs({
               display: 'flex',
               alignItems: 'center',
               gap: 1,
-              px: 2.5,
+              px: 1,
               py: 1.5,
               cursor: 'pointer',
               whiteSpace: 'nowrap',
-              borderTopLeftRadius: 12,
-              borderTopRightRadius: 12,
               borderBottom: isActive
                 ? `2px solid ${theme.palette.primary.main}`
                 : '2px solid transparent',
-              bgcolor: isActive ? theme.suraha.activePillBg : 'transparent',
-              '&:hover': { bgcolor: isActive ? theme.suraha.activePillBg : theme.palette.action.hover },
+              mb: '-1px',
             }}
           >
-            <StarRoundedIcon
-              sx={{ fontSize: 20, color: isActive ? 'primary.main' : 'text.secondary' }}
-            />
-            <Box>
-              <Typography
-                sx={{ fontSize: 14.5, fontWeight: isActive ? 700 : 600, lineHeight: 1.2 }}
-              >
-                {t.label}
-              </Typography>
-              {t.total !== undefined && (
-                <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>
-                  {S.common.total} {bn(t.total)}
-                </Typography>
-              )}
-            </Box>
+            <Typography
+              sx={{
+                fontSize: 15,
+                fontWeight: isActive ? 700 : 600,
+                color: isActive ? 'primary.main' : 'text.secondary',
+              }}
+            >
+              {t.label}
+            </Typography>
             {t.newCount ? (
               <Box
                 component="span"
                 sx={{
-                  ml: 0.5,
-                  px: 1,
-                  py: 0.25,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 20,
+                  height: 20,
+                  px: 0.5,
                   borderRadius: 999,
                   fontSize: 11.5,
                   fontWeight: 700,
@@ -88,7 +79,7 @@ export default function TableTabs({
                   color: badge.fg,
                 }}
               >
-                {bn(t.newCount)} {S.common.newSuffix}
+                {bn(t.newCount)}
               </Box>
             ) : null}
           </Box>

@@ -25,6 +25,7 @@ import OfficerList from './pages/officers/OfficerList';
 import SliderManage from './pages/content/SliderManage';
 import GeneralInfoManage from './pages/content/GeneralInfoManage';
 import Reports from './pages/reports/Reports';
+import NotificationsPage from './pages/NotificationsPage';
 import { useAuth } from './auth/AuthContext';
 
 function Spinner() {
@@ -87,6 +88,7 @@ export default function App() {
       <Route path="/appointment" element={<RequireAuth><AppointmentList /></RequireAuth>} />
       <Route path="/appointment/:id" element={<RequireAuth><AppointmentDetail /></RequireAuth>} />
       <Route path="/reports" element={<RequireAuth><Reports /></RequireAuth>} />
+      <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
       <Route path="/officers" element={<RequireAuth roles={['uno', 'seal_admin']}><OfficerList /></RequireAuth>} />
       <Route path="/sliders" element={<RequireAuth roles={['uno', 'seal_admin']}><SliderManage /></RequireAuth>} />
       <Route path="/general-info" element={<RequireAuth roles={['uno', 'seal_admin']}><GeneralInfoManage /></RequireAuth>} />

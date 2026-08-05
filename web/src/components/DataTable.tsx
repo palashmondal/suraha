@@ -1,5 +1,4 @@
 import {
-  Box,
   Paper,
   Table,
   TableBody,
@@ -10,7 +9,10 @@ import {
 } from '@mui/material';
 import type { ReactNode } from 'react';
 import EmptyState from './EmptyState';
+import LoadingState from './LoadingState';
+import PaginationBar from './PaginationBar';
 import RowMenu, { type RowAction } from './RowMenu';
+import { usePagination } from './usePagination';
 
 export interface Column<T> {
   key: string;
@@ -30,6 +32,7 @@ export default function DataTable<T extends { id: string | number }>({
   onRowClick,
   emptyTitle,
   emptyHelper,
+  loading = false,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -37,7 +40,18 @@ export default function DataTable<T extends { id: string | number }>({
   onRowClick?: (row: T) => void;
   emptyTitle?: string;
   emptyHelper?: string;
+  loading?: boolean;
 }) {
+  const { pageRows, page, setPage, pageSize, setPageSize, pageCount } = usePagination(rows);
+
+  // While fetching, show a loading state instead of flashing the empty state before data arrives.
+  if (loading && rows.length === 0) {
+    return (
+      <Paper elevation={0} sx={{ borderRadius: '16px' }}>
+        <LoadingState />
+      </Paper>
+    );
+  }
   if (rows.length === 0) {
     return (
       <Paper elevation={0} sx={{ borderRadius: '16px' }}>
@@ -54,7 +68,7 @@ export default function DataTable<T extends { id: string | number }>({
     >
       <Table sx={{ minWidth: 720 }}>
         <TableHead>
-          <TableRow>
+          <TableRow sx={{ '& th': { bgcolor: 'action.hover', borderBottom: '1px solid', borderColor: 'divider' } }}>
             {columns.map((c) => (
               <TableCell
                 key={c.key}
@@ -68,12 +82,17 @@ export default function DataTable<T extends { id: string | number }>({
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
+          {pageRows.map((row) => (
             <TableRow
               key={row.id}
               hover={Boolean(onRowClick)}
               onClick={() => onRowClick?.(row)}
-              sx={{ cursor: onRowClick ? 'pointer' : 'default', verticalAlign: 'top' }}
+              sx={{
+                cursor: onRowClick ? 'pointer' : 'default',
+                verticalAlign: 'top',
+                '& td': { borderBottom: '1px solid', borderColor: 'divider' },
+                '&:last-child td': { borderBottom: 0 },
+              }}
             >
               {columns.map((c) => (
                 <TableCell key={c.key} align={c.align ?? 'left'}>
@@ -89,7 +108,8 @@ export default function DataTable<T extends { id: string | number }>({
           ))}
         </TableBody>
       </Table>
-      <Box />
+
+      <PaginationBar page={page} pageCount={pageCount} pageSize={pageSize} onPage={setPage} onPageSize={setPageSize} />
     </TableContainer>
   );
 }

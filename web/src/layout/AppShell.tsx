@@ -18,10 +18,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
             bgcolor: 'background.paper',
             borderTopLeftRadius: '28px',
             overflowY: 'auto',
-            p: { xs: 2, md: 3.5 },
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
-          {children}
+          <Box sx={{ flex: 1, p: { xs: 2, md: 3.5 } }}>{children}</Box>
         </Box>
       </Box>
     </Box>

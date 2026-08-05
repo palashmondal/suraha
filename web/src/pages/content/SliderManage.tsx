@@ -6,6 +6,9 @@ import { bn } from '../../utils/bnNum';
 import PageHeader from '../../components/PageHeader';
 import StatusPill from '../../components/StatusPill';
 import EmptyState from '../../components/EmptyState';
+import LoadingState from '../../components/LoadingState';
+import PaginationBar from '../../components/PaginationBar';
+import { usePagination } from '../../components/usePagination';
 import AppDialog from '../../components/AppDialog';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { FormField } from '../../components/form/FormFields';
@@ -18,19 +21,28 @@ export default function SliderManage() {
   const [rows, setRows] = useState<Slider[]>([]);
   const [open, setOpen] = useState(false);
   const [del, setDel] = useState<Slider | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const load = () => listSliders().then((r) => setRows(r.sliders)).catch(() => setRows([]));
+  const load = () => {
+    setLoading(true);
+    return listSliders().then((r) => setRows(r.sliders)).catch(() => setRows([])).finally(() => setLoading(false));
+  };
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [version]);
+
+  const { pageRows, page, setPage, pageSize, setPageSize, pageCount } = usePagination(rows);
 
   return (
     <Box>
       <PageHeader title={S.sliders.title} primaryLabel={S.sliders.addNew} onPrimary={() => setOpen(true)} />
 
-      {rows.length === 0 ? (
+      {loading && rows.length === 0 ? (
+        <Paper elevation={0} sx={{ borderRadius: '16px' }}><LoadingState /></Paper>
+      ) : rows.length === 0 ? (
         <Paper elevation={0} sx={{ borderRadius: '16px' }}><EmptyState /></Paper>
       ) : (
+        <>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3,1fr)' }, gap: 2.5 }}>
-          {rows.map((s) => (
+          {pageRows.map((s) => (
             <Paper key={s.id} elevation={0} sx={{ borderRadius: '16px', overflow: 'hidden', border: (t) => `1px solid ${t.palette.divider}` }}>
               <Box sx={{ height: 150, bgcolor: 'action.hover', backgroundImage: s.image_url ? `url(${s.image_url})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }} />
               <Box sx={{ p: 2 }}>
@@ -47,6 +59,8 @@ export default function SliderManage() {
             </Paper>
           ))}
         </Box>
+        <PaginationBar page={page} pageCount={pageCount} pageSize={pageSize} onPage={setPage} onPageSize={setPageSize} />
+        </>
       )}
 
       <CreateSliderDialog open={open} onClose={() => setOpen(false)} onCreated={() => { setOpen(false); load(); }} />

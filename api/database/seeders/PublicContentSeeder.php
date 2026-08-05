@@ -21,8 +21,24 @@ class PublicContentSeeder extends Seeder
 
         tenancy()->initialize($golachipa);
 
-        Slider::factory()->count(3)->create();
-        Slider::factory()->stopped()->create();
+        // Public-awareness posters from the upazila administration (§8.5). Images live in
+        // storage/app/public/sliders and are served via the storage symlink.
+        $slides = [
+            ['ডেঙ্গু প্রতিরোধে সচেতন হোন', 'sliders/dengue.svg'],
+            ['শিশুর টিকা সময়মতো দিন', 'sliders/vaccine.svg'],
+            ['বাল্যবিবাহকে না বলুন', 'sliders/child-marriage.svg'],
+            ['নিরাপদ মাতৃত্ব নিশ্চিত করুন', 'sliders/safe-motherhood.svg'],
+        ];
+        foreach ($slides as $i => [$title, $path]) {
+            Slider::create([
+                'title' => $title,
+                'image_path' => $path,
+                'link' => 'https://dcpatuakhali.gov.bd',
+                'slide_date' => now()->subDays(count($slides) - $i)->toDateString(),
+                'is_active' => true,
+                'sort_order' => $i,
+            ]);
+        }
 
         foreach ([
             ['থানা (গলাচিপা)', '01320001234'],

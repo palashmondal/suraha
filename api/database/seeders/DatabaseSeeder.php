@@ -59,6 +59,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ComplaintSeeder::class);
         $this->call(AppointmentSeeder::class);
         $this->call(PublicContentSeeder::class);
+        $this->call(NotificationSeeder::class);
     }
 
     private function upazila(string $id, string $name, string $nameBn, int $districtId, array $unions): Upazila

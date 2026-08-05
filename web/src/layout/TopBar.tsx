@@ -24,7 +24,7 @@ import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import { bnStrings as S } from '../i18n';
 import { useColorMode } from '../theme/ColorModeContext';
 import NotificationMenu from '../components/NotificationMenu';
-import { unreadCount } from '../data/notifications';
+import { getNotifications, markAllNotificationsRead, type AppNotification } from '../api/notifications';
 import { useAuth } from '../auth/AuthContext';
 import { useSelectedTenant } from '../tenant/SelectedTenantContext';
 import { api } from '../api/client';
@@ -60,6 +60,18 @@ export default function TopBar() {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
   const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
   const [notifAnchor, setNotifAnchor] = useState<null | HTMLElement>(null);
+  const [notifs, setNotifs] = useState<AppNotification[]>([]);
+  const [unread, setUnread] = useState(0);
+
+  const loadNotifs = () =>
+    getNotifications()
+      .then((r) => { setNotifs(r.notifications); setUnread(r.unread_count); })
+      .catch(() => { setNotifs([]); setUnread(0); });
+
+  useEffect(() => {
+    loadNotifs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedUpazilaId]);
 
   const label = (u: SwitchableUpazila) => `${u.name_bn} উপজেলা${u.district ? `, ${u.district}` : ''}`;
 
@@ -144,12 +156,19 @@ export default function TopBar() {
       </Tooltip>
 
       {/* Notification bell (in-app notifications, §9) */}
-      <IconButton onClick={(e) => setNotifAnchor(e.currentTarget)}>
-        <Badge badgeContent={unreadCount} color="error" overlap="circular">
+      <IconButton onClick={(e) => { setNotifAnchor(e.currentTarget); loadNotifs(); }}>
+        <Badge badgeContent={unread} color="error" overlap="circular">
           <NotificationsNoneRoundedIcon />
         </Badge>
       </IconButton>
-      <NotificationMenu anchorEl={notifAnchor} onClose={() => setNotifAnchor(null)} />
+      <NotificationMenu
+        anchorEl={notifAnchor}
+        onClose={() => setNotifAnchor(null)}
+        notifications={notifs}
+        unreadCount={unread}
+        onMarkAll={async () => { await markAllNotificationsRead(); loadNotifs(); }}
+        onViewAll={() => { setNotifAnchor(null); navigate('/notifications'); }}
+      />
 
       {/* Profile: name (bigger) + designation on the left, picture rightmost; opens menu */}
       <Box

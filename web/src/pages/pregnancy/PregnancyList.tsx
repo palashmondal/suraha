@@ -16,9 +16,9 @@ const TAB_LABEL: Record<string, string> = {
   not_delivered: S.pregnancy.tabNotDelivered,
   delivered: S.pregnancy.tabDelivered,
 };
-const TAB_TONE: Record<string, 'pending' | 'success' | 'info'> = {
+const TAB_TONE: Record<string, 'pending' | 'success' | 'info' | 'danger'> = {
   all: 'info',
-  not_delivered: 'pending',
+  not_delivered: 'danger',
   delivered: 'success',
 };
 
@@ -28,8 +28,10 @@ export default function PregnancyList() {
   const [status, setStatus] = useState('all');
   const [rows, setRows] = useState<Pregnancy[]>([]);
   const [tabs, setTabs] = useState<TabCount[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     listPregnancies({ status })
       .then((r) => {
         setRows(r.data);
@@ -38,7 +40,8 @@ export default function PregnancyList() {
       .catch(() => {
         setRows([]);
         setTabs([]);
-      });
+      })
+      .finally(() => setLoading(false));
   }, [status, version]);
 
   const tableTabs: TableTab[] = tabs.map((t) => ({
@@ -54,7 +57,7 @@ export default function PregnancyList() {
     { key: 'husband_name', header: S.pregnancy.colHusband, render: (r) => r.husband_name ?? '—' },
     { key: 'ward_no', header: S.pregnancy.colWard, render: (r) => (r.ward_no ? bn(r.ward_no) : '—') },
     { key: 'union', header: S.pregnancy.colUnion, render: (r) => r.union ?? '—' },
-    { key: 'mobile', header: S.pregnancy.colMobile, render: (r) => (r.mobile ? bn(r.mobile) : '—') },
+    { key: 'mobile', header: S.pregnancy.colMobile, render: (r) => r.mobile ?? '—' },
     {
       key: 'status',
       header: S.pregnancy.colStatus,
@@ -81,6 +84,7 @@ export default function PregnancyList() {
       <DataTable
         columns={columns}
         rows={rows}
+        loading={loading}
         onRowClick={(r) => navigate(`/pregnancy/${r.id}`)}
         rowActions={(r) => [
           {
