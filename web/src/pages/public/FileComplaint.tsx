@@ -1,0 +1,81 @@
+import { useEffect, useState } from 'react';
+import { Alert, Box, Button, Container, Paper, Typography } from '@mui/material';
+import MyLocationRoundedIcon from '@mui/icons-material/MyLocationRounded';
+import { useNavigate } from 'react-router-dom';
+import { bnStrings as S } from '../../i18n';
+import PublicLayout from './PublicLayout';
+import FieldCard from '../../components/form/FieldCard';
+import { FormField, SelectField, type Option } from '../../components/form/FormFields';
+import { api, ApiError } from '../../api/client';
+import { createComplaint } from '../../api/complaint';
+import SubmittedCard from './SubmittedCard';
+
+export default function FileComplaint() {
+  const navigate = useNavigate();
+  const [f, setF] = useState<Record<string, string>>({});
+  const [unions, setUnions] = useState<Option[]>([]);
+  const [token, setToken] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }));
+
+  useEffect(() => {
+    api<{ unions: { id: number; name_bn: string }[] }>('/registry/unions')
+      .then((r) => setUnions(r.unions.map((u) => ({ value: String(u.id), label: u.name_bn }))))
+      .catch(() => setUnions([]));
+  }, []);
+
+  const track = () => navigator.geolocation?.getCurrentPosition((p) =>
+    setF((s) => ({ ...s, latitude: String(p.coords.latitude), longitude: String(p.coords.longitude) })));
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErr(null);
+    setBusy(true);
+    try {
+      const res = await createComplaint({
+        title: f.title,
+        complainant_name: f.complainant_name,
+        union_id: f.union_id ? Number(f.union_id) : undefined,
+        ward_no: f.ward_no ? Number(f.ward_no) : undefined,
+        address: f.address || undefined,
+        latitude: f.latitude ? Number(f.latitude) : undefined,
+        longitude: f.longitude ? Number(f.longitude) : undefined,
+        mobile: f.mobile || undefined,
+        description: f.description || undefined,
+      });
+      setToken(res.data.tracking_token);
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) navigate('/login');
+      else setErr(e instanceof ApiError ? (Object.values(e.errors ?? {})[0]?.[0] ?? e.message) : S.auth.genericError);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <PublicLayout>
+      <Container maxWidth="sm" sx={{ py: { xs: 4, md: 6 } }}>
+        <Typography sx={{ fontSize: 26, fontWeight: 800, mb: 3 }}>{S.public.fileComplaintTitle}</Typography>
+        {token ? (
+          <SubmittedCard token={token} />
+        ) : (
+          <Paper component="form" onSubmit={submit} elevation={0} sx={{ display: 'grid', gap: 2, background: 'transparent' }}>
+            {err && <Alert severity="error">{err}</Alert>}
+            <FormField label={S.complaint.fTitle} value={f.title ?? ''} onChange={set('title')} />
+            <FormField label={S.complaint.fName} value={f.complainant_name ?? ''} onChange={set('complainant_name')} />
+            <SelectField label={S.complaint.fUnion} value={f.union_id ?? ''} onChange={set('union_id')} options={unions} placeholder="নির্বাচন করুন" />
+            <FormField label={S.complaint.fWard} value={f.ward_no ?? ''} onChange={set('ward_no')} type="number" />
+            <FormField label={S.complaint.fAddress} value={f.address ?? ''} onChange={set('address')} />
+            <FieldCard label={S.complaint.fPlace} action={<Button size="small" startIcon={<MyLocationRoundedIcon />} onClick={track}>{S.common.track}</Button>}>
+              <Typography sx={{ fontSize: 14, color: 'text.secondary' }}>{f.latitude ? `${f.latitude}, ${f.longitude}` : '—'}</Typography>
+            </FieldCard>
+            <FormField label={S.complaint.fMobile} value={f.mobile ?? ''} onChange={set('mobile')} placeholder="01XXXXXXXXX" />
+            <FormField label={S.complaint.fDesc} value={f.description ?? ''} onChange={set('description')} multiline />
+            <Box><Button type="submit" variant="contained" size="large" disabled={busy}>{S.public.submit}</Button></Box>
+          </Paper>
+        )}
+      </Container>
+    </PublicLayout>
+  );
+}

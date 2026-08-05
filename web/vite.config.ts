@@ -31,5 +31,11 @@ export default defineConfig({
   resolve: {
     alias: { '@': path.resolve(__dirname, 'src') },
   },
-  server: { port: 5173, host: true },
+  server: {
+    port: 5173,
+    host: true,
+    // Allow the per-upazila subdomains used for tenancy (dev: {upazila}.lvh.me,
+    // prod: {upazila}.suraha.com.bd). A leading dot whitelists all subdomains.
+    allowedHosts: ['.lvh.me', '.suraha.com.bd', '.suraha.gov.bd'],
+  },
 });
