@@ -11,7 +11,8 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
@@ -24,17 +25,67 @@ import { bnStrings as S } from '../i18n';
 import { useColorMode } from '../theme/ColorModeContext';
 import NotificationMenu from '../components/NotificationMenu';
 import { unreadCount } from '../data/notifications';
+import { useAuth } from '../auth/AuthContext';
+import { useSelectedTenant } from '../tenant/SelectedTenantContext';
+import { api } from '../api/client';
 
-// Sample upazilas for the switcher (real list comes from the shared registry, §4).
-const upazilas = ['গলাচিপা উপজেলা, বরিশাল', 'দুমুরিয়া উপজেলা, খুলনা', 'মিরপুর উপজেলা, কুষ্টিয়া'];
+interface SwitchableUpazila {
+  id: string;
+  name_bn: string;
+  district: string | null;
+}
 
 export default function TopBar() {
   const theme = useTheme();
+  const navigate = useNavigate();
   const { mode, toggle } = useColorMode();
-  const [current, setCurrent] = useState(upazilas[0]);
+  const { user, logout } = useAuth();
+  const { selectedUpazilaId, setSelectedUpazila } = useSelectedTenant();
+
+  // The switcher only makes sense on the admin/console host, where a cross-tenant user (SEAL =
+  // global, DC = district) has no fixed tenant. On a upazila subdomain (e.g. golachipa.lvh.me)
+  // the tenant is pinned by the URL, so NO ONE sees the switcher — not even SEAL/DC.
+  const firstLabel = window.location.hostname.split('.')[0];
+  const isConsoleHost =
+    firstLabel === 'admin' ||
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1';
+  const canSwitch = user ? user.scope !== 'tenant' && isConsoleHost : false;
+
+  // Upazila switcher — real list from the registry (SEAL: all, DC: own district, §4).
+  const [upazilas, setUpazilas] = useState<SwitchableUpazila[]>([]);
+  const [current, setCurrent] = useState<string>(
+    user?.upazila ? `${user.upazila.name_bn} উপজেলা` : S.appName,
+  );
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
   const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
   const [notifAnchor, setNotifAnchor] = useState<null | HTMLElement>(null);
+
+  const label = (u: SwitchableUpazila) => `${u.name_bn} উপজেলা${u.district ? `, ${u.district}` : ''}`;
+
+  useEffect(() => {
+    if (!canSwitch) return;
+    api<{ upazilas: SwitchableUpazila[] }>('/registry/switchable-upazilas')
+      .then((r) => {
+        setUpazilas(r.upazilas);
+        // Restore the label for a previously-selected upazila (persisted across refresh).
+        const sel = r.upazilas.find((u) => u.id === selectedUpazilaId);
+        if (sel) setCurrent(label(sel));
+      })
+      .catch(() => setUpazilas([]));
+  }, [canSwitch, selectedUpazilaId]);
+
+  const chooseUpazila = (u: SwitchableUpazila) => {
+    setSelectedUpazila(u.id); // updates X-Upazila header + bumps version → consumers refetch
+    setCurrent(label(u));
+    setAnchor(null);
+  };
+
+  const doLogout = async () => {
+    setProfileAnchor(null);
+    await logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <Box
@@ -47,39 +98,41 @@ export default function TopBar() {
         bgcolor: 'background.default',
       }}
     >
-      {/* Upazila switcher */}
-      <Box
-        onClick={(e) => setAnchor(e.currentTarget)}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1,
-          px: 2,
-          py: 1.1,
-          minWidth: 300,
-          borderRadius: 999,
-          cursor: 'pointer',
-          bgcolor: theme.suraha.switcher,
-        }}
-      >
-        <LocationOnOutlinedIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-        <Typography sx={{ flex: 1, fontSize: 15, fontWeight: 500 }}>{current}</Typography>
-        <KeyboardArrowDownRoundedIcon sx={{ color: 'text.secondary' }} />
-      </Box>
-      <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
-        {upazilas.map((u) => (
-          <MenuItem
-            key={u}
-            selected={u === current}
-            onClick={() => {
-              setCurrent(u);
-              setAnchor(null);
+      {/* Upazila switcher — cross-tenant roles only (SEAL/DC) */}
+      {canSwitch && (
+        <>
+          <Box
+            onClick={(e) => setAnchor(e.currentTarget)}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              px: 2,
+              py: 1.1,
+              minWidth: 300,
+              borderRadius: 999,
+              cursor: 'pointer',
+              bgcolor: theme.suraha.switcher,
             }}
           >
-            {u}
-          </MenuItem>
-        ))}
-      </Menu>
+            <LocationOnOutlinedIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
+            <Typography sx={{ flex: 1, fontSize: 15, fontWeight: 500 }}>{current}</Typography>
+            <KeyboardArrowDownRoundedIcon sx={{ color: 'text.secondary' }} />
+          </Box>
+          <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
+            {upazilas.length === 0 && <MenuItem disabled>{S.common.noData}</MenuItem>}
+            {upazilas.map((u) => (
+              <MenuItem
+                key={u.id}
+                selected={label(u) === current}
+                onClick={() => chooseUpazila(u)}
+              >
+                {label(u)}
+              </MenuItem>
+            ))}
+          </Menu>
+        </>
+      )}
 
       <Box sx={{ flex: 1 }} />
 
@@ -125,15 +178,15 @@ export default function TopBar() {
             className="profile-name"
             sx={{ fontSize: 16.5, fontWeight: 700, transition: 'color 120ms ease' }}
           >
-            {S.profile.name}
+            {user?.name ?? S.profile.name}
           </Typography>
           <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>
-            {S.profile.designation}
+            {user?.designation ?? user?.role_label_bn ?? S.profile.designation}
           </Typography>
         </Box>
         <Avatar
-          src="/bd_logo_bn.png"
-          alt={S.profile.name}
+          src={user?.avatar_url ?? '/bd_logo_bn.png'}
+          alt={user?.name ?? S.profile.name}
           sx={{
             width: 42,
             height: 42,
@@ -155,20 +208,30 @@ export default function TopBar() {
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         slotProps={{ paper: { sx: { minWidth: 210, borderRadius: '12px', mt: 1 } } }}
       >
-        <MenuItem onClick={() => setProfileAnchor(null)}>
+        <MenuItem
+          onClick={() => {
+            setProfileAnchor(null);
+            navigate('/profile');
+          }}
+        >
           <ListItemIcon>
             <PersonOutlineRoundedIcon fontSize="small" />
           </ListItemIcon>
           {S.profile.view}
         </MenuItem>
-        <MenuItem onClick={() => setProfileAnchor(null)}>
+        <MenuItem
+          onClick={() => {
+            setProfileAnchor(null);
+            navigate('/profile');
+          }}
+        >
           <ListItemIcon>
             <LockResetRoundedIcon fontSize="small" />
           </ListItemIcon>
           {S.profile.changePassword}
         </MenuItem>
         <Divider />
-        <MenuItem onClick={() => setProfileAnchor(null)} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={doLogout} sx={{ color: 'error.main' }}>
           <ListItemIcon>
             <LogoutRoundedIcon fontSize="small" sx={{ color: 'error.main' }} />
           </ListItemIcon>

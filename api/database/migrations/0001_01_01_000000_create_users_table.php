@@ -14,9 +14,28 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('name_en')->nullable();            // optional English name (data field)
+
+            // Officers authenticate with an admin-created username; citizens with mobile + OTP.
+            $table->string('username')->nullable()->unique();
+            $table->string('phone')->nullable()->unique();
+            $table->string('email')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->timestamp('phone_verified_at')->nullable();
+            $table->string('password')->nullable();           // null for citizens (OTP-only)
+
+            // RBAC + tenancy scope (see App\Enums\Role). Kept as plain indexed columns, not
+            // DB foreign keys: this table is created before the registry tables, and §4 calls
+            // for avoiding cross-tenant FKs (clean boundary for single-upazila export later).
+            $table->string('role')->index();                  // fwa|up_sochib|uno|investigating_officer|dc|seal_admin|citizen
+            $table->string('tenant_id')->nullable()->index(); // officer/citizen upazila; null for seal_admin
+            $table->unsignedBigInteger('district_id')->nullable()->index(); // dc scope
+            $table->unsignedBigInteger('union_id')->nullable();             // fwa/officer union scope
+            $table->unsignedTinyInteger('ward_no')->nullable();
+            $table->string('designation')->nullable();        // পদবী (Bangla)
+            $table->string('avatar_path')->nullable();
+            $table->boolean('is_active')->default(true);
+
             $table->rememberToken();
             $table->timestamps();
         });

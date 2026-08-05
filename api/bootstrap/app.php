@@ -13,7 +13,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            // Resolve the upazila (tenant) from the request subdomain, e.g. golachipa.suraha.com.bd
+            'tenant' => \Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain::class,
+            'tenant.prevent-central' => \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
+            // For cross-tenant roles (SEAL/DC) on the admin host: resolve the upazila from
+            // the X-Upazila header so they can switch context without changing the URL.
+            'tenant.selected' => \App\Http\Middleware\ApplySelectedTenant::class,
+            // RBAC (see app/Http/Middleware)
+            'role' => \App\Http\Middleware\EnsureRole::class,
+            'deny.readonly' => \App\Http\Middleware\DenyReadOnlyWrites::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
