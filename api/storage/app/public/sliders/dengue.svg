@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" font-family="'Noto Sans Bengali','Hind Siliguri','Kalpurush',sans-serif">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d7a6f"/>
+      <stop offset="1" stop-color="#04463f"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="500" fill="url(#g1)"/>
+  <circle cx="1010" cy="120" r="230" fill="#ffffff" opacity="0.06"/>
+  <circle cx="1080" cy="420" r="150" fill="#ffffff" opacity="0.05"/>
+  <!-- mosquito motif -->
+  <g transform="translate(1050,140) scale(0.72)" stroke="#7fe6d8" stroke-width="6" fill="none" opacity="0.8" stroke-linecap="round">
+    <ellipse cx="0" cy="0" rx="46" ry="18"/>
+    <path d="M-40 -6 q-70 -60 -120 -34 M-30 6 q-70 40 -128 26"/>
+    <path d="M30 -8 l70 -46 M34 2 l78 -12"/>
+    <circle cx="42" cy="-2" r="12" fill="#7fe6d8" stroke="none"/>
+  </g>
+  <text x="80" y="150" fill="#bff3ea" font-size="26" font-weight="600">গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</text>
+  <text x="80" y="240" fill="#ffffff" font-size="56" font-weight="800">ডেঙ্গু প্রতিরোধে সচেতন হোন</text>
+  <text x="80" y="300" fill="#e6fffa" font-size="30" font-weight="500">জমে থাকা পানি ফেলে দিন, ঘর পরিষ্কার রাখুন।</text>
+  <rect x="80" y="360" width="10" height="54" rx="5" fill="#7fe6d8"/>
+  <text x="108" y="398" fill="#ffffff" font-size="30" font-weight="700">উপজেলা প্রশাসন, গলাচিপা</text>
+</svg>

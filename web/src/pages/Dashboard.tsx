@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Chip, Typography } from '@mui/material';
+import { Box, Button, Chip, CircularProgress, Typography } from '@mui/material';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
@@ -37,9 +37,11 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { version } = useSelectedTenant();
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [statsError, setStatsError] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [slides, setSlides] = useState<Slider[]>([]);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const role = user?.role ?? '';
   const can = (roles: string[]) => roles.includes(role);
@@ -48,14 +50,36 @@ export default function Dashboard() {
   const showSliders = can(['uno', 'dc', 'seal_admin']);
 
   useEffect(() => {
-    getDashboardStats().then(setStats).catch(() => setStats(null));
-    if (showAppointments) listAppointments().then((r) => setAppointments(r.data.slice(0, 4))).catch(() => setAppointments([]));
-    if (showComplaints) listComplaints().then((r) => setComplaints(r.data.slice(0, 4))).catch(() => setComplaints([]));
-    if (showSliders) getPublicSliders().then((r) => setSlides(r.sliders)).catch(() => setSlides([]));
+    let active = true;
+    setStatsError(false);
+    getDashboardStats()
+      .then((s) => active && setStats(s))
+      .catch(() => active && setStatsError(true));
+    if (showAppointments) listAppointments().then((r) => active && setAppointments(r.data.slice(0, 4))).catch(() => active && setAppointments([]));
+    if (showComplaints) listComplaints().then((r) => active && setComplaints(r.data.slice(0, 4))).catch(() => active && setComplaints([]));
+    if (showSliders) getPublicSliders().then((r) => active && setSlides(r.sliders)).catch(() => active && setSlides([]));
+    return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [version, role]);
+  }, [version, role, reloadKey]);
 
-  if (!stats) return null;
+  // A transient stats-fetch failure must never leave the page permanently blank:
+  // surface an error with a retry instead of returning null forever.
+  if (statsError && !stats) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, minHeight: '50vh' }}>
+        <Typography color="text.secondary">{S.common.loadError}</Typography>
+        <Button variant="outlined" onClick={() => setReloadKey((k) => k + 1)}>{S.common.retry}</Button>
+      </Box>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   const P = S.common.person;
   const isAggregate = stats.scope.level !== 'tenant';
@@ -63,7 +87,11 @@ export default function Dashboard() {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
-        <Typography variant="h5">{S.dashboard.title}</Typography>
+        <Typography variant="h5">
+          {stats.scope.level === 'tenant' && stats.scope.label
+            ? S.dashboard.titleUpazila(stats.scope.label)
+            : S.dashboard.title}
+        </Typography>
         {isAggregate && (
           <Chip
             label={`${S.dashboard.aggregateOf} · ${stats.scope.label} (${bn(stats.scope.upazila_count)}${S.dashboard.upazilaCount})`}
@@ -81,6 +109,7 @@ export default function Dashboard() {
             title={S.dashboard.officer.title}
             accent={theme.suraha.module.officer}
             actionLabel={S.common.details}
+            actionSx={{ borderRadius: '6px' }}
             tiles={[
               { label: S.dashboard.officer.totalHealthWorker, value: bn(stats.officers.fwa), unit: P },
               { label: S.dashboard.officer.totalFpWorker, value: bn(stats.officers.investigators), unit: P },
@@ -88,7 +117,7 @@ export default function Dashboard() {
             ]}
           />
         )}
-        {can(['fwa', 'up_sochib', 'dc', 'seal_admin']) && (
+        {can(['fwa', 'up_sochib', 'uno', 'dc', 'seal_admin']) && (
           <ModuleSummaryCard
             title={S.dashboard.pregnancy.title}
             accent={theme.suraha.module.pregnancy}
@@ -100,7 +129,7 @@ export default function Dashboard() {
             ]}
           />
         )}
-        {can(['up_sochib', 'dc', 'seal_admin']) && (
+        {can(['up_sochib', 'uno', 'dc', 'seal_admin']) && (
           <ModuleSummaryCard
             title={S.dashboard.birth.title}
             accent={theme.suraha.module.birth}

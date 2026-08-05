@@ -26,6 +26,8 @@ import { bnStrings as S } from '../../i18n';
 import { bn } from '../../utils/bnNum';
 import { api, ApiError } from '../../api/client';
 import StatusPill from '../../components/StatusPill';
+import PaginationBar from '../../components/PaginationBar';
+import { usePagination } from '../../components/usePagination';
 
 interface UpazilaRow {
   id: string;
@@ -51,11 +53,14 @@ export default function Instances() {
   const [open, setOpen] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<Credential[] | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const load = () => {
+    setLoading(true);
     api<{ data: UpazilaRow[] }>('/upazilas')
       .then((r) => setRows(r.data))
-      .catch(() => setRows([]));
+      .catch(() => setRows([]))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -71,6 +76,8 @@ export default function Instances() {
     setCredentials(creds.length ? creds : null);
     load();
   };
+
+  const { pageRows, page, setPage, pageSize, setPageSize, pageCount } = usePagination(rows);
 
   return (
     <Box sx={{ display: 'grid', gap: 3 }}>
@@ -98,7 +105,7 @@ export default function Instances() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((u) => (
+            {pageRows.map((u) => (
               <TableRow
                 key={u.id}
                 hover
@@ -122,12 +129,15 @@ export default function Instances() {
             {rows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} align="center" sx={{ color: 'text.secondary', py: 4 }}>
-                  {S.common.noData}
+                  {loading ? S.common.loading : S.common.noData}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
+        {rows.length > 0 && (
+          <PaginationBar page={page} pageCount={pageCount} pageSize={pageSize} onPage={setPage} onPageSize={setPageSize} />
+        )}
       </TableContainer>
 
       <CreateInstanceDialog

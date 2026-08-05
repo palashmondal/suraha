@@ -1,4 +1,5 @@
 import { Box, Button, Paper, Typography } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material/styles';
 import StatTile from './StatTile';
 
 export type Tile = { label: string; value: string; unit?: string; full?: boolean };
@@ -10,11 +11,13 @@ export default function ModuleSummaryCard({
   accent,
   actionLabel,
   tiles,
+  actionSx,
 }: {
   title: string;
   accent: string;
   actionLabel: string;
   tiles: Tile[];
+  actionSx?: SxProps<Theme>;
 }) {
   return (
     <Paper
@@ -47,6 +50,7 @@ export default function ModuleSummaryCard({
             borderColor: 'rgba(255,255,255,0.6)',
             px: 2,
             '&:hover': { borderColor: '#fff', bgcolor: 'rgba(255,255,255,0.12)' },
+            ...actionSx,
           }}
         >
           {actionLabel}

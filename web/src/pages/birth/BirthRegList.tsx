@@ -26,8 +26,10 @@ export default function BirthRegList() {
   const [status, setStatus] = useState('all');
   const [rows, setRows] = useState<BirthReg[]>([]);
   const [tabs, setTabs] = useState<BirthRegTab[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     listBirthRegs({ status })
       .then((r) => {
         setRows(r.data);
@@ -36,7 +38,8 @@ export default function BirthRegList() {
       .catch(() => {
         setRows([]);
         setTabs([]);
-      });
+      })
+      .finally(() => setLoading(false));
   }, [status, version]);
 
   const tableTabs: TableTab[] = tabs.map((t) => ({
@@ -65,6 +68,7 @@ export default function BirthRegList() {
       <DataTable
         columns={columns}
         rows={rows}
+        loading={loading}
         rowActions={(r) =>
           r.has_certificate
             ? [

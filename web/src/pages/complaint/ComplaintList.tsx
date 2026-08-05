@@ -36,8 +36,10 @@ export default function ComplaintList() {
   const [status, setStatus] = useState('all');
   const [rows, setRows] = useState<Complaint[]>([]);
   const [tabs, setTabs] = useState<ComplaintTab[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     listComplaints({ status })
       .then((r) => {
         setRows(r.data);
@@ -46,7 +48,8 @@ export default function ComplaintList() {
       .catch(() => {
         setRows([]);
         setTabs([]);
-      });
+      })
+      .finally(() => setLoading(false));
   }, [status, version]);
 
   const tableTabs: TableTab[] = tabs.map((t) => ({
@@ -88,6 +91,7 @@ export default function ComplaintList() {
       <DataTable
         columns={columns}
         rows={rows}
+        loading={loading}
         onRowClick={(r) => navigate(`/complaint/${r.id}`)}
         rowActions={(r) => [
           { key: 'view', label: S.common.details, icon: <VisibilityOutlinedIcon fontSize="small" />, onClick: () => navigate(`/complaint/${r.id}`) },

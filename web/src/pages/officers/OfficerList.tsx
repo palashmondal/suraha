@@ -9,6 +9,9 @@ import StatusPill from '../../components/StatusPill';
 import AppDialog from '../../components/AppDialog';
 import { FormField, SelectField, type Option } from '../../components/form/FormFields';
 import EmptyState from '../../components/EmptyState';
+import LoadingState from '../../components/LoadingState';
+import PaginationBar from '../../components/PaginationBar';
+import { usePagination } from '../../components/usePagination';
 import { api, ApiError } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
 import { useSelectedTenant } from '../../tenant/SelectedTenantContext';
@@ -29,8 +32,12 @@ export default function OfficerList() {
   const [roles, setRoles] = useState<AssignableRole[]>([]);
   const [open, setOpen] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const load = () => listOfficers().then((r) => setRows(r.data)).catch(() => setRows([]));
+  const load = () => {
+    setLoading(true);
+    return listOfficers().then((r) => setRows(r.data)).catch(() => setRows([])).finally(() => setLoading(false));
+  };
 
   useEffect(() => {
     load();
@@ -39,6 +46,8 @@ export default function OfficerList() {
       .catch(() => setRoles([]));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedUpazilaId]);
+
+  const { pageRows, page, setPage, pageSize, setPageSize, pageCount } = usePagination(rows);
 
   const toggle = async (o: Officer) => {
     try {
@@ -68,7 +77,7 @@ export default function OfficerList() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((o) => (
+            {pageRows.map((o) => (
               <TableRow key={o.id}>
                 <TableCell sx={{ fontWeight: 600 }}>{o.name}</TableCell>
                 <TableCell sx={{ fontFamily: 'monospace', fontSize: 13 }}>{o.username ?? '—'}</TableCell>
@@ -89,7 +98,11 @@ export default function OfficerList() {
             ))}
           </TableBody>
         </Table>
-        {rows.length === 0 && <EmptyState />}
+        {loading && rows.length === 0 && <LoadingState />}
+        {!loading && rows.length === 0 && <EmptyState />}
+        {rows.length > 0 && (
+          <PaginationBar page={page} pageCount={pageCount} pageSize={pageSize} onPage={setPage} onPageSize={setPageSize} />
+        )}
       </TableContainer>
 
       <CreateOfficerDialog

@@ -30,8 +30,10 @@ export default function AppointmentList() {
   const [status, setStatus] = useState('all');
   const [rows, setRows] = useState<Appointment[]>([]);
   const [tabs, setTabs] = useState<AppointmentTab[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     listAppointments({ status })
       .then((r) => {
         setRows(r.data);
@@ -40,7 +42,8 @@ export default function AppointmentList() {
       .catch(() => {
         setRows([]);
         setTabs([]);
-      });
+      })
+      .finally(() => setLoading(false));
   }, [status, version]);
 
   const tableTabs: TableTab[] = tabs.map((t) => ({
@@ -67,6 +70,7 @@ export default function AppointmentList() {
       <DataTable
         columns={columns}
         rows={rows}
+        loading={loading}
         onRowClick={(r) => navigate(`/appointment/${r.id}`)}
         rowActions={(r) => [
           { key: 'view', label: S.common.details, icon: <VisibilityOutlinedIcon fontSize="small" />, onClick: () => navigate(`/appointment/${r.id}`) },

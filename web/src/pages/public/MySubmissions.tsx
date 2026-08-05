@@ -5,6 +5,9 @@ import { bn } from '../../utils/bnNum';
 import PublicLayout from './PublicLayout';
 import StatusPill from '../../components/StatusPill';
 import EmptyState from '../../components/EmptyState';
+import LoadingState from '../../components/LoadingState';
+import PaginationBar from '../../components/PaginationBar';
+import { usePagination } from '../../components/usePagination';
 import { getMySubmissions, type MySubmission } from '../../api/track';
 
 export default function MySubmissions() {
@@ -14,15 +17,20 @@ export default function MySubmissions() {
     getMySubmissions().then((r) => setItems(r.submissions)).catch(() => setItems([]));
   }, []);
 
+  const { pageRows, page, setPage, pageSize, setPageSize, pageCount } = usePagination(items ?? []);
+
   return (
     <PublicLayout>
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
         <Typography sx={{ fontSize: 26, fontWeight: 800, mb: 3 }}>{S.public.mySubmissions}</Typography>
+        {items === null && (
+          <Paper elevation={0} sx={{ borderRadius: '16px' }}><LoadingState /></Paper>
+        )}
         {items && items.length === 0 && (
           <Paper elevation={0} sx={{ borderRadius: '16px' }}><EmptyState /></Paper>
         )}
         <Stack spacing={1.5}>
-          {items?.map((s) => (
+          {pageRows.map((s) => (
             <Paper key={s.token} elevation={0} sx={{ p: 2.5, borderRadius: '14px', border: (t) => `1px solid ${t.palette.divider}` }}>
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -35,6 +43,11 @@ export default function MySubmissions() {
             </Paper>
           ))}
         </Stack>
+        {items && items.length > 0 && (
+          <Box sx={{ mt: 2, border: (t) => `1px solid ${t.palette.divider}`, borderRadius: '12px' }}>
+            <PaginationBar page={page} pageCount={pageCount} pageSize={pageSize} onPage={setPage} onPageSize={setPageSize} />
+          </Box>
+        )}
       </Container>
     </PublicLayout>
   );

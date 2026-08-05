@@ -60,6 +60,11 @@ Route::middleware('tenant')->group(function () {
         // A citizen's own submissions (complaints + appointments) with tracking tokens.
         Route::middleware('role:citizen')->get('my/submissions', [\App\Http\Controllers\MyController::class, 'submissions']);
 
+        // In-app notification bell (§9) — role-targeted within the upazila.
+        Route::get('notifications', [\App\Http\Controllers\NotificationController::class, 'index']);
+        Route::post('notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllRead']);
+        Route::post('notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markRead']);
+
         // Profile self-service. deny.readonly is a no-op for writers but blocks a read-only
         // role (DC) from mutating anything, enforced server-side.
         Route::middleware('deny.readonly')->group(function () {

@@ -18,8 +18,8 @@ return [
     ],
 
     'allowed_origins_patterns' => [
-        '#^https?://([a-z0-9-]+\.)?suraha\.com\.bd$#',
-        '#^https?://([a-z0-9-]+\.)?suraha\.gov\.bd$#',
+        '#^https?://([a-z0-9-]+\.)?suraha\.com\.bd(:\d+)?$#',
+        '#^https?://([a-z0-9-]+\.)?suraha\.gov\.bd(:\d+)?$#',
         '#^https?://([a-z0-9-]+\.)?lvh\.me(:\d+)?$#',
     ],
 

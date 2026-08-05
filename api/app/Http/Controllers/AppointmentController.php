@@ -82,6 +82,15 @@ class AppointmentController extends Controller
 
         $appointment = Appointment::create($data);
 
+        // Notify the UNO of a new appointment request (§8.3).
+        \App\Models\Notification::emit(
+            'appointment',
+            Role::UNO,
+            'নতুন সাক্ষাৎকারের আবেদন',
+            $appointment->purpose,
+            '/appointment/'.$appointment->id,
+        );
+
         return new AppointmentResource($appointment->load('union'));
     }
 

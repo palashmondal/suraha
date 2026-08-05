@@ -19,9 +19,9 @@ export const palette = {
   error: '#B3261E', // destructive action "জন্ম নিবন্ধন তৈরি করুন"
 
   // Per-module accent header bands (dashboard summary cards) — measured from Dashboard.png.
-  moduleOfficer: '#4F378B', // কর্মকর্তা — purple
-  modulePregnancy: '#1D192B', // প্রসূতি কল্যাণ — near-black navy
-  moduleBirth: '#633B48', // জন্ম সনদ — maroon
+  moduleOfficer: '#4F378B', // ব্যবহারকারী তথ্য — purple
+  modulePregnancy: '#2E7D53', // প্রসূতি কল্যাণ — green
+  moduleBirth: '#5F6368', // জন্ম সনদ — grey
   moduleBirthAlt: '#B3261E', // M3 error red (destructive)
 
   // Small count badge on list-card titles (measured).

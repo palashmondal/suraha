@@ -91,6 +91,15 @@ class ComplaintController extends Controller
 
         $complaint = Complaint::create($data);
 
+        // Notify the UNO of a new complaint (§8.4).
+        \App\Models\Notification::emit(
+            'complaint',
+            Role::UNO,
+            'নতুন অভিযোগ দাখিল হয়েছে',
+            $complaint->title,
+            '/complaint/'.$complaint->id,
+        );
+
         return new ComplaintResource($complaint->load('union'));
     }
 

@@ -13,7 +13,6 @@ import {
 import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
-import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded';
 import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
@@ -42,10 +41,10 @@ const baseItems: Item[] = [
     icon: <FolderOutlinedIcon />,
     children: [
       { key: 'pregnancy.list', label: S.nav.list, route: '/pregnancy' },
+      { key: 'birth', label: S.nav.birth, route: '/birth' },
       { key: 'pregnancy.report', label: S.nav.report, route: '/reports' },
     ],
   },
-  { key: 'birth', label: S.nav.birth, icon: <FolderOutlinedIcon />, route: '/birth' },
   { key: 'appointment', label: S.nav.appointment, icon: <FolderOutlinedIcon />, route: '/appointment' },
   {
     key: 'complaint',
@@ -56,7 +55,6 @@ const baseItems: Item[] = [
       { key: 'complaint.officers', label: S.nav.officerList },
     ],
   },
-  { key: 'reports', label: S.nav.report, icon: <InsightsRoundedIcon />, route: '/reports' },
   { key: 'slider', label: S.nav.slider, icon: <SendOutlinedIcon />, route: '/sliders', managerOnly: true },
 ];
 
@@ -149,10 +147,13 @@ export default function Sidebar() {
         width: SIDEBAR_WIDTH,
         flexShrink: 0,
         height: '100%',
-        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
         bgcolor: theme.suraha.sidebarBg,
       }}
     >
+      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
       {/* Brand header — links back to the dashboard */}
       <Box
         onClick={() => navigate('/')}
@@ -264,6 +265,21 @@ export default function Sidebar() {
           </List>
         </>
       )}
+      </Box>
+
+      {/* Bottom brand footer */}
+      <Box
+        sx={{
+          px: 2.5,
+          py: 1.25,
+          textAlign: 'center',
+          color: 'text.secondary',
+          fontSize: 10.5,
+          lineHeight: 1.5,
+        }}
+      >
+        {S.footer.copyright}
+      </Box>
     </Box>
   );
 }

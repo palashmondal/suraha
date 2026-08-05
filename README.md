@@ -1,114 +1,123 @@
 # সুরাহা — Suraha
 
-Module-based government service-delivery platform for Bangladesh upazilas (SEAL Foundation).
+**Smart Upazila – Responsive, Accessible and Humane Administration**
 
-- **What & why:** [SURAHA_OVERVIEW.md](SURAHA_OVERVIEW.md) — business model, features, flows.
-- **Full build spec:** [SURAHA_BUILD_PROMPT.md](SURAHA_BUILD_PROMPT.md) — the authoritative agent spec.
+A module-based, multi-tenant government service-delivery platform for Bangladesh upazilas, built for
+**SEAL Foundation**. One Bangla-language site per upazila (served on a subdomain) that digitizes
+frontline officer work and citizen services — with an automated **pregnancy → BDRIS birth-certificate**
+pipeline at its core.
+
+- **What & why:** [SURAHA_OVERVIEW.md](SURAHA_OVERVIEW.md) — business model, roles, features, flows.
+- **Full build spec:** [SURAHA_BUILD_PROMPT.md](SURAHA_BUILD_PROMPT.md) — the authoritative spec.
 - **Design source of truth:** [`concept_ui/`](concept_ui/) + Figma
-  (https://www.figma.com/design/eywg5k7XOILjdYc7Gzarqm/Suraha-app). **Never invent UI.**
+  (https://www.figma.com/design/eywg5k7XOILjdYc7Gzarqm/Suraha-app).
 
 ## Monorepo layout
 
 ```
 suraha/
-├── web/          React + Vite + MUI (MD3) PWA  — the frontend
-├── api/          Laravel REST API              — Sanctum, stancl/tenancy, Horizon
-├── infra/        Docker Compose + reverse proxy (wildcard TLS *.suraha.com.bd)
+├── web/          React + Vite + MUI (Material 3) PWA — the frontend (Bangla-only, light + dark)
+├── api/          Laravel REST API — Sanctum (Bearer), stancl/tenancy, role-based access
+├── infra/        Docker Compose + Caddy reverse proxy (wildcard TLS *.suraha.com.bd)
 ├── concept_ui/   Design reference screenshots
 └── SURAHA_*.md   Overview + build prompt
 ```
 
-## Build status
+## Architecture
 
-**Milestone 0 (scaffold) — done. Milestone 1 (Foundation) — done.** Design tokens, app shell, and
-the full shared component library are in place (light + dark, Bangla).
+- **Multi-tenancy** — a single central database; each **upazila is a tenant** resolved from the
+  request subdomain (`golachipa.suraha.com.bd` → tenant `golachipa`) via `stancl/tenancy`. Tenant rows
+  are scoped by a `tenant_id` global scope (no per-tenant databases). Cross-tenant roles (SEAL/DC)
+  work on the **admin host** (`admin.suraha.com.bd`) and switch upazila in-app via an `X-Upazila`
+  header — without changing the URL.
+- **Auth** — Bearer-token Sanctum. Officers sign in with username/password; citizens with mobile +
+  OTP (behind a mockable SMS gateway).
+- **RBAC** — 7 roles enforced server-side: FWA, UP Sochib, UNO, Investigating Officer, DC
+  (read-only), SEAL Admin (super-admin), Citizen. See [SURAHA_OVERVIEW.md §4](SURAHA_OVERVIEW.md).
+- **Frontend** — React + Vite + MUI, Bangla-only UI with Bangla numerals, installable PWA, and a full
+  shared component library (live gallery at `/ui`).
 
-Implemented so far:
+## Features (complete)
 
-- **Design tokens + MUI theme** (`web/src/theme/`) — violet primary, per-module accents
-  (purple/charcoal/green/maroon), semantic status pills, soft-lavender canvas; **light + dark**.
-- **App shell** (`web/src/layout/`) — sidebar (icons, sections কর্মকর্তা / সাধারণ তথ্য, expandable
-  children, active lavender pill) per `concept_ui/Side Navigations.png`; top bar with **upazila
-  switcher**, **notification bell**, **theme toggle**, profile (name + role).
-- **Dashboard** (`web/src/pages/Dashboard.tsx`) — 3 module summary cards over 3 list cards
-  (সাক্ষাৎকার / অভিযোগ / স্লাইডার ইমেজ) per `concept_ui/Dashboard.png`, with sample data.
-- **Shared component library** (`web/src/components/`) — cards (`ModuleSummaryCard`, `SectionCard`,
-  `StatTile`), `StatusPill`, `NotificationMenu`, `PageHeader`, `TableTabs` + `DataTable` + `RowMenu`
-  (Bangla headers, status-pill cells, kebab menu, "N new" badges), `EmptyState`, `AppDialog` +
-  `ConfirmDialog`, `VerticalStepper`, `StatusTimeline`, `SummaryPanel`, `SectionTitle`, `DetailRow`,
-  and form fields (`form/` — `FieldCard`, `FormField`, `SelectField`, `DateField`, `TimeField`,
-  `RadioGroupField`, `FileDropzone`). Live gallery at **`/ui`** (concept_ui-faithful, both themes).
-- **Bangla-only UI** with Bangla numerals (`web/src/i18n.ts`, `web/src/utils/bnNum.ts`).
-- **PWA** manifest + service-worker precache wired (`web/vite.config.ts`); offline queue + Background
-  Sync land with the pregnancy module (Milestone 4).
-- **API** scaffolded with Sanctum (`install:api`), `stancl/tenancy`, Horizon, `predis/predis`.
-- **infra/** Docker Compose (app, web, worker, scheduler, postgres, redis, minio, Caddy proxy).
+| Area | Highlights |
+|---|---|
+| **Auth & tenancy** | Subdomain→upazila resolution, 7-role RBAC, officer + citizen (OTP) login, profile/password/avatar |
+| **Admin console (SEAL)** | Provision new upazila instances (tenant + subdomain), instance roster, officer provisioning, in-app upazila switcher |
+| **Dashboards** | Per-role dashboards with real data; SEAL/DC aggregate + district roll-up |
+| **প্রসূতি (Pregnancy)** | FWA field capture → Sochib approval → **auto BDRIS birth registration** → downloadable certificate |
+| **নবজাতক (Birth)** | Birth-registration list, statuses, certificate download |
+| **অভিযোগ (Complaints)** | Full lifecycle: file → schedule → assign investigator → findings → resolve, with timeline |
+| **সাক্ষাৎকার (Appointments)** | Citizen booking, UNO approve/reject/schedule |
+| **Public site** | Landing page, complaint/appointment filing, tracking tokens, "my submissions" |
+| **Content** | Awareness image sliders + general info (emergency phones, about) |
+| **তথ্যচিত্র (Reporting)** | Scope-aware analytics (Recharts), multiple chart types |
+| **Notifications** | In-app, role/tenant-scoped bell + full **সকল নোটিফিকেশন** page (mark-read) |
+| **Cross-cutting** | Global pagination (10/20/30/50/all), loading/empty states, listing-page polish |
 
-> Note: `composer create-project` installed **Laravel 13** (current release), not 11 as the doc
-> text says. Functionally equivalent for this stack; update the doc if you want the version pinned.
+Verified by ~80 Laravel feature tests across `api/tests/Feature/` (auth/tenancy, admin, dashboards,
+pregnancy, birth, complaints, appointments, public content, tracking, reporting, notifications).
 
-## Run the frontend (works now)
+---
+
+## Run locally
+
+### 1. Frontend (works standalone)
 
 ```bash
 cd web
 npm install
-npm run dev      # http://localhost:5173  — try the light/dark toggle in the top bar
+npm run dev      # http://localhost:5173  (try the light/dark toggle in the top bar)
 ```
 
-Production build (also generates the PWA service worker):
+### 2. API
 
-```bash
-cd web && npm run build
-```
-
-## Run the API (needs PostgreSQL + Redis)
-
-The Laravel scaffold defaults to SQLite. For the real stack, point `api/.env` at PostgreSQL + Redis:
+Defaults to SQLite for dev (no PostgreSQL needed to try it):
 
 ```bash
 cd api
+composer install
 php artisan key:generate
-php artisan migrate
-php artisan serve         # http://localhost:8000
+php artisan migrate:fresh --seed   # Golachipa + Dumuria (Barishal), officers, DC, SEAL, citizen, demo data
+php artisan serve --host=0.0.0.0 --port=8000
+php artisan test                   # run the feature suite
 ```
 
-**Milestone 2 (Auth & Multi-tenancy) — done.** Subdomain → upazila resolution (`stancl/tenancy`,
-single central DB with `tenant_id` global scoping), 7-role RBAC enforced server-side (DC read-only,
-SEAL cross-tenant), **Bearer-token** Sanctum auth for officers (username/password) and citizens
-(mobile + OTP behind a mockable SMS gateway), profile management (edit / password / avatar), and
-SEAL officer-provisioning. Verified by `tests/Feature/AuthTenancyTest.php` (13 cases).
+Officer logins (all password `password`): `admin`, `uno_golachipa`, `fwa_golachipa`,
+`tdonto_golachipa`, … Citizen: mobile + OTP (dev code returned by the API).
 
-**Admin console (SEAL super-admin):** the SEAL admin works on a single **admin host**
-(`admin.suraha.com.bd`, dev `admin.lvh.me`) and can **provision new upazila instances**
-(new tenant + subdomain) and review the roster of instances (`/instances` UI, `GET|POST /api/upazilas`).
-The top-bar **upazila switcher** now actually switches context: for cross-tenant roles (SEAL/DC) it
-sends the picked upazila as an `X-Upazila` header and the API scopes to it **without changing the URL
-host**; tenant-scoped officers (UNO/FWA/Sochib/…) have no switcher. Verified by
-`tests/Feature/AdminUpazilaTest.php` (10 cases). Seed:
+### 3. Tenant subdomains
 
-```bash
-cd api
-php artisan migrate:fresh --seed   # Golachipa + Dumuria (Barishal), officers, DC, SEAL, citizen
-php artisan serve                  # officer login: admin / uno_golachipa / … (password: "password")
-php artisan test                   # run the M2 suite
-```
+The SPA calls the API on the **same host, port 8000**, so the upazila subdomain flows through
+automatically. Two ways to resolve subdomains locally:
 
-Dev subdomains resolve via `{upazila}.lvh.me` (→ 127.0.0.1, no hosts edits). The SPA points at the
-same host on port 8000 so the tenant subdomain flows through automatically.
+- **Zero-setup:** use `*.lvh.me` → `golachipa.lvh.me:5173` / `admin.lvh.me:5173` (resolves to
+  127.0.0.1 with no config).
+- **Real domain (`*.suraha.com.bd`)** via a dnsmasq wildcard:
+  ```bash
+  brew install dnsmasq
+  echo 'address=/suraha.com.bd/127.0.0.1' | sudo tee -a "$(brew --prefix)/etc/dnsmasq.conf"
+  sudo brew services start dnsmasq
+  sudo mkdir -p /etc/resolver && echo 'nameserver 127.0.0.1' | sudo tee /etc/resolver/suraha.com.bd
+  ```
+  Then open `http://golachipa.suraha.com.bd:5173`. To drop the `:5173`, serve the frontend on port
+  80 (e.g. a ServBay/Caddy reverse proxy `*.suraha.com.bd:80 → 127.0.0.1:5173`, or `sudo npx vite
+  --host --port 80`). `api/.env` sets `APP_URL`/`ASSET_URL` to `suraha.com.bd` so uploaded assets
+  (slider images, avatars) resolve.
 
-## Deploy (Docker — not installed on this machine)
+---
+
+## Deploy (Docker)
 
 ```bash
 cd infra
 cp .env.example .env      # set DB/S3/BDRIS/SMS secrets
-docker compose up -d      # app, web, postgres, redis, worker, scheduler, minio, proxy
+docker compose up -d      # app, web, postgres, redis, worker, scheduler, minio, Caddy proxy
 ```
 
 The Caddy proxy terminates **wildcard TLS for `*.suraha.com.bd`**; the app resolves the upazila
-(tenant) from the request host.
+(tenant) from the request host. Adding a new upazila in the admin console needs **no server change** —
+wildcard DNS + vhost + cert cover every new subdomain automatically.
 
-## Next milestones (see SURAHA_BUILD_PROMPT §13)
+## License
 
-3. Per-role dashboards + SEAL aggregate + DC district switcher
-4. Pregnancy module + BDRIS → birth certificate  ·  5. Complaints  ·  6. Appointments
-7. Public site  ·  8. Sliders & general info  ·  9. Reporting  ·  10. Notifications + polish
+See [LICENSE](LICENSE).
