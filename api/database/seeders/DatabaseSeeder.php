@@ -19,7 +19,9 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $barishal = District::create(['name' => 'Barishal', 'name_bn' => 'বরিশাল']);
+        // All 64 districts first, so the instance-admin district dropdown is fully populated.
+        $this->call(DistrictSeeder::class);
+        $barishal = District::where('name', 'Barishal')->firstOrFail();
 
         $golachipa = $this->upazila('golachipa', 'Golachipa', 'গলাচিপা', $barishal->id, [
             ['Golachipa Sadar', 'গলাচিপা সদর', 'union', 9],

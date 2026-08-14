@@ -12,7 +12,7 @@ import AppDialog from '../../components/AppDialog';
 import { DateField, FormField } from '../../components/form/FormFields';
 import { useAuth } from '../../auth/AuthContext';
 import {
-  getAppointment, approveAppointment, rejectAppointment, rescheduleAppointment, type Appointment,
+  getAppointment, approveAppointment, rejectAppointment, type Appointment,
 } from '../../api/appointment';
 
 export default function AppointmentDetail() {
@@ -20,7 +20,7 @@ export default function AppointmentDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [a, setA] = useState<Appointment | null>(null);
-  const [dlg, setDlg] = useState<null | 'approve' | 'reject' | 'reschedule'>(null);
+  const [dlg, setDlg] = useState<null | 'approve' | 'reject'>(null);
   const [flash, setFlash] = useState<string | null>(null);
 
   const load = () => { if (id) getAppointment(id).then((r) => setA(r.data)).catch(() => setA(null)); };
@@ -29,6 +29,7 @@ export default function AppointmentDetail() {
   if (!a) return null;
 
   const isManager = user?.role === 'uno' || user?.role === 'seal_admin';
+  const decided = a.status === 'approved' || a.status === 'rejected'; // done once decided
   const done = () => { setDlg(null); setFlash(S.appointment.done); load(); };
 
   return (
@@ -36,7 +37,7 @@ export default function AppointmentDetail() {
       <Box sx={{ display: 'grid', gap: 2 }}>
         <Paper elevation={0} sx={{ borderRadius: '16px', p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton onClick={() => navigate('/appointment')}><ArrowBackRoundedIcon /></IconButton>
-          <Typography sx={{ fontSize: 18, fontWeight: 700, flex: 1 }}>{S.appointment.listTitle}- {a.applicant_name}</Typography>
+          <Typography sx={{ fontSize: 18, fontWeight: 700, flex: 1 }}>{S.appointment.listTitle} — {a.applicant_name}</Typography>
           <StatusPill label={a.status_label} tone={a.status_tone} />
         </Paper>
 
@@ -57,9 +58,10 @@ export default function AppointmentDetail() {
           <SectionTitle>{S.appointment.secRequest}</SectionTitle>
           <Box sx={{ mt: 1 }}>
             <DetailRow label={S.appointment.fPurpose} value={a.purpose} />
-            <DetailRow label={S.appointment.colDate} value={a.appointment_date ? bn(a.appointment_date) : '—'} />
-            <DetailRow label={S.appointment.colTime} value={a.appointment_time ? bn(a.appointment_time) : '—'} />
-            <DetailRow label={S.appointment.fDesc} value={a.description ?? '—'} divider={false} />
+            <DetailRow label={decided ? S.appointment.confirmDate : S.appointment.proposedDate} value={a.appointment_date ? bn(a.appointment_date) : '—'} />
+            <DetailRow label={decided ? S.appointment.confirmTime : S.appointment.proposedTime} value={a.appointment_time ? bn(a.appointment_time) : '—'} />
+            <DetailRow label={S.appointment.fDesc} value={a.description ?? '—'} divider={!!a.decision_note} />
+            {a.decision_note && <DetailRow label={S.appointment.decision} value={a.decision_note} divider={false} />}
           </Box>
         </Paper>
       </Box>
@@ -68,34 +70,30 @@ export default function AppointmentDetail() {
         <SummaryPanel
           title={a.applicant_name}
           lines={[
-            { label: S.appointment.colDate, value: a.appointment_date ? bn(a.appointment_date) : '—' },
-            { label: S.appointment.colTime, value: a.appointment_time ? bn(a.appointment_time) : '—' },
+            { label: decided ? S.appointment.confirmDate : S.appointment.proposedDate, value: a.appointment_date ? bn(a.appointment_date) : '—' },
+            { label: decided ? S.appointment.confirmTime : S.appointment.proposedTime, value: a.appointment_time ? bn(a.appointment_time) : '—' },
           ]}
         >
-          {isManager && (
+          {isManager && !decided && (
             <Stack spacing={1}>
-              {a.status !== 'approved' && (
-                <Button variant="contained" color="success" onClick={() => setDlg('approve')}>{S.appointment.approve}</Button>
-              )}
-              <Button variant="outlined" onClick={() => setDlg('reschedule')}>{S.appointment.reschedule}</Button>
-              {a.status !== 'rejected' && (
-                <Button variant="outlined" color="error" onClick={() => setDlg('reject')}>{S.appointment.reject}</Button>
-              )}
+              <Button variant="contained" color="success" onClick={() => setDlg('approve')}>{S.appointment.approve}</Button>
+              <Button variant="outlined" color="error" onClick={() => setDlg('reject')}>{S.appointment.reject}</Button>
+              <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>{S.appointment.notifyHint}</Typography>
             </Stack>
           )}
         </SummaryPanel>
       </Box>
 
-      <ActionDialogs which={dlg} id={a.id} onClose={() => setDlg(null)} onDone={done} />
+      <ActionDialogs which={dlg} appointment={a} onClose={() => setDlg(null)} onDone={done} />
     </Box>
   );
 }
 
 function ActionDialogs({
-  which, id, onClose, onDone,
+  which, appointment, onClose, onDone,
 }: {
-  which: null | 'approve' | 'reject' | 'reschedule';
-  id: number;
+  which: null | 'approve' | 'reject';
+  appointment: Appointment;
   onClose: () => void;
   onDone: () => void;
 }) {
@@ -104,7 +102,12 @@ function ActionDialogs({
   const [time, setTime] = useState('');
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { setNote(''); setDate(''); setTime(''); }, [which]);
+  // Prefill the accept dialog with the citizen's proposed time so the UNO can confirm or modify it.
+  useEffect(() => {
+    setNote('');
+    setDate(appointment.appointment_date ?? '');
+    setTime(appointment.appointment_time ? appointment.appointment_time.slice(0, 5) : '');
+  }, [which, appointment]);
 
   if (!which) return null;
 
@@ -112,29 +115,33 @@ function ActionDialogs({
     e.preventDefault();
     setBusy(true);
     try {
-      if (which === 'approve') await approveAppointment(id, note || undefined);
-      else if (which === 'reject') await rejectAppointment(id, note || undefined);
-      else await rescheduleAppointment(id, date, time || undefined);
+      if (which === 'approve') {
+        await approveAppointment(appointment.id, {
+          appointment_date: date || undefined,
+          appointment_time: time || undefined,
+          decision_note: note || undefined,
+        });
+      } else {
+        await rejectAppointment(appointment.id, note || undefined);
+      }
       onDone();
     } finally {
       setBusy(false);
     }
   };
 
-  const titles: Record<string, string> = {
-    approve: S.appointment.approve, reject: S.appointment.reject, reschedule: S.appointment.reschedule,
-  };
+  const titles: Record<string, string> = { approve: S.appointment.approve, reject: S.appointment.reject };
 
   return (
     <AppDialog open title={titles[which]} onClose={onClose} onSubmit={run} submitting={busy} maxWidth="xs">
-      {which === 'reschedule' ? (
+      {which === 'approve' && (
         <>
-          <DateField label={S.appointment.newDate} value={date} onChange={setDate} />
-          <FormField label={S.appointment.newTime} value={time} onChange={setTime} type="time" />
+          <DateField label={S.appointment.confirmDate} value={date} onChange={setDate} />
+          <FormField label={S.appointment.confirmTime} value={time} onChange={setTime} type="time" />
         </>
-      ) : (
-        <FormField label={S.appointment.note} value={note} onChange={setNote} multiline rows={3} />
       )}
+      <FormField label={S.appointment.decisionNote} value={note} onChange={setNote} multiline rows={3} />
+      <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{S.appointment.notifyHint}</Typography>
     </AppDialog>
   );
 }

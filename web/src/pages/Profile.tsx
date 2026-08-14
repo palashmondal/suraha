@@ -93,10 +93,15 @@ export default function Profile() {
 
       <Paper elevation={0} sx={{ p: 3, borderRadius: '16px' }}>
         <Stack direction="row" spacing={2} alignItems="center">
-          <Avatar src={user.avatar_url ?? undefined} sx={{ width: 72, height: 72 }} />
+          <Avatar src={user.avatar_url ?? '/profile.jpg'} sx={{ width: 72, height: 72 }} />
           <Box sx={{ flex: 1 }}>
             <Typography sx={{ fontWeight: 700, fontSize: 18 }}>{user.name}</Typography>
             <Typography sx={{ color: 'text.secondary' }}>{user.role_label_bn}</Typography>
+            {user.username && (
+              <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
+                {S.auth.username}: {user.username}
+              </Typography>
+            )}
             {user.upazila && (
               <Typography sx={{ color: 'text.secondary', fontSize: 13 }}>
                 {user.upazila.name_bn}

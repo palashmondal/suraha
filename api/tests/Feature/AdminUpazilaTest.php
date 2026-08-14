@@ -16,7 +16,8 @@ class AdminUpazilaTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const ADMIN = 'http://admin.lvh.me';
+    // SEAL now works on the central host (the admin.* host is retired).
+    private const ADMIN = 'http://lvh.me';
 
     protected function setUp(): void
     {
@@ -33,7 +34,7 @@ class AdminUpazilaTest extends TestCase
 
     public function test_admin_host_is_central_not_a_tenant(): void
     {
-        // admin.lvh.me must resolve tenant-less (not be read as a "admin" subdomain).
+        // The central host (lvh.me) must resolve tenant-less (not read as a subdomain tenant).
         $this->getJson(self::ADMIN.'/api/registry/current-upazila')
             ->assertOk()
             ->assertJsonPath('upazila', null);
@@ -70,9 +71,10 @@ class AdminUpazilaTest extends TestCase
     {
         Sanctum::actingAs($this->seal());
 
-        // district_id 1 (Barishal) already has dc_barishal from the seeder → no new DC.
+        // Barishal already has dc_barishal from the seeder → no new DC provisioned.
+        $barishalId = \App\Models\District::where('name', 'Barishal')->value('id');
         $res = $this->postJson(self::ADMIN.'/api/upazilas', [
-            'slug' => 'kalapara', 'name' => 'Kalapara', 'name_bn' => 'কলাপাড়া', 'district_id' => 1,
+            'slug' => 'kalapara', 'name' => 'Kalapara', 'name_bn' => 'কলাপাড়া', 'district_id' => $barishalId,
         ])->assertCreated();
 
         $this->assertDatabaseHas('users', ['username' => 'uno_kalapara', 'role' => 'uno', 'tenant_id' => 'kalapara']);

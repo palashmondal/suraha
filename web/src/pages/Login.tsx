@@ -13,9 +13,22 @@ import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../i18n';
 import { useAuth } from '../auth/AuthContext';
 import { ApiError } from '../api/client';
+import { useHostContext } from '../tenant/host';
 
 export default function Login() {
+  const host = useHostContext();
   const [tab, setTab] = useState(0);
+
+  // Login is gated by host type (mirrors the API):
+  //  - central host (suraha.com.bd) → SEAL admin only: no citizen tab, single admin form.
+  //  - upazila host → officer + citizen tabs (upazila officers / citizen OTP).
+  const isCentral = host?.kind === 'central';
+  const subtitle = isCentral
+    ? S.auth.adminLoginTitle
+    : host?.name_bn
+      ? `${host.name_bn} — ${S.auth.loginTitle}`
+      : S.auth.loginTitle;
+
   return (
     <Box
       sx={{
@@ -31,15 +44,20 @@ export default function Login() {
           {S.appName}
         </Typography>
         <Typography sx={{ textAlign: 'center', color: 'text.secondary', mb: 3 }}>
-          {S.auth.loginTitle}
+          {subtitle}
         </Typography>
 
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="fullWidth" sx={{ mb: 3 }}>
-          <Tab label={S.auth.officerTab} />
-          <Tab label={S.auth.citizenTab} />
-        </Tabs>
-
-        {tab === 0 ? <OfficerForm /> : <CitizenForm />}
+        {isCentral ? (
+          <OfficerForm />
+        ) : (
+          <>
+            <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="fullWidth" sx={{ mb: 3 }}>
+              <Tab label={S.auth.officerTab} />
+              <Tab label={S.auth.citizenTab} />
+            </Tabs>
+            {tab === 0 ? <OfficerForm /> : <CitizenForm />}
+          </>
+        )}
       </Paper>
     </Box>
   );

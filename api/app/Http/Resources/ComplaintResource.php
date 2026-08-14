@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\ComplaintEvent;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -36,18 +37,33 @@ class ComplaintResource extends JsonResource
             'description' => $this->description,
             'has_attachment' => (bool) $this->attachment_path,
 
-            'schedule_date' => $this->schedule_date?->toDateString(),
+            // Current investigation state (drives the UNO's action buttons).
             'investigating_officer_id' => $this->investigating_officer_id,
             'investigating_officer' => $this->whenLoaded('investigatingOfficer', fn () => $this->investigatingOfficer?->name),
-            'findings' => $this->findings,
-            'resolution_note' => $this->resolution_note,
+            'due_date' => $this->due_date?->toDateString(),
+            'hearing_date' => $this->hearing_date?->toDateString(),
 
-            // Lifecycle timestamps → detail timeline
             'filed_at' => $this->created_at?->toDateTimeString(),
-            'scheduled_at' => $this->scheduled_at?->toDateTimeString(),
             'assigned_at' => $this->assigned_at?->toDateTimeString(),
-            'resolved_at' => $this->resolved_at?->toDateTimeString(),
+            'completed_at' => $this->completed_at?->toDateTimeString(),
             'rejected_at' => $this->rejected_at?->toDateTimeString(),
+
+            // Full step history → detail timeline (oldest → newest).
+            'timeline' => $this->whenLoaded('events', fn () => $this->events->map(fn (ComplaintEvent $e) => [
+                'id' => $e->id,
+                'type' => $e->type,
+                'label' => $e->labelBn(),
+                'actor_name' => $e->actor?->name,
+                'actor_role' => $e->actor_role,
+                'comment' => $e->comment,
+                'meta' => $e->meta,
+                'at' => $e->created_at?->toDateTimeString(),
+                'attachments' => $e->attachments->map(fn ($a) => [
+                    'url' => $a->url(),
+                    'original_name' => $a->original_name,
+                    'kind' => $a->kind,
+                ])->all(),
+            ])->all()),
         ];
     }
 }

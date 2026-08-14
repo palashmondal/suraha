@@ -14,8 +14,11 @@ import PregnancyDetail from './pages/pregnancy/PregnancyDetail';
 import BirthRegList from './pages/birth/BirthRegList';
 import ComplaintList from './pages/complaint/ComplaintList';
 import ComplaintDetail from './pages/complaint/ComplaintDetail';
+import InvestigatingOfficers from './pages/complaint/InvestigatingOfficers';
+import HearingSchedule from './pages/complaint/HearingSchedule';
 import AppointmentList from './pages/appointment/AppointmentList';
 import AppointmentDetail from './pages/appointment/AppointmentDetail';
+import AppointmentSchedule from './pages/appointment/AppointmentSchedule';
 import Landing from './pages/public/Landing';
 import Track from './pages/public/Track';
 import FileComplaint from './pages/public/FileComplaint';
@@ -84,8 +87,11 @@ export default function App() {
       <Route path="/pregnancy/:id" element={<RequireAuth><PregnancyDetail /></RequireAuth>} />
       <Route path="/birth" element={<RequireAuth><BirthRegList /></RequireAuth>} />
       <Route path="/complaint" element={<RequireAuth><ComplaintList /></RequireAuth>} />
+      <Route path="/investigators" element={<RequireAuth roles={['uno', 'seal_admin']}><InvestigatingOfficers /></RequireAuth>} />
+      <Route path="/hearings" element={<RequireAuth roles={['uno', 'seal_admin']}><HearingSchedule /></RequireAuth>} />
       <Route path="/complaint/:id" element={<RequireAuth><ComplaintDetail /></RequireAuth>} />
       <Route path="/appointment" element={<RequireAuth><AppointmentList /></RequireAuth>} />
+      <Route path="/appointment-schedule" element={<RequireAuth roles={['uno', 'seal_admin']}><AppointmentSchedule /></RequireAuth>} />
       <Route path="/appointment/:id" element={<RequireAuth><AppointmentDetail /></RequireAuth>} />
       <Route path="/reports" element={<RequireAuth><Reports /></RequireAuth>} />
       <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />

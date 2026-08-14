@@ -14,17 +14,17 @@ import { useSelectedTenant } from '../../tenant/SelectedTenantContext';
 
 const TAB_LABEL: Record<string, string> = {
   all: S.complaint.tabAll,
-  filed: S.complaint.tabFiled,
-  scheduled: S.complaint.tabScheduled,
+  pending: S.complaint.tabPending,
   assigned: S.complaint.tabAssigned,
-  resolved: S.complaint.tabResolved,
+  completed: S.complaint.tabCompleted,
+  rejected: S.complaint.tabRejected,
 };
-const TAB_TONE: Record<string, 'pending' | 'success' | 'info'> = {
+const TAB_TONE: Record<string, 'pending' | 'success' | 'info' | 'danger'> = {
   all: 'info',
-  filed: 'pending',
-  scheduled: 'info',
+  pending: 'pending',
   assigned: 'info',
-  resolved: 'success',
+  completed: 'success',
+  rejected: 'danger',
 };
 
 const mapLink = (c: Complaint) =>

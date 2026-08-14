@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { api, tokenStore } from '../api/client';
-import { SELECTED_TENANT_KEY } from '../tenant/SelectedTenantContext';
+import { SELECTED_TENANT_KEY, SELECTED_TENANT_LABEL_KEY } from '../tenant/SelectedTenantContext';
 
 // Shape returned by UserResource on the API.
 export interface AuthUser {
@@ -43,14 +43,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    api<AuthUser>('/auth/me')
-      .then(setUser)
+    // /auth/me returns a UserResource wrapped as { data: {...} } (login/verify return the user
+    // flat under `user`), so unwrap .data here.
+    api<{ data: AuthUser }>('/auth/me')
+      .then((r) => setUser(r.data))
       .catch(() => tokenStore.clear())
       .finally(() => setLoading(false));
   }, []);
 
   const applyToken = async (res: { token: string; user: AuthUser }) => {
     tokenStore.set(res.token);
+    // A fresh login starts clean: cross-tenant roles (SEAL/DC) default to the aggregate
+    // ("সকল উপজেলা"). An in-session upazila pick still persists across navigation/reload.
+    localStorage.removeItem(SELECTED_TENANT_KEY);
+    localStorage.removeItem(SELECTED_TENANT_LABEL_KEY);
     setUser(res.user);
   };
 
@@ -82,7 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const refresh = async () => {
-    setUser(await api<AuthUser>('/auth/me'));
+    const r = await api<{ data: AuthUser }>('/auth/me');
+    setUser(r.data);
   };
 
   const logout = async () => {
@@ -91,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       tokenStore.clear();
       localStorage.removeItem(SELECTED_TENANT_KEY);
+      localStorage.removeItem(SELECTED_TENANT_LABEL_KEY);
       setUser(null);
     }
   };

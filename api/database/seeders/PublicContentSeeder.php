@@ -35,7 +35,8 @@ class PublicContentSeeder extends Seeder
                 'image_path' => $path,
                 'link' => 'https://dcpatuakhali.gov.bd',
                 'slide_date' => now()->subDays(count($slides) - $i)->toDateString(),
-                'is_active' => true,
+                // Last poster is stopped, so the public carousel (active-only) shows 3 of 4.
+                'is_active' => $i < count($slides) - 1,
                 'sort_order' => $i,
             ]);
         }

@@ -5,8 +5,8 @@
 *.suraha.com.bd, suraha.com.bd {
 	# tls { dns <provider> {env.DNS_API_TOKEN} }   # enable for wildcard issuance
 
-	# API under /api → Laravel; everything else → React web app.
-	@api path /api/*
-	reverse_proxy @api app:8080
+	# API + uploaded files (public disk) → Laravel; everything else → React web app.
+	@laravel path /api/* /storage/*
+	reverse_proxy @laravel app:8080
 	reverse_proxy web:80
 }

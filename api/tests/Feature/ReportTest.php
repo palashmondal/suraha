@@ -17,7 +17,7 @@ class ReportTest extends TestCase
     use RefreshDatabase;
 
     private const GOLACHIPA = 'http://golachipa.lvh.me';
-    private const ADMIN = 'http://admin.lvh.me';
+    private const ADMIN = 'http://lvh.me';
 
     protected function setUp(): void
     {
@@ -32,7 +32,7 @@ class ReportTest extends TestCase
 
         $res->assertJsonPath('scope.level', 'tenant');
         $this->assertSame(18, $res->json('kpis.pregnancies_total'));
-        $this->assertSame(12, $res->json('kpis.complaints_total'));
+        $this->assertSame(10, $res->json('kpis.complaints_total'));
         $this->assertSame(11, $res->json('kpis.appointments_total'));
 
         // Single scope → union comparison, no upazila comparison.
@@ -41,8 +41,8 @@ class ReportTest extends TestCase
 
         // Chart bundles present.
         $this->assertCount(6, $res->json('trends'));
-        $this->assertCount(5, $res->json('status.complaint'));
-        $this->assertCount(4, $res->json('funnel'));
+        $this->assertCount(4, $res->json('status.complaint'));
+        $this->assertCount(3, $res->json('funnel'));
     }
 
     public function test_delivery_and_resolution_rates_are_percentages(): void

@@ -23,7 +23,7 @@ import { useAuth } from '../auth/AuthContext';
 
 export const SIDEBAR_WIDTH = 264;
 
-type Child = { key: string; label: string; route?: string };
+type Child = { key: string; label: string; route?: string; managerOnly?: boolean };
 type Item = {
   key: string;
   label: string;
@@ -45,14 +45,23 @@ const baseItems: Item[] = [
       { key: 'pregnancy.report', label: S.nav.report, route: '/reports' },
     ],
   },
-  { key: 'appointment', label: S.nav.appointment, icon: <FolderOutlinedIcon />, route: '/appointment' },
+  {
+    key: 'appointment',
+    label: S.nav.appointment,
+    icon: <FolderOutlinedIcon />,
+    children: [
+      { key: 'appointment.all', label: S.nav.appointmentList, route: '/appointment' },
+      { key: 'appointment.schedule', label: S.nav.appointmentSchedule, route: '/appointment-schedule', managerOnly: true },
+    ],
+  },
   {
     key: 'complaint',
     label: S.nav.complaint,
     icon: <FolderOutlinedIcon />,
     children: [
       { key: 'complaint.all', label: S.nav.allList, route: '/complaint' },
-      { key: 'complaint.officers', label: S.nav.officerList },
+      { key: 'complaint.hearings', label: S.nav.hearingSchedule, route: '/hearings', managerOnly: true },
+      { key: 'complaint.officers', label: S.nav.officerList, route: '/investigators', managerOnly: true },
     ],
   },
   { key: 'slider', label: S.nav.slider, icon: <SendOutlinedIcon />, route: '/sliders', managerOnly: true },
@@ -105,6 +114,9 @@ export default function Sidebar() {
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
   const isManager = user?.role === 'uno' || user?.role === 'seal_admin';
+  // An investigating officer only works on complaints assigned to their desk — no prosuti/birth,
+  // no appointments, no management sections.
+  const isInvestigator = user?.role === 'investigating_officer';
 
   // Insert the SEAL-only instances item right after the dashboard; drop manager-only items
   // (e.g. slider management) for roles that can't manage content.
@@ -112,7 +124,9 @@ export default function Sidebar() {
     user?.role === 'seal_admin'
       ? [baseItems[0], instancesItem, ...baseItems.slice(1)]
       : baseItems
-  ).filter((it) => ! it.managerOnly || isManager);
+  )
+    .filter((it) => ! it.managerOnly || isManager)
+    .filter((it) => ! isInvestigator || it.key === 'dashboard' || it.key === 'complaint');
 
   const activePill = theme.suraha.activePillBg;
   const activeText = theme.suraha.activePillText;
@@ -196,7 +210,7 @@ export default function Sidebar() {
               {item.children ? (
                 <Collapse in={isOpen} unmountOnExit>
                   <List disablePadding>
-                    {item.children.map((child) => {
+                    {item.children.filter((c) => ! c.managerOnly || isManager).map((child) => {
                       const childActive = child.route
                         ? isRouteActive(child.route)
                         : active === child.key;

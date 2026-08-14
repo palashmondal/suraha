@@ -78,6 +78,54 @@ class AuthTenancyTest extends TestCase
         ])->assertOk()->assertJsonPath('user.role', 'seal_admin');
     }
 
+    public function test_seal_admin_cannot_log_in_on_a_upazila_subdomain(): void
+    {
+        // Admin login is central-only; the upazila host must reject SEAL.
+        $this->postJson(self::GOLACHIPA.'/api/auth/officer/login', [
+            'username' => 'admin',
+            'password' => 'password',
+        ])->assertStatus(422);
+    }
+
+    public function test_upazila_officer_cannot_log_in_on_central_host(): void
+    {
+        // A upazila-level officer belongs to their subdomain, not the central admin site.
+        $this->postJson(self::CENTRAL.'/api/auth/officer/login', [
+            'username' => 'uno_golachipa',
+            'password' => 'password',
+        ])->assertStatus(422);
+    }
+
+    public function test_dc_cannot_log_in_on_central_host(): void
+    {
+        // DC/district hosts are a deferred TODO; today only SEAL may log in centrally.
+        $this->postJson(self::CENTRAL.'/api/auth/officer/login', [
+            'username' => 'dc_barishal',
+            'password' => 'password',
+        ])->assertStatus(422);
+    }
+
+    public function test_host_context_reports_central(): void
+    {
+        $this->getJson(self::CENTRAL.'/api/registry/host-context')
+            ->assertOk()->assertJsonPath('kind', 'central');
+    }
+
+    public function test_host_context_reports_upazila(): void
+    {
+        $this->getJson(self::GOLACHIPA.'/api/registry/host-context')
+            ->assertOk()
+            ->assertJsonPath('kind', 'upazila')
+            ->assertJsonPath('slug', 'golachipa')
+            ->assertJsonPath('name_bn', 'গলাচিপা');
+    }
+
+    public function test_host_context_unknown_subdomain_returns_404(): void
+    {
+        $this->getJson('http://nowhere.lvh.me/api/registry/host-context')
+            ->assertNotFound();
+    }
+
     public function test_wrong_password_is_rejected(): void
     {
         $this->postJson(self::GOLACHIPA.'/api/auth/officer/login', [

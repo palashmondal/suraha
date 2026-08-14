@@ -24,7 +24,7 @@ class UserResource extends JsonResource
             'role' => $this->role->value,
             'role_label_bn' => $this->role->labelBn(),
             'designation' => $this->designation,
-            'avatar_url' => $this->avatar_path ? asset('storage/'.$this->avatar_path) : null,
+            'avatar_url' => $this->avatar_path ? '/storage/'.$this->avatar_path : null,
             'scope' => $this->role->scope(),
             'is_read_only' => $this->isReadOnly(),
             'is_active' => (bool) $this->is_active,
