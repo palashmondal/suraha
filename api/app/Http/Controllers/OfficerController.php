@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 /**
@@ -100,6 +101,65 @@ class OfficerController extends Controller
         return new UserResource($officer->load('upazila'));
     }
 
+    /**
+     * The current upazila's investigating officers (তদন্ত কর্মকর্তা তালিকা) — the pool the UNO/SEAL
+     * assign to complaints. Tenant-scoped: resolved from the subdomain, or from the SEAL's selected
+     * upazila (X-Upazila) on the central host.
+     */
+    public function investigators()
+    {
+        $tenantId = $this->currentTenantId();
+
+        $officers = User::query()
+            ->where('role', Role::INVESTIGATING_OFFICER->value)
+            ->where('tenant_id', $tenantId)
+            ->with('upazila')
+            ->orderBy('name')
+            ->paginate(20);
+
+        return UserResource::collection($officers);
+    }
+
+    /**
+     * Add an investigating officer. The mobile number IS the account identity (username = mobile),
+     * so a login account is created for it with a one-time temporary password (returned once).
+     * Role is fixed to Investigating Officer and the upazila is the current tenant context.
+     */
+    public function storeInvestigator(Request $request): JsonResponse
+    {
+        $tenantId = $this->currentTenantId();
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'designation' => ['nullable', 'string', 'max:120'],
+            'email' => ['nullable', 'email', 'max:160'],
+            'phone' => [
+                'required', 'string', 'regex:/^01[0-9]{9}$/',
+                Rule::unique('users', 'phone'),
+                Rule::unique('users', 'username'),
+            ],
+        ]);
+
+        $password = Str::password(10, symbols: false);
+
+        $officer = User::create([
+            'name' => $data['name'],
+            'designation' => $data['designation'] ?? null,
+            'email' => $data['email'] ?? null,
+            'phone' => $data['phone'],
+            'username' => $data['phone'],      // the mobile number is the login identity
+            'password' => Hash::make($password),
+            'role' => Role::INVESTIGATING_OFFICER->value,
+            'tenant_id' => $tenantId,
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'data' => new UserResource($officer->load('upazila')),
+            'credentials' => ['username' => $data['phone'], 'temp_password' => $password], // shown once
+        ], 201);
+    }
+
     public function updateStatus(Request $request, User $officer): UserResource
     {
         abort_if($officer->role === Role::CITIZEN, 404);
@@ -112,6 +172,18 @@ class OfficerController extends Controller
     }
 
     // ---- helpers ---------------------------------------------------------
+
+    /** The upazila an investigating officer is being managed for; requires a tenant context. */
+    private function currentTenantId(): string
+    {
+        abort_unless(
+            tenancy()->initialized,
+            400,
+            'কোন উপজেলার জন্য কর্মকর্তা যুক্ত করবেন তা নির্ধারণ করুন — উপরের তালিকা থেকে একটি উপজেলা নির্বাচন করুন।',
+        );
+
+        return tenant()->getTenantKey();
+    }
 
     /** @return array<int,Role> */
     private function assignableFor(User $actor): array

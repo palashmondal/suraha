@@ -46,8 +46,8 @@ class TrackingTest extends TestCase
             ->assertOk()
             ->assertJsonPath('type', 'complaint')
             ->assertJsonPath('title', 'রাস্তার সমস্যা')
-            ->assertJsonPath('status', 'filed')
-            ->assertJsonCount(4, 'timeline');
+            ->assertJsonPath('status', 'pending')
+            ->assertJsonCount(3, 'timeline');
     }
 
     public function test_filing_an_appointment_returns_a_token_and_it_tracks(): void

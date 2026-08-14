@@ -25,10 +25,25 @@ class ComplaintSeeder extends Seeder
         $investigatorId = User::where('username', 'tdonto_golachipa')->value('id');
         $withOfficer = fn () => ['investigating_officer_id' => $investigatorId];
 
-        Complaint::factory()->count(4)->create();                                  // নিষ্পত্তিহীন
-        Complaint::factory()->count(3)->scheduled()->create();                     // শিডিউল যুক্ত
-        Complaint::factory()->count(3)->assigned()->state($withOfficer)->create(); // তদন্তকারী যুক্ত
-        Complaint::factory()->count(2)->resolved()->state($withOfficer)->create(); // নিষ্পত্তি সম্পন্ন
+        $pending = Complaint::factory()->count(5)->create();                                   // পর্যালোচনাধীন
+        $assigned = Complaint::factory()->count(3)->assigned()->state($withOfficer)->create();  // তদন্ত কর্মকর্তা নিযুক্ত
+        $completed = Complaint::factory()->count(2)->completed()->state($withOfficer)->create(); // সম্পন্ন
+
+        // A baseline timeline so the detail page + tabs look real.
+        foreach ($pending->concat($assigned)->concat($completed) as $c) {
+            $c->events()->create(['type' => 'filed']);
+        }
+        foreach ($assigned->concat($completed) as $c) {
+            $c->events()->create([
+                'type' => 'accepted',
+                'actor_role' => 'uno',
+                'comment' => 'তদন্তের জন্য গ্রহণ করা হলো।',
+                'meta' => ['officer_id' => $investigatorId, 'due_date' => $c->due_date?->toDateString()],
+            ]);
+        }
+        foreach ($completed as $c) {
+            $c->events()->create(['type' => 'completed', 'actor_role' => 'uno', 'comment' => 'তদন্ত শেষে নিষ্পত্তি করা হলো।']);
+        }
 
         tenancy()->end();
     }

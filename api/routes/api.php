@@ -25,6 +25,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('tenant')->group(function () {
 
     // ---- Public (unauthenticated) -------------------------------------
+    Route::get('registry/host-context', [RegistryController::class, 'hostContext']);
+    // Public upazila directory for the FWA mobile app's first-run picker (called on the central host).
+    Route::get('upazilas/directory', [RegistryController::class, 'upazilaDirectory']);
     Route::get('registry/current-upazila', [RegistryController::class, 'currentUpazila']);
     Route::get('registry/unions', [RegistryController::class, 'unions']);
     Route::get('registry/districts', [RegistryController::class, 'districts']);
@@ -103,7 +106,8 @@ Route::middleware('tenant')->group(function () {
 
         // ---- অভিযোগ (§8.4) ---------------------------------------------
         // File: citizen (or officer on behalf). View: UNO/investigator/DC/SEAL (investigators are
-        // auto-scoped to their own assignments). Manage: UNO. Findings: the assigned investigator.
+        // auto-scoped to their own assignments). Manage (accept/appoint, reject, schedule hearing,
+        // order): UNO. Report: the assigned investigator.
         Route::middleware('deny.readonly', 'role:citizen,uno,seal_admin')
             ->post('complaints', [ComplaintController::class, 'store']);
 
@@ -113,14 +117,16 @@ Route::middleware('tenant')->group(function () {
 
             Route::middleware('deny.readonly', 'role:uno,seal_admin')->group(function () {
                 Route::get('complaint-investigators', [ComplaintController::class, 'investigators']);
-                Route::post('complaints/{complaint}/schedule', [ComplaintController::class, 'schedule']);
-                Route::post('complaints/{complaint}/assign', [ComplaintController::class, 'assign']);
-                Route::post('complaints/{complaint}/resolve', [ComplaintController::class, 'resolve']);
+                Route::get('complaint-hearings', [ComplaintController::class, 'hearings']);
+                Route::post('complaints/{complaint}/accept', [ComplaintController::class, 'accept']);
                 Route::post('complaints/{complaint}/reject', [ComplaintController::class, 'reject']);
+                Route::post('complaints/{complaint}/schedule-hearing', [ComplaintController::class, 'scheduleHearing']);
+                Route::post('complaints/{complaint}/complete', [ComplaintController::class, 'complete']);
+                Route::post('complaints/{complaint}/reinvestigate', [ComplaintController::class, 'reinvestigate']);
             });
 
             Route::middleware('deny.readonly', 'role:investigating_officer,seal_admin')
-                ->post('complaints/{complaint}/findings', [ComplaintController::class, 'submitFindings']);
+                ->post('complaints/{complaint}/report', [ComplaintController::class, 'report']);
         });
 
         // ---- সাক্ষাৎকার (§8.3) — citizen request; UNO decide; DC/SEAL view -
@@ -129,12 +135,12 @@ Route::middleware('tenant')->group(function () {
 
         Route::middleware('role:uno,dc,seal_admin')->group(function () {
             Route::get('appointments', [AppointmentController::class, 'index']);
+            Route::get('appointment-schedule', [AppointmentController::class, 'schedule']);
             Route::get('appointments/{appointment}', [AppointmentController::class, 'show']);
 
             Route::middleware('deny.readonly', 'role:uno,seal_admin')->group(function () {
                 Route::post('appointments/{appointment}/approve', [AppointmentController::class, 'approve']);
                 Route::post('appointments/{appointment}/reject', [AppointmentController::class, 'reject']);
-                Route::post('appointments/{appointment}/reschedule', [AppointmentController::class, 'reschedule']);
             });
         });
 
@@ -151,6 +157,11 @@ Route::middleware('tenant')->group(function () {
             Route::get('officer-roles', [OfficerController::class, 'assignableRoles']);
             Route::post('officers', [OfficerController::class, 'store']);
             Route::patch('officers/{officer}/status', [OfficerController::class, 'updateStatus']);
+
+            // Investigating officers (তদন্ত কর্মকর্তা তালিকা, §8.4) — mobile-keyed accounts the
+            // UNO/SEAL add and then assign to complaints. Tenant-scoped.
+            Route::get('investigating-officers', [OfficerController::class, 'investigators']);
+            Route::post('investigating-officers', [OfficerController::class, 'storeInvestigator']);
 
             // Sliders (§8.5) + General Info (§8.6) management
             Route::get('manage/sliders', [\App\Http\Controllers\SliderController::class, 'index']);
@@ -170,6 +181,8 @@ Route::middleware('tenant')->group(function () {
             Route::get('upazilas', [UpazilaController::class, 'index']);
             Route::post('upazilas', [UpazilaController::class, 'store']);
             Route::get('upazilas/{upazila}', [UpazilaController::class, 'show']);
+            Route::put('upazilas/{upazila}', [UpazilaController::class, 'update']);
+            Route::delete('upazilas/{upazila}', [UpazilaController::class, 'destroy']);
         });
     });
 });

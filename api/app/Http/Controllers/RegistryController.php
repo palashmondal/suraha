@@ -15,6 +15,29 @@ use Illuminate\Http\Request;
  */
 class RegistryController extends Controller
 {
+    /**
+     * Host context for the requesting subdomain — lets the SPA render the right shell without
+     * guessing district-vs-upazila from the hostname string:
+     *  - central host (suraha.com.bd)        → { kind: 'central' }
+     *  - upazila host ({upazila}.suraha…)     → { kind: 'upazila', slug, name_bn }
+     * (A 'district' kind is a deferred TODO — see the platform plan.)
+     */
+    public function hostContext()
+    {
+        if (! tenancy()->initialized) {
+            return response()->json(['kind' => 'central', 'slug' => null, 'name_bn' => null]);
+        }
+
+        $upazila = tenant()->load('district');
+
+        return response()->json([
+            'kind' => 'upazila',
+            'slug' => $upazila->getTenantKey(),
+            'name_bn' => $upazila->name_bn,
+            'district_bn' => $upazila->district?->name_bn,
+        ]);
+    }
+
     /** Current upazila context (resolved from subdomain), or null on a central domain. */
     public function currentUpazila()
     {
@@ -74,6 +97,28 @@ class RegistryController extends Controller
     {
         return response()->json([
             'districts' => District::orderBy('name_bn')->get(['id', 'name', 'name_bn']),
+        ]);
+    }
+
+    /**
+     * Public directory of active upazilas for the FWA mobile app's first-run picker. The app has
+     * no subdomain yet, so it calls this on the central host, then pins its API base to the chosen
+     * upazila's subdomain. Returns the subdomain slug + Bangla names.
+     */
+    public function upazilaDirectory()
+    {
+        $upazilas = Upazila::query()
+            ->where('is_active', true)
+            ->with('district')
+            ->orderBy('name_bn')
+            ->get();
+
+        return response()->json([
+            'upazilas' => $upazilas->map(fn (Upazila $u) => [
+                'slug' => $u->getTenantKey(),
+                'name_bn' => $u->name_bn,
+                'district_bn' => $u->district?->name_bn,
+            ]),
         ]);
     }
 }

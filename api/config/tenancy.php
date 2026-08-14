@@ -24,17 +24,15 @@ return [
     'central_domains' => [
         '127.0.0.1',
         'localhost',
-        // Production wildcard base (subdomain = upazila): {upazila}.suraha.com.bd
+        // The national public site AND the SEAL admin host: suraha.com.bd. SEAL logs in here
+        // (suraha.com.bd/login) and switches upazila in-app via the X-Upazila header — the base
+        // domain is central, so it is NOT read as a tenant subdomain. Upazila subdomains
+        // ({upazila}.suraha.com.bd) resolve as tenants. (The old admin.* host is retired.)
         'suraha.com.bd',
         'suraha.gov.bd',
-        // The SEAL/DC admin host — cross-tenant users work here and switch upazila in-app
-        // (via the X-Upazila header). Listed as central so it is NOT read as a tenant subdomain.
-        'admin.suraha.com.bd',
-        'admin.suraha.gov.bd',
-        // Local dev: {upazila}.lvh.me resolves to 127.0.0.1 with no /etc/hosts edits; admin.lvh.me
-        // is the dev admin host. Both are matched as central (admin.lvh.me listed explicitly).
+        // Local dev: {upazila}.lvh.me resolves to 127.0.0.1 with no /etc/hosts edits; bare lvh.me
+        // is the central (SEAL) host.
         'lvh.me',
-        'admin.lvh.me',
     ],
 
     /**

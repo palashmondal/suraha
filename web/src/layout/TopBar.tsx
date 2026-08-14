@@ -27,6 +27,7 @@ import NotificationMenu from '../components/NotificationMenu';
 import { getNotifications, markAllNotificationsRead, type AppNotification } from '../api/notifications';
 import { useAuth } from '../auth/AuthContext';
 import { useSelectedTenant } from '../tenant/SelectedTenantContext';
+import { useHostContext } from '../tenant/host';
 import { api } from '../api/client';
 
 interface SwitchableUpazila {
@@ -40,23 +41,21 @@ export default function TopBar() {
   const navigate = useNavigate();
   const { mode, toggle } = useColorMode();
   const { user, logout } = useAuth();
-  const { selectedUpazilaId, setSelectedUpazila } = useSelectedTenant();
+  const { selectedUpazilaId, selectedUpazilaLabel, setSelectedUpazila } = useSelectedTenant();
+  const host = useHostContext();
 
-  // The switcher only makes sense on the admin/console host, where a cross-tenant user (SEAL =
-  // global, DC = district) has no fixed tenant. On a upazila subdomain (e.g. golachipa.lvh.me)
-  // the tenant is pinned by the URL, so NO ONE sees the switcher — not even SEAL/DC.
-  const firstLabel = window.location.hostname.split('.')[0];
-  const isConsoleHost =
-    firstLabel === 'admin' ||
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1';
-  const canSwitch = user ? user.scope !== 'tenant' && isConsoleHost : false;
+  // The switcher only makes sense on the central host, where a cross-tenant user (SEAL = global,
+  // DC = district) has no fixed tenant and picks one via the X-Upazila header. On a upazila
+  // subdomain the tenant is pinned by the URL, so NO ONE sees the switcher — not even SEAL/DC.
+  const isCentralHost = host?.kind === 'central';
+  const canSwitch = user ? user.scope !== 'tenant' && isCentralHost : false;
 
   // Upazila switcher — real list from the registry (SEAL: all, DC: own district, §4).
+  // Cross-tenant roles default to the aggregate view ("সকল উপজেলা") until they pick one upazila.
+  // The displayed label comes from the persisted selection so it survives per-navigation remounts
+  // (no flash back to "সকল উপজেলা").
+  const current = selectedUpazilaLabel ?? S.common.allUpazilas;
   const [upazilas, setUpazilas] = useState<SwitchableUpazila[]>([]);
-  const [current, setCurrent] = useState<string>(
-    user?.upazila ? `${user.upazila.name_bn} উপজেলা` : S.appName,
-  );
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
   const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
   const [notifAnchor, setNotifAnchor] = useState<null | HTMLElement>(null);
@@ -78,18 +77,18 @@ export default function TopBar() {
   useEffect(() => {
     if (!canSwitch) return;
     api<{ upazilas: SwitchableUpazila[] }>('/registry/switchable-upazilas')
-      .then((r) => {
-        setUpazilas(r.upazilas);
-        // Restore the label for a previously-selected upazila (persisted across refresh).
-        const sel = r.upazilas.find((u) => u.id === selectedUpazilaId);
-        if (sel) setCurrent(label(sel));
-      })
+      .then((r) => setUpazilas(r.upazilas))
       .catch(() => setUpazilas([]));
-  }, [canSwitch, selectedUpazilaId]);
+  }, [canSwitch]);
 
   const chooseUpazila = (u: SwitchableUpazila) => {
-    setSelectedUpazila(u.id); // updates X-Upazila header + bumps version → consumers refetch
-    setCurrent(label(u));
+    // Persist id (X-Upazila) + label so both data scope and the switcher label survive navigation.
+    setSelectedUpazila(u.id, label(u));
+    setAnchor(null);
+  };
+
+  const chooseAll = () => {
+    setSelectedUpazila(null); // clears X-Upazila → API returns the cross-tenant aggregate
     setAnchor(null);
   };
 
@@ -132,11 +131,13 @@ export default function TopBar() {
             <KeyboardArrowDownRoundedIcon sx={{ color: 'text.secondary' }} />
           </Box>
           <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
-            {upazilas.length === 0 && <MenuItem disabled>{S.common.noData}</MenuItem>}
+            <MenuItem selected={!selectedUpazilaId} onClick={chooseAll}>
+              {S.common.allUpazilas}
+            </MenuItem>
             {upazilas.map((u) => (
               <MenuItem
                 key={u.id}
-                selected={label(u) === current}
+                selected={u.id === selectedUpazilaId}
                 onClick={() => chooseUpazila(u)}
               >
                 {label(u)}
@@ -204,14 +205,14 @@ export default function TopBar() {
           </Typography>
         </Box>
         <Avatar
-          src={user?.avatar_url ?? '/bd_logo_bn.png'}
+          src={user?.avatar_url ?? '/profile.jpg'}
           alt={user?.name ?? S.profile.name}
           sx={{
             width: 42,
             height: 42,
             bgcolor: 'transparent',
             transition: 'box-shadow 120ms ease',
-            '& img': { objectFit: 'contain' },
+            '& img': { objectFit: 'cover' },
           }}
         />
         <KeyboardArrowDownRoundedIcon

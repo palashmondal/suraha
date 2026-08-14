@@ -13,6 +13,7 @@ import { bnStrings as S } from '../../i18n';
 import PublicLayout from './PublicLayout';
 import SliderCarousel from '../../components/SliderCarousel';
 import { getPublicSliders, getPublicGeneralInfo, type Slider, type InfoItem } from '../../api/content';
+import { useHostContext } from '../../tenant/host';
 
 // Simple self-contained hero illustration (inline SVG — no external assets), themed to violet.
 function HeroArt() {
@@ -49,6 +50,10 @@ const FAQS = [
 export default function Landing() {
   const theme = useTheme();
   const navigate = useNavigate();
+  const host = useHostContext();
+  // Citizen services (file complaint / book appointment / track) are upazila-scoped, so they only
+  // work on a upazila subdomain. On the central national site we surface admin login instead.
+  const isCentral = host?.kind === 'central';
   const [slides, setSlides] = useState<Slider[]>([]);
   const [phones, setPhones] = useState<InfoItem[]>([]);
   const [about, setAbout] = useState<InfoItem[]>([]);
@@ -71,9 +76,17 @@ export default function Landing() {
               {S.public.heroSubtitle}
             </Typography>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 3 }}>
-              <Button variant="contained" size="large" onClick={() => navigate('/file-complaint')}>{S.public.ctaComplaint}</Button>
-              <Button variant="outlined" size="large" onClick={() => navigate('/book-appointment')}>{S.public.ctaAppointment}</Button>
-              <Button size="large" endIcon={<ArrowForwardRoundedIcon />} onClick={() => navigate('/track')}>{S.public.ctaTrack}</Button>
+              {isCentral ? (
+                <Button variant="contained" size="large" endIcon={<ArrowForwardRoundedIcon />} onClick={() => navigate('/login')}>
+                  {S.auth.adminLoginTitle}
+                </Button>
+              ) : (
+                <>
+                  <Button variant="contained" size="large" onClick={() => navigate('/file-complaint')}>{S.public.ctaComplaint}</Button>
+                  <Button variant="outlined" size="large" onClick={() => navigate('/book-appointment')}>{S.public.ctaAppointment}</Button>
+                  <Button size="large" endIcon={<ArrowForwardRoundedIcon />} onClick={() => navigate('/track')}>{S.public.ctaTrack}</Button>
+                </>
+              )}
             </Stack>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>

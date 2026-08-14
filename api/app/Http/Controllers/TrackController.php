@@ -44,11 +44,10 @@ class TrackController extends Controller
             'status_tone' => $c->status->tone(),
             'timeline' => [
                 $this->node('অভিযোগ দাখিল', $c->created_at, true),
-                $this->node('শিডিউল যুক্ত', $c->scheduled_at, (bool) $c->scheduled_at),
-                $this->node('তদন্তকারী যুক্ত', $c->assigned_at, (bool) $c->assigned_at),
+                $this->node('তদন্ত কর্মকর্তা নিযুক্ত', $c->assigned_at, (bool) $c->assigned_at),
                 $c->rejected_at
-                    ? $this->node('নাকচ', $c->rejected_at, true)
-                    : $this->node('নিষ্পত্তি', $c->resolved_at, (bool) $c->resolved_at),
+                    ? $this->node('বাতিল', $c->rejected_at, true)
+                    : $this->node('নিষ্পত্তি সম্পন্ন', $c->completed_at, (bool) $c->completed_at),
             ],
         ];
     }

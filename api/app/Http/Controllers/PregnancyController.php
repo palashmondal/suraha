@@ -63,6 +63,15 @@ class PregnancyController extends Controller
         $data = $request->validate($this->rules(creating: true));
         $data['created_by'] = $request->user()->id;
 
+        // Idempotent create for the offline mobile app: a retried submit with the same client_uuid
+        // returns the already-created mother instead of duplicating it.
+        if (! empty($data['client_uuid'])) {
+            $existing = Pregnancy::where('client_uuid', $data['client_uuid'])->first();
+            if ($existing) {
+                return new PregnancyResource($existing->load('union'));
+            }
+        }
+
         $pregnancy = Pregnancy::create($data);
 
         // Notify the Sochib that a new mother was added for review (§8.1).
@@ -146,6 +155,8 @@ class PregnancyController extends Controller
         $req = $creating ? 'required' : 'sometimes';
 
         return [
+            // Offline mobile idempotency key (optional; only meaningful on create).
+            'client_uuid' => ['nullable', 'uuid'],
             'mother_name_bn' => [$req, 'string', 'max:120'],
             'mother_name_en' => ['nullable', 'string', 'max:120'],
             'husband_name' => ['nullable', 'string', 'max:120'],

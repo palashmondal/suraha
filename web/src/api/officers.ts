@@ -4,6 +4,8 @@ export interface Officer {
   id: number;
   name: string;
   username: string | null;
+  phone: string | null;
+  email: string | null;
   role: string;
   role_label_bn: string;
   designation: string | null;

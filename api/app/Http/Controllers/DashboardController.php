@@ -27,6 +27,9 @@ class DashboardController extends Controller
         [$tenantIds, $scope] = ScopeResolver::resolve($user);
 
         $in = fn ($query) => $query->withoutTenancy()->whereIn('tenant_id', $tenantIds);
+        // Complaints for an investigating officer are scoped to their own assignments.
+        $complaints = fn () => $in(Complaint::query())
+            ->when($user->role === Role::INVESTIGATING_OFFICER, fn ($q) => $q->where('investigating_officer_id', $user->id));
         $today = today();
 
         return response()->json([
@@ -48,9 +51,10 @@ class DashboardController extends Controller
                 'pending_entry' => $in(BirthRegistration::query())->where('status', 'pending_entry')->count(),
             ],
             'complaints' => [
-                'total' => $in(Complaint::query())->count(),
-                'unresolved' => $in(Complaint::query())->whereIn('status', ['filed', 'scheduled', 'assigned'])->count(),
-                'resolved' => $in(Complaint::query())->where('status', 'resolved')->count(),
+                // Investigating officers only ever see complaints on their own desk.
+                'total' => $complaints()->count(),
+                'unresolved' => $complaints()->whereIn('status', ['pending', 'assigned'])->count(),
+                'resolved' => $complaints()->where('status', 'completed')->count(),
             ],
             'appointments' => [
                 'total' => $in(Appointment::query())->count(),

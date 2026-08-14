@@ -85,7 +85,7 @@ class ReportController extends Controller
         $pregTotal = $this->dated(Pregnancy::class)->count();
         $delivered = $this->dated(Pregnancy::class)->where('delivery_status', 'delivered')->count();
         $compTotal = $this->dated(Complaint::class)->count();
-        $resolved = $this->dated(Complaint::class)->where('status', 'resolved')->count();
+        $resolved = $this->dated(Complaint::class)->where('status', 'completed')->count();
         $apptTotal = $this->dated(Appointment::class)->count();
         $approved = $this->dated(Appointment::class)->where('status', 'approved')->count();
 
@@ -105,12 +105,12 @@ class ReportController extends Controller
 
     private function avgResolutionDays(): float
     {
-        $rows = $this->dated(Complaint::class)->whereNotNull('resolved_at')->get(['created_at', 'resolved_at']);
+        $rows = $this->dated(Complaint::class)->whereNotNull('completed_at')->get(['created_at', 'completed_at']);
         if ($rows->isEmpty()) {
             return 0.0;
         }
 
-        return round($rows->avg(fn (Complaint $c) => $c->created_at->diffInHours($c->resolved_at) / 24), 1);
+        return round($rows->avg(fn (Complaint $c) => $c->created_at->diffInHours($c->completed_at) / 24), 1);
     }
 
     /** Last 6 months of new records per module (uses scope + union/ward, ignores the date range). */
@@ -145,11 +145,10 @@ class ReportController extends Controller
                 ['name' => 'এন্ট্রি হয়নি', 'value' => $countBy(BirthRegistration::class, 'status', 'pending_entry'), 'tone' => 'pending'],
             ],
             'complaint' => [
-                ['name' => 'নিষ্পত্তিহীন', 'value' => $countBy(Complaint::class, 'status', 'filed'), 'tone' => 'pending'],
-                ['name' => 'শিডিউল যুক্ত', 'value' => $countBy(Complaint::class, 'status', 'scheduled'), 'tone' => 'info'],
-                ['name' => 'তদন্তকারী যুক্ত', 'value' => $countBy(Complaint::class, 'status', 'assigned'), 'tone' => 'info'],
-                ['name' => 'নিষ্পত্তি সম্পন্ন', 'value' => $countBy(Complaint::class, 'status', 'resolved'), 'tone' => 'success'],
-                ['name' => 'নাকচ', 'value' => $countBy(Complaint::class, 'status', 'rejected'), 'tone' => 'danger'],
+                ['name' => 'পর্যালোচনাধীন', 'value' => $countBy(Complaint::class, 'status', 'pending'), 'tone' => 'pending'],
+                ['name' => 'তদন্ত কর্মকর্তা নিযুক্ত', 'value' => $countBy(Complaint::class, 'status', 'assigned'), 'tone' => 'info'],
+                ['name' => 'সম্পন্ন', 'value' => $countBy(Complaint::class, 'status', 'completed'), 'tone' => 'success'],
+                ['name' => 'বাতিল', 'value' => $countBy(Complaint::class, 'status', 'rejected'), 'tone' => 'danger'],
             ],
             'appointment' => [
                 ['name' => 'অপেক্ষমান', 'value' => $countBy(Appointment::class, 'status', 'pending'), 'tone' => 'pending'],
@@ -175,9 +174,8 @@ class ReportController extends Controller
     {
         return [
             ['stage' => 'দাখিল', 'count' => $this->dated(Complaint::class)->count()],
-            ['stage' => 'শিডিউল যুক্ত', 'count' => $this->dated(Complaint::class)->whereNotNull('scheduled_at')->count()],
-            ['stage' => 'তদন্তকারী যুক্ত', 'count' => $this->dated(Complaint::class)->whereNotNull('assigned_at')->count()],
-            ['stage' => 'নিষ্পত্তি', 'count' => $this->dated(Complaint::class)->whereNotNull('resolved_at')->count()],
+            ['stage' => 'তদন্ত কর্মকর্তা নিযুক্ত', 'count' => $this->dated(Complaint::class)->whereNotNull('assigned_at')->count()],
+            ['stage' => 'সম্পন্ন', 'count' => $this->dated(Complaint::class)->whereNotNull('completed_at')->count()],
         ];
     }
 
@@ -198,7 +196,7 @@ class ReportController extends Controller
             'pregnancies' => $this->dated(Pregnancy::class)->where('tenant_id', $u->id)->count(),
             'deliveries' => $this->dated(Pregnancy::class)->where('tenant_id', $u->id)->where('delivery_status', 'delivered')->count(),
             'births' => $this->dated(BirthRegistration::class)->where('tenant_id', $u->id)->where('status', 'entered')->count(),
-            'complaints_resolved' => $this->dated(Complaint::class)->where('tenant_id', $u->id)->where('status', 'resolved')->count(),
+            'complaints_resolved' => $this->dated(Complaint::class)->where('tenant_id', $u->id)->where('status', 'completed')->count(),
             'appointments_approved' => $this->dated(Appointment::class)->where('tenant_id', $u->id)->where('status', 'approved')->count(),
         ])->all();
     }

@@ -113,7 +113,7 @@ class PregnancyTest extends TestCase
     {
         Sanctum::actingAs(User::where('username', 'dc_barishal')->firstOrFail());
         // DC switches into Golachipa via header, but writes are blocked server-side.
-        $this->postJson('http://admin.lvh.me/api/pregnancies', [
+        $this->postJson('http://lvh.me/api/pregnancies', [
             'mother_name_bn' => 'x',
         ], ['X-Upazila' => 'golachipa'])->assertStatus(403);
     }

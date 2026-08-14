@@ -17,8 +17,23 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     /**
+     * Upazila-level officer roles — the only roles that may log in on a upazila subdomain.
+     * SEAL (global) and DC (district) belong to the central / district hosts, not here.
+     */
+    private const UPAZILA_OFFICER_ROLES = [
+        Role::FWA,
+        Role::UP_SOCHIB,
+        Role::UNO,
+        Role::INVESTIGATING_OFFICER,
+    ];
+
+    /**
      * Officer login — admin-created username + password (§1.1(3)). Returns a Bearer token.
-     * If the request arrives on an upazila subdomain, the officer must be allowed there.
+     *
+     * Login is gated by host type (subdomain topology):
+     *  - central host (suraha.com.bd, no tenant)      → SEAL admin only.
+     *  - upazila host ({upazila}.suraha.com.bd, tenant) → that upazila's officers only.
+     * (DC / district hosts are a deferred TODO — see the platform plan.)
      */
     public function officerLogin(Request $request): JsonResponse
     {
@@ -41,11 +56,26 @@ class AuthController extends Controller
             ]);
         }
 
-        // If resolved on a tenant subdomain, the officer must have access to that upazila.
-        if (tenancy()->initialized && ! $user->canAccessTenant(tenant()->getTenantKey())) {
-            throw ValidationException::withMessages([
-                'username' => ['এই উপজেলায় আপনার প্রবেশাধিকার নেই।'],
-            ]);
+        if (tenancy()->initialized) {
+            // Upazila host: only upazila-level officers, and only for this upazila.
+            if (! in_array($user->role, self::UPAZILA_OFFICER_ROLES, true)) {
+                throw ValidationException::withMessages([
+                    'username' => ['এই সাবডোমেইন থেকে লগইন করার অনুমতি আপনার নেই।'],
+                ]);
+            }
+
+            if (! $user->canAccessTenant(tenant()->getTenantKey())) {
+                throw ValidationException::withMessages([
+                    'username' => ['এই উপজেলায় আপনার প্রবেশাধিকার নেই।'],
+                ]);
+            }
+        } else {
+            // Central host (suraha.com.bd): SEAL admin only.
+            if ($user->role !== Role::SEAL_ADMIN) {
+                throw ValidationException::withMessages([
+                    'username' => ['অ্যাডমিন লগইন শুধুমাত্র প্রধান সাইট থেকে সম্ভব। আপনার উপজেলার সাবডোমেইন ব্যবহার করুন।'],
+                ]);
+            }
         }
 
         return $this->tokenResponse($user, 'officer');

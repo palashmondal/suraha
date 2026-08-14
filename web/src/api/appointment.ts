@@ -38,15 +38,29 @@ export function listAppointments(params: { status?: string; q?: string } = {}) {
   return api<AppointmentList>(`/appointments${suffix}`);
 }
 
+export interface ScheduledAppointment {
+  id: number;
+  applicant_name: string;
+  purpose: string;
+  appointment_date: string | null;
+  appointment_time: string | null;
+}
+
 export const getAppointment = (id: string | number) => api<{ data: Appointment }>(`/appointments/${id}`);
 
 export const createAppointment = (body: Record<string, unknown>) =>
   api<{ data: Appointment }>('/appointments', { method: 'POST', body });
 
+export const listAppointmentSchedule = () =>
+  api<{ appointments: ScheduledAppointment[] }>('/appointment-schedule');
+
 const action = (id: number, verb: string, body: Record<string, unknown> = {}) =>
   api<{ data: Appointment }>(`/appointments/${id}/${verb}`, { method: 'POST', body });
 
-export const approveAppointment = (id: number, decision_note?: string) => action(id, 'approve', { decision_note });
+// UNO accepts — confirming or modifying the proposed time — or rejects; both notify the citizen.
+export const approveAppointment = (
+  id: number,
+  body: { appointment_date?: string; appointment_time?: string; decision_note?: string } = {},
+) => action(id, 'approve', body);
+
 export const rejectAppointment = (id: number, decision_note?: string) => action(id, 'reject', { decision_note });
-export const rescheduleAppointment = (id: number, appointment_date: string, appointment_time?: string) =>
-  action(id, 'reschedule', { appointment_date, appointment_time });

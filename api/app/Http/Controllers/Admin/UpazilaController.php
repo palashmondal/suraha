@@ -138,9 +138,45 @@ class UpazilaController extends Controller
         ];
     }
 
-    /** Single instance (details page is expanded later). */
+    /** Single instance (used by the edit page). */
     public function show(Upazila $upazila): UpazilaResource
     {
         return new UpazilaResource($upazila->load('district')->loadCount('unions'));
+    }
+
+    /**
+     * Edit an instance: display name (Bangla/English), its district, and active status. The slug
+     * (tenant id == subdomain label) is the immutable identity of the tenant and its data, so it
+     * is NOT editable here.
+     */
+    public function update(Request $request, Upazila $upazila): UpazilaResource
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'name_bn' => ['required', 'string', 'max:120'],
+            'district_id' => ['required', 'integer', Rule::exists('districts', 'id')],
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        $upazila->update($data);
+
+        return new UpazilaResource($upazila->load('district')->loadCount('unions'));
+    }
+
+    /**
+     * Delete an instance and everything scoped to it. All tenant-owned tables FK their tenant_id
+     * with cascadeOnDelete, so deleting the tenant row removes its unions, pregnancies, birth
+     * registrations, complaints, appointments, notifications, sliders, general info, and domain.
+     * Users are the one exception (tenant_id is a plain indexed column, no FK), so they are
+     * removed explicitly first.
+     */
+    public function destroy(Upazila $upazila): JsonResponse
+    {
+        DB::transaction(function () use ($upazila) {
+            User::where('tenant_id', $upazila->id)->delete();
+            $upazila->delete(); // cascades domains + every tenant-owned module table
+        });
+
+        return response()->json(['message' => 'উপজেলা ইনস্ট্যান্স মুছে ফেলা হয়েছে।']);
     }
 }

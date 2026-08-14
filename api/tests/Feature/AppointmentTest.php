@@ -52,19 +52,39 @@ class AppointmentTest extends TestCase
         ])->assertCreated()->assertJsonPath('data.status', 'pending');
     }
 
-    public function test_uno_approves_rejects_and_reschedules(): void
+    public function test_uno_accepts_with_a_modified_time(): void
     {
         $id = Upazila::find('golachipa')->run(fn () => Appointment::factory()->create()->id);
         Sanctum::actingAs($this->uno());
 
-        $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/approve")
-            ->assertOk()->assertJsonPath('data.status', 'approved');
+        // UNO accepts but modifies the proposed time to fit the schedule.
+        $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/approve", [
+            'appointment_date' => '2026-09-01',
+            'appointment_time' => '11:30',
+            'decision_note' => 'সকাল ১১:৩০ এ আসুন',
+        ])->assertOk()
+            ->assertJsonPath('data.status', 'approved')
+            ->assertJsonPath('data.appointment_date', '2026-09-01')
+            ->assertJsonPath('data.appointment_time', '11:30');
+    }
 
-        $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/reschedule", ['appointment_date' => '2026-09-01'])
-            ->assertOk()->assertJsonPath('data.status', 'pending')
-            ->assertJsonPath('data.appointment_date', '2026-09-01');
+    public function test_accepted_appointment_appears_on_the_uno_schedule(): void
+    {
+        $id = Upazila::find('golachipa')->run(fn () => Appointment::factory()->create(['appointment_date' => '2026-09-05'])->id);
+        Sanctum::actingAs($this->uno());
+        $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/approve", ['appointment_date' => '2026-09-05'])->assertOk();
 
-        $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/reject")
+        $this->getJson(self::GOLACHIPA.'/api/appointment-schedule')
+            ->assertOk()
+            ->assertJsonFragment(['id' => $id]);
+    }
+
+    public function test_uno_rejects(): void
+    {
+        $id = Upazila::find('golachipa')->run(fn () => Appointment::factory()->create()->id);
+        Sanctum::actingAs($this->uno());
+
+        $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/reject", ['decision_note' => 'সময় নেই'])
             ->assertOk()->assertJsonPath('data.status', 'rejected');
     }
 
@@ -72,7 +92,7 @@ class AppointmentTest extends TestCase
     {
         $id = Upazila::find('golachipa')->run(fn () => Appointment::factory()->create()->id);
         Sanctum::actingAs(User::where('username', 'dc_barishal')->firstOrFail());
-        $this->postJson('http://admin.lvh.me/api/appointments/'.$id.'/approve', [], ['X-Upazila' => 'golachipa'])
+        $this->postJson('http://lvh.me/api/appointments/'.$id.'/approve', [], ['X-Upazila' => 'golachipa'])
             ->assertStatus(403);
     }
 }

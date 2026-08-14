@@ -9,11 +9,13 @@ use Database\Factories\ComplaintFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /**
- * অভিযোগ record (§8.4). Tenant-scoped. Lifecycle timestamps (created_at, scheduled_at,
- * assigned_at, resolved_at, rejected_at) feed the detail timeline.
+ * অভিযোগ record (§8.4). Tenant-scoped. The step-by-step history (appointment, report, hearing,
+ * order, re-investigation) lives in complaint_events and feeds the detail timeline; the complaint
+ * row keeps the current status + officer + due/hearing dates for listing and the UNO schedule.
  */
 class Complaint extends Model
 {
@@ -23,7 +25,7 @@ class Complaint extends Model
     protected $guarded = ['id', 'tenant_id'];
 
     protected $attributes = [
-        'status' => 'filed',
+        'status' => 'pending',
     ];
 
     protected function casts(): array
@@ -31,12 +33,17 @@ class Complaint extends Model
         return [
             'status' => ComplaintStatus::class,
             'complaint_date' => 'date',
-            'schedule_date' => 'date',
-            'scheduled_at' => 'datetime',
+            'due_date' => 'date',
+            'hearing_date' => 'date',
             'assigned_at' => 'datetime',
-            'resolved_at' => 'datetime',
+            'completed_at' => 'datetime',
             'rejected_at' => 'datetime',
         ];
+    }
+
+    public function events(): HasMany
+    {
+        return $this->hasMany(ComplaintEvent::class)->oldest();
     }
 
     public function union(): BelongsTo

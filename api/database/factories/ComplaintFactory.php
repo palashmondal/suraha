@@ -29,7 +29,7 @@ class ComplaintFactory extends Factory
     public function definition(): array
     {
         return [
-            'status' => ComplaintStatus::FILED->value,
+            'status' => ComplaintStatus::PENDING->value,
             'complainant_name' => $this->faker->randomElement(self::NAMES),
             'ward_no' => $this->faker->numberBetween(1, 9),
             'address' => $this->faker->randomElement(self::PLACES).' থেকে ১ কি:মি উত্তরে।',
@@ -43,29 +43,20 @@ class ComplaintFactory extends Factory
         ];
     }
 
-    public function scheduled(): static
-    {
-        return $this->state(fn () => [
-            'status' => ComplaintStatus::SCHEDULED->value,
-            'schedule_date' => $this->faker->dateTimeBetween('now', '+1 week')->format('Y-m-d'),
-            'scheduled_at' => now(),
-        ]);
-    }
-
     public function assigned(): static
     {
-        return $this->scheduled()->state(fn () => [
+        return $this->state(fn () => [
             'status' => ComplaintStatus::ASSIGNED->value,
             'assigned_at' => now(),
+            'due_date' => $this->faker->dateTimeBetween('now', '+1 week')->format('Y-m-d'),
         ]);
     }
 
-    public function resolved(): static
+    public function completed(): static
     {
         return $this->assigned()->state(fn () => [
-            'status' => ComplaintStatus::RESOLVED->value,
-            'findings' => 'তদন্তে অভিযোগের সত্যতা পাওয়া গেছে এবং প্রয়োজনীয় ব্যবস্থা নেওয়া হয়েছে।',
-            'resolved_at' => now(),
+            'status' => ComplaintStatus::COMPLETED->value,
+            'completed_at' => now(),
         ]);
     }
 }

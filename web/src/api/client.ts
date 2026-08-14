@@ -67,7 +67,7 @@ export async function api<T = unknown>(path: string, opts: Options = {}): Promis
   const token = tokenStore.get();
   if (auth && token) headers['Authorization'] = `Bearer ${token}`;
 
-  // Cross-tenant roles (SEAL/DC) on the admin host switch upazila via this header. Ignored by
+  // Cross-tenant roles (SEAL/DC) on the central host switch upazila via this header. Ignored by
   // the API when the request already resolved a tenant from a subdomain.
   const selectedUpazila = localStorage.getItem(SELECTED_TENANT_KEY);
   if (auth && selectedUpazila) headers['X-Upazila'] = selectedUpazila;
