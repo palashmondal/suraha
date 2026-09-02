@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureCanWrite;
+use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\ResolveTenant;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,7 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // RBAC + tenant scoping middleware aliases (SURAHA_BUILD_PROMPT §3).
+        $middleware->alias([
+            'role' => EnsureRole::class,
+            'can.write' => EnsureCanWrite::class,
+            'tenant' => ResolveTenant::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
