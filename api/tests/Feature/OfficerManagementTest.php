@@ -52,10 +52,30 @@ class OfficerManagementTest extends TestCase
     public function test_uno_can_create_an_fwa_in_own_upazila(): void
     {
         Sanctum::actingAs($this->uno());
+        $union = \App\Models\Union::where('tenant_id', 'galachipa')->firstOrFail();
+
         $this->postJson(self::GALACHIPA.'/api/officers', [
             'name' => 'নতুন এফডব্লিউএ', 'username' => 'fwa_new', 'password' => 'secret123',
-            'role' => 'fwa', 'ward_no' => 4,
+            'role' => 'fwa', 'designation' => 'পরিবার কল্যাণ সহকারী',
+            'phone' => '01711111111', 'email' => 'fwa.new@example.com',
+            'union_id' => $union->id, 'ward_no' => 4,
         ])->assertCreated()->assertJsonPath('data.role', 'fwa')->assertJsonPath('data.tenant_id', 'galachipa');
+
+        // An FWA is placed in a ward of a union — both are required, so a missing one is refused.
+        $this->postJson(self::GALACHIPA.'/api/officers', [
+            'name' => 'ওয়ার্ডবিহীন', 'username' => 'fwa_noward', 'password' => 'secret123',
+            'role' => 'fwa', 'designation' => 'পরিবার কল্যাণ সহকারী',
+            'phone' => '01711111112', 'email' => 'fwa.noward@example.com',
+            'union_id' => $union->id,
+        ])->assertStatus(422)->assertJsonValidationErrors('ward_no');
+
+        // A UP Sochib serves a whole union, so the union alone is required — no ward.
+        $this->postJson(self::GALACHIPA.'/api/officers', [
+            'name' => 'নতুন সচিব', 'username' => 'sochib_new', 'password' => 'secret123',
+            'role' => 'up_sochib', 'designation' => 'ইউপি সচিব',
+            'phone' => '01711111113', 'email' => 'sochib.new@example.com',
+            'union_id' => $union->id,
+        ])->assertCreated()->assertJsonPath('data.role', 'up_sochib');
     }
 
     public function test_uno_cannot_create_a_uno_or_dc(): void
@@ -71,7 +91,10 @@ class OfficerManagementTest extends TestCase
         Sanctum::actingAs($this->uno());
         // Even if a different tenant_id is passed, it is forced to the UNO's own upazila.
         $this->postJson(self::GALACHIPA.'/api/officers', [
-            'name' => 'y', 'username' => 'fwa_y', 'password' => 'secret123', 'role' => 'fwa', 'tenant_id' => 'dumuria',
+            'name' => 'y', 'username' => 'fwa_y', 'password' => 'secret123', 'role' => 'fwa',
+            'designation' => 'পরিবার কল্যাণ সহকারী', 'phone' => '01722222222', 'email' => 'fwa.y@example.com',
+            'union_id' => \App\Models\Union::where('tenant_id', 'galachipa')->value('id'), 'ward_no' => 2,
+            'tenant_id' => 'dumuria',
         ])->assertCreated()->assertJsonPath('data.tenant_id', 'galachipa');
     }
 
@@ -103,6 +126,7 @@ class OfficerManagementTest extends TestCase
 
         $this->postJson(self::GALACHIPA.'/api/officers', [
             'name' => 'দ্বিতীয় ইউএনও', 'username' => 'uno_two', 'password' => 'password123', 'role' => 'uno',
+            'designation' => 'উপজেলা নির্বাহী কর্মকর্তা', 'phone' => '01733333333', 'email' => 'uno.two@example.com',
         ])->assertStatus(422)->assertJsonValidationErrors('role');
 
         // Deactivate the serving one and the seat frees up — a handover, not a deletion.
@@ -112,7 +136,8 @@ class OfficerManagementTest extends TestCase
         Sanctum::actingAs(User::where('username', 'admin')->firstOrFail());
         $this->postJson(self::GALACHIPA.'/api/officers', [
             'name' => 'দ্বিতীয় ইউএনও', 'username' => 'uno_two', 'password' => 'password123',
-            'role' => 'uno', 'tenant_id' => 'galachipa',
+            'role' => 'uno', 'designation' => 'উপজেলা নির্বাহী কর্মকর্তা',
+            'phone' => '01733333333', 'email' => 'uno.two@example.com', 'tenant_id' => 'galachipa',
         ])->assertCreated();
     }
 

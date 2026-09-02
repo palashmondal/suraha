@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  Box, MenuItem, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Alert, Box, MenuItem, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   TextField, Typography,
 } from '@mui/material';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
@@ -11,6 +11,9 @@ import StatusPill from '../../components/StatusPill';
 import PaginationBar from '../../components/PaginationBar';
 import { usePagination } from '../../components/usePagination';
 import { useSelectedTenant } from '../../tenant/SelectedTenantContext';
+import { useAuth } from '../../auth/AuthContext';
+import PageHeader from '../../components/PageHeader';
+import CreateOfficerDialog from '../officers/CreateOfficerDialog';
 import { bn } from '../../utils/bnNum';
 
 // Everyone attached to this upazila — officers, citizens, and the DC of its district. Read-only:
@@ -20,6 +23,11 @@ import { bn } from '../../utils/bnNum';
 // and books appointments, so narrowing in the browser would mean fetching them all first.
 export default function UserList() {
   const { selectedUpazilaId } = useSelectedTenant();
+  const { user } = useAuth();
+  const isSeal = user?.role === 'seal_admin';
+  const [open, setOpen] = useState(false);
+  const [flash, setFlash] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [rows, setRows] = useState<DirectoryUser[]>([]);
   const [roles, setRoles] = useState<{ value: string; label: string }[]>([]);
   const [role, setRole] = useState('');
@@ -43,16 +51,18 @@ export default function UserList() {
     }, 250);
 
     return () => clearTimeout(t);
-  }, [role, term, selectedUpazilaId]);
+  }, [role, term, selectedUpazilaId, reloadKey]);
 
   const { pageRows, page, setPage, pageCount } = usePagination(rows);
 
   return (
     <Box sx={{ display: 'grid', gap: 3 }}>
       <Box>
-        <Typography sx={{ fontSize: 22, fontWeight: 800 }}>{S.users.title}</Typography>
+        <PageHeader title={S.users.title} primaryLabel={S.users.addNew} onPrimary={() => setOpen(true)} />
         <Typography sx={{ color: 'text.secondary' }}>{S.users.subtitle}</Typography>
       </Box>
+
+      {flash && <Alert severity="success" onClose={() => setFlash(null)}>{flash}</Alert>}
 
       <Paper elevation={0} sx={{ p: 2, borderRadius: '16px', display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <TextField
@@ -88,7 +98,6 @@ export default function UserList() {
             <TableRow>
               <TableCell>{S.users.colName}</TableCell>
               <TableCell>{S.users.colRole}</TableCell>
-              <TableCell>{S.users.colDesignation}</TableCell>
               <TableCell>{S.users.colLogin}</TableCell>
               <TableCell>{S.users.colStatus}</TableCell>
             </TableRow>
@@ -98,7 +107,6 @@ export default function UserList() {
               <TableRow key={u.id} hover>
                 <TableCell sx={{ fontWeight: 600 }}>{u.name}</TableCell>
                 <TableCell>{u.role_label_bn}</TableCell>
-                <TableCell>{u.designation ?? '—'}</TableCell>
                 <TableCell sx={{ direction: 'ltr', fontFamily: 'monospace', fontSize: 13 }}>
                   {u.username ?? u.phone ?? '—'}
                 </TableCell>
@@ -112,7 +120,7 @@ export default function UserList() {
             ))}
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ color: 'text.secondary', py: 4 }}>
+                <TableCell colSpan={4} align="center" sx={{ color: 'text.secondary', py: 4 }}>
                   {loading ? S.common.loading : S.common.noData}
                 </TableCell>
               </TableRow>
@@ -121,6 +129,19 @@ export default function UserList() {
         </Table>
         <PaginationBar page={page} pageCount={pageCount} onPage={setPage} />
       </TableContainer>
+
+      <CreateOfficerDialog
+        open={open}
+        roles={roles}
+        needsTenant={isSeal}
+        selectedUpazilaId={selectedUpazilaId}
+        onClose={() => setOpen(false)}
+        onCreated={() => {
+          setOpen(false);
+          setFlash(S.users.created);
+          setReloadKey((k) => k + 1);
+        }}
+      />
     </Box>
   );
 }

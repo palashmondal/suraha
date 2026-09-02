@@ -6,19 +6,17 @@ import { bnStrings as S } from '../../i18n';
 import { bn } from '../../utils/bnNum';
 import PageHeader from '../../components/PageHeader';
 import StatusPill from '../../components/StatusPill';
-import AppDialog from '../../components/AppDialog';
-import { FormField, SelectField, type Option } from '../../components/form/FormFields';
 import EmptyState from '../../components/EmptyState';
 import LoadingState from '../../components/LoadingState';
 import PaginationBar from '../../components/PaginationBar';
 import { usePagination } from '../../components/usePagination';
-import { api, ApiError } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
 import { useSelectedTenant } from '../../tenant/SelectedTenantContext';
 import {
-  listOfficers, getAssignableRoles, createOfficer, setOfficerActive,
+  listOfficers, getAssignableRoles, setOfficerActive,
   type Officer, type AssignableRole,
 } from '../../api/officers';
+import CreateOfficerDialog from './CreateOfficerDialog';
 
 // Only tenant-scoped staff are provisioned here; DC/SEAL are provisioned via instance setup.
 const TENANT_ROLES = ['fwa', 'up_sochib', 'uno', 'investigating_officer'];
@@ -118,71 +116,5 @@ export default function OfficerList() {
         }}
       />
     </Box>
-  );
-}
-
-function CreateOfficerDialog({
-  open, roles, needsTenant, selectedUpazilaId, onClose, onCreated,
-}: {
-  open: boolean;
-  roles: AssignableRole[];
-  needsTenant: boolean;
-  selectedUpazilaId: string | null;
-  onClose: () => void;
-  onCreated: () => void;
-}) {
-  const [f, setF] = useState<Record<string, string>>({});
-  const [unions, setUnions] = useState<Option[]>([]);
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }));
-
-  useEffect(() => {
-    if (!open) return;
-    setF({});
-    setErr(null);
-    api<{ unions: { id: number; name_bn: string }[] }>('/registry/unions')
-      .then((r) => setUnions(r.unions.map((u) => ({ value: String(u.id), label: u.name_bn }))))
-      .catch(() => setUnions([]));
-  }, [open]);
-
-  const missingTenant = needsTenant && !selectedUpazilaId;
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErr(null);
-    setBusy(true);
-    try {
-      await createOfficer({
-        name: f.name,
-        username: f.username,
-        password: f.password,
-        role: f.role,
-        designation: f.designation || undefined,
-        ward_no: f.ward_no ? Number(f.ward_no) : undefined,
-        union_id: f.union_id ? Number(f.union_id) : undefined,
-        // UNO's tenant is forced server-side; SEAL provisions into the selected upazila.
-        ...(needsTenant && selectedUpazilaId ? { tenant_id: selectedUpazilaId } : {}),
-      });
-      onCreated();
-    } catch (e) {
-      setErr(e instanceof ApiError ? (Object.values(e.errors ?? {})[0]?.[0] ?? e.message) : S.auth.genericError);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <AppDialog open={open} title={S.officers.createTitle} onClose={onClose} onSubmit={submit} submitLabel={S.officers.create} submitting={busy || missingTenant}>
-      {missingTenant && <Alert severity="warning">{S.officers.noTenant}</Alert>}
-      {err && <Alert severity="error">{err}</Alert>}
-      <FormField label={S.officers.fName} value={f.name ?? ''} onChange={set('name')} />
-      <FormField label={S.officers.fUsername} value={f.username ?? ''} onChange={set('username')} />
-      <FormField label={S.officers.fPassword} value={f.password ?? ''} onChange={set('password')} type="password" />
-      <SelectField label={S.officers.fRole} value={f.role ?? ''} onChange={set('role')} options={roles.map((r) => ({ value: r.value, label: r.label }))} placeholder="নির্বাচন করুন" />
-      <FormField label={S.officers.fDesignation} value={f.designation ?? ''} onChange={set('designation')} />
-      <SelectField label={S.officers.fUnion} value={f.union_id ?? ''} onChange={set('union_id')} options={unions} placeholder="নির্বাচন করুন" />
-      <FormField label={S.officers.fWard} value={f.ward_no ?? ''} onChange={set('ward_no')} type="number" />
-    </AppDialog>
   );
 }
