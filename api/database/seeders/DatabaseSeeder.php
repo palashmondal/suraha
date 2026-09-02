@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         // All 64 districts first, so the instance-admin district dropdown is fully populated.
         $this->call(DivisionSeeder::class);
         $this->call(DistrictSeeder::class);
+        $this->call(UpazilaRefSeeder::class);
         $barishal = District::where('name', 'Barishal')->firstOrFail();
 
         $golachipa = $this->upazila('golachipa', 'Golachipa', 'গলাচিপা', $barishal->id, [

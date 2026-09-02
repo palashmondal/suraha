@@ -10,7 +10,7 @@ use Illuminate\Database\Seeder;
 
 /**
  * All 64 districts of Bangladesh (English + Bangla), used by the instance/subdomain admin's
- * district dropdown. Idempotent: firstOrCreate keyed on the English name, so it can be run on a
+ * district dropdown. Bangla spellings follow the national portal (see UpazilaRefSeeder). Idempotent: firstOrCreate keyed on the English name, so it can be run on a
  * live DB without duplicating districts already created by seeds or SEAL provisioning.
  */
 class DistrictSeeder extends Seeder
@@ -54,7 +54,7 @@ class DistrictSeeder extends Seeder
         ['Manikganj', 'মানিকগঞ্জ', 'Dhaka'],
         ['Meherpur', 'মেহেরপুর', 'Khulna'],
         ['Moulvibazar', 'মৌলভীবাজার', 'Sylhet'],
-        ['Munshiganj', 'মুন্সিগঞ্জ', 'Dhaka'],
+        ['Munshiganj', 'মুন্সীগঞ্জ', 'Dhaka'],
         ['Mymensingh', 'ময়মনসিংহ', 'Mymensingh'],
         ['Naogaon', 'নওগাঁ', 'Rajshahi'],
         ['Narail', 'নড়াইল', 'Khulna'],
@@ -62,7 +62,7 @@ class DistrictSeeder extends Seeder
         ['Narsingdi', 'নরসিংদী', 'Dhaka'],
         ['Natore', 'নাটোর', 'Rajshahi'],
         ['Chapai Nawabganj', 'চাঁপাইনবাবগঞ্জ', 'Rajshahi'],
-        ['Netrokona', 'নেত্রকোনা', 'Mymensingh'],
+        ['Netrokona', 'নেত্রকোণা', 'Mymensingh'],
         ['Nilphamari', 'নীলফামারী', 'Rangpur'],
         ['Noakhali', 'নোয়াখালী', 'Chattogram'],
         ['Pabna', 'পাবনা', 'Rajshahi'],
@@ -71,7 +71,7 @@ class DistrictSeeder extends Seeder
         ['Pirojpur', 'পিরোজপুর', 'Barishal'],
         ['Rajbari', 'রাজবাড়ী', 'Dhaka'],
         ['Rajshahi', 'রাজশাহী', 'Rajshahi'],
-        ['Rangamati', 'রাঙ্গামাটি', 'Chattogram'],
+        ['Rangamati', 'রাঙ্গামাটি পার্বত্য', 'Chattogram'],
         ['Rangpur', 'রংপুর', 'Rangpur'],
         ['Satkhira', 'সাতক্ষীরা', 'Khulna'],
         ['Shariatpur', 'শরীয়তপুর', 'Dhaka'],

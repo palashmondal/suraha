@@ -45,6 +45,14 @@ interface DivisionOption {
   name_bn: string;
 }
 
+interface UpazilaOption {
+  id: number;
+  name: string;
+  name_bn: string;
+  slug: string;
+  taken: boolean;
+}
+
 // Instance edit page: rename the upazila (Bangla/English), move it to another of the 64 districts,
 // toggle active status, or delete the instance (and all its data). The subdomain is derived from
 // the tenant's immutable slug ({slug}.{base domain}) and so is shown read-only — renaming it would
@@ -65,6 +73,7 @@ export default function InstanceDetail() {
 
   const [districts, setDistricts] = useState<DistrictOption[]>([]);
   const [divisions, setDivisions] = useState<DivisionOption[]>([]);
+  const [upazilas, setUpazilas] = useState<UpazilaOption[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -99,6 +108,16 @@ export default function InstanceDetail() {
       })
       .catch(fail);
   }, [id]);
+
+  useEffect(() => {
+    if (districtId === '') {
+      setUpazilas([]);
+      return;
+    }
+    api<{ upazilas: UpazilaOption[] }>(`/registry/upazila-options?district_id=${districtId}`)
+      .then((r) => setUpazilas(r.upazilas))
+      .catch(() => setUpazilas([]));
+  }, [districtId]);
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,8 +174,6 @@ export default function InstanceDetail() {
           InputProps={{ readOnly: true, sx: { fontFamily: 'monospace', direction: 'ltr' } }}
           fullWidth
         />
-        <TextField label={S.instances.nameBn} value={nameBn} onChange={(e) => setNameBn(e.target.value)} fullWidth />
-        <TextField label={S.instances.nameEn} value={nameEn} onChange={(e) => setNameEn(e.target.value)} fullWidth />
         <TextField
           select
           label={S.instances.division}
@@ -189,6 +206,29 @@ export default function InstanceDetail() {
                 {d.name_bn}
               </MenuItem>
             ))}
+        </TextField>
+        {/* Names come from the national catalogue rather than free text. The subdomain above is
+            unaffected: it is the tenant's immutable identity, not a function of the current name. */}
+        <TextField
+          select
+          label={S.instances.upazila}
+          value={upazilas.some((u) => u.name === nameEn) ? nameEn : ''}
+          onChange={(e) => {
+            const picked = upazilas.find((u) => u.name === e.target.value);
+            if (picked) {
+              setNameEn(picked.name);
+              setNameBn(picked.name_bn);
+            }
+          }}
+          fullWidth
+          disabled={districtId === ''}
+          helperText={districtId === '' ? S.instances.divisionFirst : nameBn}
+        >
+          {upazilas.map((u) => (
+            <MenuItem key={u.id} value={u.name}>
+              {u.name_bn}
+            </MenuItem>
+          ))}
         </TextField>
         <FormControlLabel
           control={<Switch checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />}

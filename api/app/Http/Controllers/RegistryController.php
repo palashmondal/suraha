@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\District;
 use App\Models\Division;
 use App\Models\Union;
+use App\Models\UpazilaRef;
 use App\Models\Upazila;
 use Illuminate\Http\Request;
 
@@ -98,6 +99,37 @@ class RegistryController extends Controller
     {
         return response()->json([
             'districts' => District::orderBy('name_bn')->get(['id', 'name', 'name_bn', 'division_id']),
+        ]);
+    }
+
+    /**
+     * The upazilas of one district, as pickable options for the instance admin. Returns the
+     * subdomain slug alongside each name so the console never has to invent one: the slug is
+     * assigned in the catalogue and is unique nationwide (nine upazila names recur across
+     * districts, so those are qualified with the district).
+     *
+     * `taken` marks upazilas already provisioned, so the console can grey them out instead of
+     * letting SEAL hit a uniqueness error on submit.
+     */
+    public function upazilaOptions(Request $request)
+    {
+        $data = $request->validate([
+            'district_id' => ['required', 'integer', 'exists:districts,id'],
+        ]);
+
+        $taken = Upazila::pluck('id')->all();
+
+        return response()->json([
+            'upazilas' => UpazilaRef::where('district_id', $data['district_id'])
+                ->orderBy('name_bn')
+                ->get(['id', 'name', 'name_bn', 'slug'])
+                ->map(fn (UpazilaRef $u) => [
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'name_bn' => $u->name_bn,
+                    'slug' => $u->slug,
+                    'taken' => in_array($u->slug, $taken, true),
+                ]),
         ]);
     }
 

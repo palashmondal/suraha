@@ -60,6 +60,40 @@ pregnancy, birth, complaints, appointments, public content, tracking, reporting,
 
 ---
 
+## Administrative data (বিভাগ / জেলা / উপজেলা)
+
+Source of truth is the **Bangladesh National Portal**, not a community dataset:
+
+| Data | Source | Count |
+|---|---|---|
+| বিভাগ (divisions) | [bangladesh.gov.bd](https://bangladesh.gov.bd/views/upazila-list) | 8 |
+| জেলা (districts) | [bangladesh.gov.bd/views/upazila-list](https://bangladesh.gov.bd/views/upazila-list) | 64 |
+| উপজেলা (upazilas) | [bangladesh.gov.bd/views/upazila-list](https://bangladesh.gov.bd/views/upazila-list) | 499 |
+| ইউনিয়ন (unions) | [bangladesh.gov.bd/views/union-list](https://bangladesh.gov.bd/views/union-list) | 4567 *(not yet imported)* |
+
+Divisions and districts live in `DivisionSeeder` / `DistrictSeeder`; the 499 upazilas are in
+[`api/database/data/bd-upazilas.json`](api/database/data/bd-upazilas.json), loaded by
+`UpazilaRefSeeder`. Bangla spellings follow the portal exactly (নেত্রকোণা, মুন্সীগঞ্জ,
+রাঙ্গামাটি পার্বত্য).
+
+**Subdomains come from the government's own naming.** Each upazila's slug is the label from its
+gov.bd site — `galachipa.patuakhali.gov.bd` → `galachipa.suraha.net` — so a Suraha address matches
+the one citizens already know. Labels that are not unique nationwide are qualified with the
+district: every district has a `sadar` (28 use that exact label) and Kaliganj appears in four
+districts, so those become `sadar-gazipur`, `kaliganj-gazipur`, and so on. All 499 are unique, and
+`AdminUpazilaTest` pins that.
+
+SEAL never types a subdomain: the instance console picks বিভাগ → জেলা → উপজেলা and the slug comes
+from the catalogue, with already-provisioned upazilas shown as unavailable.
+
+To refresh after a boundary change, re-run the seeders — they are idempotent:
+
+```bash
+cd api && php artisan db:seed --class=DivisionSeeder && php artisan db:seed --class=DistrictSeeder && php artisan db:seed --class=UpazilaRefSeeder
+```
+
+---
+
 ## Run locally
 
 ### 1. Frontend (works standalone)

@@ -37,6 +37,7 @@ Route::middleware('tenant')->group(function () {
     Route::get('registry/unions', [RegistryController::class, 'unions']);
     Route::get('registry/districts', [RegistryController::class, 'districts']);
     Route::get('registry/divisions', [RegistryController::class, 'divisions']);
+    Route::get('registry/upazila-options', [RegistryController::class, 'upazilaOptions']);
 
     Route::prefix('auth')->group(function () {
         Route::post('officer/login', [AuthController::class, 'officerLogin']);
