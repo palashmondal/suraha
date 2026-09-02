@@ -1,0 +1,99 @@
+import { useEffect, useState } from 'react';
+import {
+  Alert, Box, Button, Container, FormControlLabel, MenuItem, Paper, Switch, TextField, Typography,
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { bnStrings as S } from '../../i18n';
+import PublicLayout from './PublicLayout';
+import { FormField, SelectField } from '../../components/form/FormFields';
+import { useUnionOptions } from '../../tenant/useUnionOptions';
+import { api, ApiError } from '../../api/client';
+import { createSuggestion } from '../../api/suggestion';
+import type { Kind } from '../../api/assistance';
+import SubmittedCard from './SubmittedCard';
+
+/** নাগরিক পরামর্শ — a citizen's proposal to the UNO, optionally confidential. */
+export default function SubmitSuggestion() {
+  const navigate = useNavigate();
+  const unions = useUnionOptions();
+  const [kinds, setKinds] = useState<Kind[]>([]);
+  const [f, setF] = useState<Record<string, string>>({});
+  const [confidential, setConfidential] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }));
+
+  useEffect(() => {
+    api<{ kinds: Kind[] }>('/suggestions')
+      .then((r) => setKinds(r.kinds))
+      .catch(() => setKinds([]));
+  }, []);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErr(null);
+    setBusy(true);
+    try {
+      const res = await createSuggestion({
+        applicant_name: f.applicant_name,
+        kind: f.kind,
+        title: f.title,
+        description: f.description,
+        is_confidential: confidential,
+        union_id: f.union_id ? Number(f.union_id) : undefined,
+        ward_no: f.ward_no ? Number(f.ward_no) : undefined,
+        mobile: f.mobile || undefined,
+      });
+      setToken(res.data.tracking_token);
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 401) navigate('/login');
+      else setErr(e instanceof ApiError ? (Object.values(e.errors ?? {})[0]?.[0] ?? e.message) : S.auth.genericError);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <PublicLayout>
+      <Container maxWidth="sm" sx={{ py: { xs: 4, md: 6 } }}>
+        <Typography sx={{ fontSize: 26, fontWeight: 800 }}>{S.suggestion.submitTitle}</Typography>
+        <Typography sx={{ color: 'text.secondary', mb: 3 }}>{S.suggestion.submitLead}</Typography>
+
+        {token ? (
+          <SubmittedCard token={token} />
+        ) : (
+          <Paper component="form" onSubmit={submit} elevation={0} sx={{ display: 'grid', gap: 2, background: 'transparent' }}>
+            {err && <Alert severity="error">{err}</Alert>}
+            <TextField
+              select
+              label={S.suggestion.fKind}
+              value={f.kind ?? ''}
+              onChange={(e) => set('kind')(e.target.value)}
+              fullWidth
+            >
+              {kinds.map((k) => <MenuItem key={k.value} value={k.value}>{k.label}</MenuItem>)}
+            </TextField>
+            <FormField label={S.suggestion.fTitle} value={f.title ?? ''} onChange={set('title')} />
+            <FormField label={S.suggestion.fDesc} value={f.description ?? ''} onChange={set('description')} multiline rows={5} />
+
+            {/* Confidential is offered before the identity fields, so the choice is made before
+                the name is typed rather than after. */}
+            <FormControlLabel
+              control={<Switch checked={confidential} onChange={(e) => setConfidential(e.target.checked)} />}
+              label={S.suggestion.fConfidential}
+            />
+
+            <FormField label={S.suggestion.fName} value={f.applicant_name ?? ''} onChange={set('applicant_name')} />
+            <SelectField label={S.suggestion.fUnion} value={f.union_id ?? ''} onChange={set('union_id')} options={unions} placeholder="নির্বাচন করুন" />
+            <FormField label={S.suggestion.fWard} value={f.ward_no ?? ''} onChange={set('ward_no')} type="number" />
+            <FormField label={S.suggestion.fMobile} value={f.mobile ?? ''} onChange={set('mobile')} placeholder="01XXXXXXXXX" />
+            <Box>
+              <Button type="submit" variant="contained" disabled={busy}>{S.suggestion.submit}</Button>
+            </Box>
+          </Paper>
+        )}
+      </Container>
+    </PublicLayout>
+  );
+}

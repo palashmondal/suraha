@@ -27,7 +27,12 @@ import FileComplaint from './pages/public/FileComplaint';
 import BookAppointment from './pages/public/BookAppointment';
 import MySubmissions from './pages/public/MySubmissions';
 import UserList from './pages/users/UserList';
-import ComingSoon from './pages/ComingSoon';
+import AssistanceList from './pages/assistance/AssistanceList';
+import AssistanceDetail from './pages/assistance/AssistanceDetail';
+import SuggestionList from './pages/suggestion/SuggestionList';
+import SuggestionDetail from './pages/suggestion/SuggestionDetail';
+import ApplyAssistance from './pages/public/ApplyAssistance';
+import SubmitSuggestion from './pages/public/SubmitSuggestion';
 import SliderManage from './pages/content/SliderManage';
 import GeneralInfoManage from './pages/content/GeneralInfoManage';
 import Reports from './pages/reports/Reports';
@@ -104,6 +109,8 @@ export default function App() {
       {/* Citizen filing (account required) */}
       <Route path="/file-complaint" element={<RequireLogin><FileComplaint /></RequireLogin>} />
       <Route path="/book-appointment" element={<RequireLogin><BookAppointment /></RequireLogin>} />
+      <Route path="/apply-assistance" element={<RequireLogin><ApplyAssistance /></RequireLogin>} />
+      <Route path="/submit-suggestion" element={<RequireLogin><SubmitSuggestion /></RequireLogin>} />
       <Route path="/my-submissions" element={<RequireLogin><MySubmissions /></RequireLogin>} />
 
       {/* Internal app (officers) */}
@@ -125,9 +132,11 @@ export default function App() {
       <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
       <Route path="/users" element={<RequireAuth roles={['uno', 'seal_admin']}><UserList /></RequireAuth>} />
 
-      {/* Planned modules — the nav entries exist so the shape of the app is visible. */}
-      <Route path="/advice" element={<RequireAuth><ComingSoon title={S.nav.advice} /></RequireAuth>} />
-      <Route path="/humanitarian" element={<RequireAuth><ComingSoon title={S.nav.humanitarian} /></RequireAuth>} />
+      {/* মানবিক সহায়তা + নাগরিক পরামর্শ — officer views */}
+      <Route path="/humanitarian" element={<RequireAuth><AssistanceList /></RequireAuth>} />
+      <Route path="/humanitarian/:id" element={<RequireAuth><AssistanceDetail /></RequireAuth>} />
+      <Route path="/advice" element={<RequireAuth><SuggestionList /></RequireAuth>} />
+      <Route path="/advice/:id" element={<RequireAuth><SuggestionDetail /></RequireAuth>} />
       <Route path="/sliders" element={<RequireAuth roles={['uno', 'seal_admin']}><SliderManage /></RequireAuth>} />
       <Route path="/general-info" element={<RequireAuth roles={['uno', 'seal_admin']}><GeneralInfoManage /></RequireAuth>} />
       <Route path="/instances" element={<RequireAuth roles={['seal_admin']}><Instances /></RequireAuth>} />
