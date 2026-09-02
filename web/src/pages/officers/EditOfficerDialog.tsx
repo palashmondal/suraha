@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import { Alert, FormControlLabel, Switch, Typography } from '@mui/material';
 import { bnStrings as S } from '../../i18n';
 import AppDialog from '../../components/AppDialog';
-import { FormField, SelectField, type Option } from '../../components/form/FormFields';
-import { api, ApiError } from '../../api/client';
-import { useSelectedTenant } from '../../tenant/SelectedTenantContext';
-import { useHostContext } from '../../tenant/host';
+import { FormField, SelectField } from '../../components/form/FormFields';
+import { ApiError } from '../../api/client';
+import { useUnionOptions } from '../../tenant/useUnionOptions';
 import { updateOfficer, type Officer } from '../../api/officers';
 
 // Edit an existing account. Username and role are shown but never editable: the username is the
@@ -19,14 +18,9 @@ export default function EditOfficerDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const { selectedUpazilaId } = useSelectedTenant();
-  const host = useHostContext();
-  // Unions belong to one upazila; on the central host with none picked the request can only 400.
-  const hasUpazila = host ? host.kind !== 'central' || Boolean(selectedUpazilaId) : false;
-
   const [f, setF] = useState<Record<string, string>>({});
   const [active, setActive] = useState(true);
-  const [unions, setUnions] = useState<Option[]>([]);
+  const unions = useUnionOptions();
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }));
@@ -47,14 +41,7 @@ export default function EditOfficerDialog({
       ward_no: officer.ward_no ? String(officer.ward_no) : '',
       password: '',
     });
-    if (! hasUpazila) {
-      setUnions([]);
-      return;
-    }
-    api<{ unions: { id: number; name_bn: string }[] }>('/registry/unions')
-      .then((r) => setUnions(r.unions.map((u) => ({ value: String(u.id), label: u.name_bn }))))
-      .catch(() => setUnions([]));
-  }, [officer, hasUpazila]);
+  }, [officer]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Alert, Box, Button, IconButton, Paper, Typography } from '@mui/material';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import MyLocationRoundedIcon from '@mui/icons-material/MyLocationRounded';
@@ -8,7 +8,8 @@ import VerticalStepper from '../../components/VerticalStepper';
 import FieldCard from '../../components/form/FieldCard';
 import { FormField, SelectField, DateField, RadioGroupField, type Option } from '../../components/form/FormFields';
 import { createPregnancy } from '../../api/pregnancy';
-import { api, ApiError } from '../../api/client';
+import { useUnionOptions } from '../../tenant/useUnionOptions';
+import { ApiError } from '../../api/client';
 
 type Form = Record<string, string>;
 
@@ -32,15 +33,9 @@ export default function PregnancyAdd() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>({});
-  const [unions, setUnions] = useState<Option[]>([]);
+  const unions = useUnionOptions();
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    api<{ unions: { id: number; name_bn: string }[] }>('/registry/unions')
-      .then((r) => setUnions(r.unions.map((u) => ({ value: String(u.id), label: u.name_bn }))))
-      .catch(() => setUnions([]));
-  }, []);
 
   const set = (k: string) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
 
