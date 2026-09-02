@@ -12,7 +12,6 @@ import {
 } from '@mui/material';
 import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
-import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
 import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
@@ -69,7 +68,6 @@ const baseItems: Item[] = [
       { key: 'complaint.officers', label: S.nav.officerList, route: '/investigators', managerOnly: true },
     ],
   },
-  { key: 'slider', label: S.nav.slider, icon: <SendOutlinedIcon />, route: '/sliders', managerOnly: true },
 ];
 
 // SEAL-only: manage Suraha instances (upazilas / subdomains).
@@ -90,12 +88,14 @@ const reportsItem: Item = {
 };
 
 const officerSection: Child[] = [
-  { key: 'officers', label: S.nav.officerList, route: '/officers' },
   { key: 'users', label: S.nav.users, route: '/users' },
 ];
+// সাধারণ তথ্য is the content area: the awareness slider belongs here with the phone list and the
+// about text, not among the case-handling modules above.
 const generalSection: Child[] = [
   { key: 'phones', label: S.nav.phones, route: '/general-info' },
   { key: 'about', label: S.nav.aboutUpazila, route: '/general-info' },
+  { key: 'slider', label: S.nav.slider, route: '/sliders' },
 ];
 
 function SectionHeader({ label, action }: { label: string; action?: React.ReactNode }) {

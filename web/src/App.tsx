@@ -25,7 +25,6 @@ import Track from './pages/public/Track';
 import FileComplaint from './pages/public/FileComplaint';
 import BookAppointment from './pages/public/BookAppointment';
 import MySubmissions from './pages/public/MySubmissions';
-import OfficerList from './pages/officers/OfficerList';
 import UserList from './pages/users/UserList';
 import ComingSoon from './pages/ComingSoon';
 import SliderManage from './pages/content/SliderManage';
@@ -123,7 +122,6 @@ export default function App() {
       <Route path="/appointment/:id" element={<RequireAuth><AppointmentDetail /></RequireAuth>} />
       <Route path="/reports" element={<RequireAuth><Reports /></RequireAuth>} />
       <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
-      <Route path="/officers" element={<RequireAuth roles={['uno', 'seal_admin']}><OfficerList /></RequireAuth>} />
       <Route path="/users" element={<RequireAuth roles={['uno', 'seal_admin']}><UserList /></RequireAuth>} />
 
       {/* Planned modules — the nav entries exist so the shape of the app is visible. */}
