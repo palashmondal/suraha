@@ -1,0 +1,3994 @@
+[
+{
+"district": "Bagerhat",
+"name": "Bagerhat Sadar",
+"name_bn": "বাগেরহাট সদর",
+"slug": "sadar-bagerhat",
+"division_bn": "খুলনা",
+"gov_url": "https://sadar.bagerhat.gov.bd"
+},
+{
+"district": "Bagerhat",
+"name": "Chitalmari",
+"name_bn": "চিতলমারী",
+"slug": "chitalmari",
+"division_bn": "খুলনা",
+"gov_url": "https://chitalmari.bagerhat.gov.bd"
+},
+{
+"district": "Bagerhat",
+"name": "Fakirhat",
+"name_bn": "ফকিরহাট",
+"slug": "fakirhat",
+"division_bn": "খুলনা",
+"gov_url": "https://fakirhat.bagerhat.gov.bd"
+},
+{
+"district": "Bagerhat",
+"name": "Kachua",
+"name_bn": "কচুয়া",
+"slug": "kachua-bagerhat",
+"division_bn": "খুলনা",
+"gov_url": "https://kachua.bagerhat.gov.bd"
+},
+{
+"district": "Bagerhat",
+"name": "Mollahat",
+"name_bn": "মোল্লাহাট",
+"slug": "mollahat",
+"division_bn": "খুলনা",
+"gov_url": "https://mollahat.bagerhat.gov.bd"
+},
+{
+"district": "Bagerhat",
+"name": "Mongla",
+"name_bn": "মোংলা",
+"slug": "mongla",
+"division_bn": "খুলনা",
+"gov_url": "https://mongla.bagerhat.gov.bd"
+},
+{
+"district": "Bagerhat",
+"name": "Morrelganj",
+"name_bn": "মোরেলগঞ্জ",
+"slug": "morrelganj",
+"division_bn": "খুলনা",
+"gov_url": "https://morrelganj.bagerhat.gov.bd"
+},
+{
+"district": "Bagerhat",
+"name": "Rampal",
+"name_bn": "রামপাল",
+"slug": "rampal",
+"division_bn": "খুলনা",
+"gov_url": "https://rampal.bagerhat.gov.bd"
+},
+{
+"district": "Bagerhat",
+"name": "Sarankhola",
+"name_bn": "শরণখোলা",
+"slug": "sarankhola",
+"division_bn": "খুলনা",
+"gov_url": "https://sarankhola.bagerhat.gov.bd"
+},
+{
+"district": "Bandarban",
+"name": "Alikadam",
+"name_bn": "আলীকদম",
+"slug": "alikadam",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://alikadam.bandarban.gov.bd"
+},
+{
+"district": "Bandarban",
+"name": "Bandarban Sadar",
+"name_bn": "বান্দরবান সদর",
+"slug": "sadar-bandarban",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sadar.bandarban.gov.bd"
+},
+{
+"district": "Bandarban",
+"name": "Lama",
+"name_bn": "লামা",
+"slug": "lama",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://lama.bandarban.gov.bd"
+},
+{
+"district": "Bandarban",
+"name": "Naikhongchhari",
+"name_bn": "নাইক্ষ্যংছড়ি",
+"slug": "naikhongchhari",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://naikhongchhari.bandarban.gov.bd"
+},
+{
+"district": "Bandarban",
+"name": "Rowangchhari",
+"name_bn": "রোয়াংছড়ি",
+"slug": "rowangchhari",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://rowangchhari.bandarban.gov.bd"
+},
+{
+"district": "Bandarban",
+"name": "Ruma",
+"name_bn": "রুমা",
+"slug": "ruma",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://ruma.bandarban.gov.bd"
+},
+{
+"district": "Bandarban",
+"name": "Thanchi",
+"name_bn": "থানচি",
+"slug": "thanchi",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://thanchi.bandarban.gov.bd"
+},
+{
+"district": "Barguna",
+"name": "Amtali",
+"name_bn": "আমতলী",
+"slug": "amtali",
+"division_bn": "বরিশাল",
+"gov_url": "https://amtali.barguna.gov.bd"
+},
+{
+"district": "Barguna",
+"name": "Bamna",
+"name_bn": "বামনা",
+"slug": "bamna",
+"division_bn": "বরিশাল",
+"gov_url": "https://bamna.barguna.gov.bd"
+},
+{
+"district": "Barguna",
+"name": "Barguna Sadar",
+"name_bn": "বরগুনা সদর",
+"slug": "sadar-barguna",
+"division_bn": "বরিশাল",
+"gov_url": "https://sadar.barguna.gov.bd"
+},
+{
+"district": "Barguna",
+"name": "Betagi",
+"name_bn": "বেতাগী",
+"slug": "betagi",
+"division_bn": "বরিশাল",
+"gov_url": "https://betagi.barguna.gov.bd"
+},
+{
+"district": "Barguna",
+"name": "Pathorghata",
+"name_bn": "পাথরঘাটা",
+"slug": "pathorghata",
+"division_bn": "বরিশাল",
+"gov_url": "https://pathorghata.barguna.gov.bd"
+},
+{
+"district": "Barguna",
+"name": "Taltali",
+"name_bn": "তালতলী",
+"slug": "taltali",
+"division_bn": "বরিশাল",
+"gov_url": "https://taltali.barguna.gov.bd"
+},
+{
+"district": "Barishal",
+"name": "Agailjhara",
+"name_bn": "আগৈলঝাড়া",
+"slug": "agailjhara",
+"division_bn": "বরিশাল",
+"gov_url": "https://agailjhara.barisal.gov.bd"
+},
+{
+"district": "Barishal",
+"name": "Babuganj",
+"name_bn": "বাবুগঞ্জ",
+"slug": "babuganj",
+"division_bn": "বরিশাল",
+"gov_url": "https://babuganj.barisal.gov.bd"
+},
+{
+"district": "Barishal",
+"name": "Bakerganj",
+"name_bn": "বাকেরগঞ্জ",
+"slug": "bakerganj",
+"division_bn": "বরিশাল",
+"gov_url": "https://bakerganj.barisal.gov.bd"
+},
+{
+"district": "Barishal",
+"name": "Banaripara",
+"name_bn": "বানারীপাড়া",
+"slug": "banaripara",
+"division_bn": "বরিশাল",
+"gov_url": "https://banaripara.barisal.gov.bd"
+},
+{
+"district": "Barishal",
+"name": "Barisalsadar",
+"name_bn": "বরিশাল সদর",
+"slug": "barisalsadar",
+"division_bn": "বরিশাল",
+"gov_url": "https://barisalsadar.barisal.gov.bd"
+},
+{
+"district": "Barishal",
+"name": "Gournadi",
+"name_bn": "গৌরনদী",
+"slug": "gournadi",
+"division_bn": "বরিশাল",
+"gov_url": "https://gournadi.barisal.gov.bd"
+},
+{
+"district": "Barishal",
+"name": "Hizla",
+"name_bn": "হিজলা",
+"slug": "hizla",
+"division_bn": "বরিশাল",
+"gov_url": "https://hizla.barisal.gov.bd"
+},
+{
+"district": "Barishal",
+"name": "Mehendiganj",
+"name_bn": "মেহেন্দিগঞ্জ",
+"slug": "mehendiganj",
+"division_bn": "বরিশাল",
+"gov_url": "https://mehendiganj.barisal.gov.bd"
+},
+{
+"district": "Barishal",
+"name": "Muladi",
+"name_bn": "মুলাদী",
+"slug": "muladi",
+"division_bn": "বরিশাল",
+"gov_url": "https://muladi.barisal.gov.bd"
+},
+{
+"district": "Barishal",
+"name": "Wazirpur",
+"name_bn": "উজিরপুর",
+"slug": "wazirpur",
+"division_bn": "বরিশাল",
+"gov_url": "https://wazirpur.barisal.gov.bd"
+},
+{
+"district": "Bhola",
+"name": "Bhola Sadar",
+"name_bn": "ভোলা সদর",
+"slug": "sadar-bhola",
+"division_bn": "বরিশাল",
+"gov_url": "https://sadar.bhola.gov.bd"
+},
+{
+"district": "Bhola",
+"name": "Borhanuddin",
+"name_bn": "বোরহানউদ্দিন",
+"slug": "borhanuddin",
+"division_bn": "বরিশাল",
+"gov_url": "https://borhanuddin.bhola.gov.bd"
+},
+{
+"district": "Bhola",
+"name": "Charfesson",
+"name_bn": "চরফ্যাশন",
+"slug": "charfesson",
+"division_bn": "বরিশাল",
+"gov_url": "https://charfesson.bhola.gov.bd"
+},
+{
+"district": "Bhola",
+"name": "Doulatkhan",
+"name_bn": "দৌলতখান",
+"slug": "doulatkhan",
+"division_bn": "বরিশাল",
+"gov_url": "https://doulatkhan.bhola.gov.bd"
+},
+{
+"district": "Bhola",
+"name": "Lalmohan",
+"name_bn": "লালমোহন",
+"slug": "lalmohan",
+"division_bn": "বরিশাল",
+"gov_url": "https://lalmohan.bhola.gov.bd"
+},
+{
+"district": "Bhola",
+"name": "Monpura",
+"name_bn": "মনপুরা",
+"slug": "monpura",
+"division_bn": "বরিশাল",
+"gov_url": "https://monpura.bhola.gov.bd"
+},
+{
+"district": "Bhola",
+"name": "Tazumuddin",
+"name_bn": "তজুমদ্দিন",
+"slug": "tazumuddin",
+"division_bn": "বরিশাল",
+"gov_url": "https://tazumuddin.bhola.gov.bd"
+},
+{
+"district": "Bogura",
+"name": "Adamdighi",
+"name_bn": "আদমদিঘি",
+"slug": "adamdighi",
+"division_bn": "রাজশাহী",
+"gov_url": "https://adamdighi.bogra.gov.bd"
+},
+{
+"district": "Bogura",
+"name": "Bogura Sadar",
+"name_bn": "বগুড়া সদর",
+"slug": "sadar-bogra",
+"division_bn": "রাজশাহী",
+"gov_url": "https://sadar.bogra.gov.bd"
+},
+{
+"district": "Bogura",
+"name": "Dhunot",
+"name_bn": "ধুনট",
+"slug": "dhunot",
+"division_bn": "রাজশাহী",
+"gov_url": "https://dhunot.bogra.gov.bd"
+},
+{
+"district": "Bogura",
+"name": "Dupchanchia",
+"name_bn": "দুপচাচিঁয়া",
+"slug": "dupchanchia",
+"division_bn": "রাজশাহী",
+"gov_url": "https://dupchanchia.bogra.gov.bd"
+},
+{
+"district": "Bogura",
+"name": "Gabtali",
+"name_bn": "গাবতলী",
+"slug": "gabtali",
+"division_bn": "রাজশাহী",
+"gov_url": "https://gabtali.bogra.gov.bd"
+},
+{
+"district": "Bogura",
+"name": "Kahaloo",
+"name_bn": "কাহালু",
+"slug": "kahaloo",
+"division_bn": "রাজশাহী",
+"gov_url": "https://kahaloo.bogra.gov.bd"
+},
+{
+"district": "Bogura",
+"name": "Mokamtala",
+"name_bn": "মোকামতলা",
+"slug": "mokamtala",
+"division_bn": "রাজশাহী",
+"gov_url": "https://mokamtala.bogra.gov.bd"
+},
+{
+"district": "Bogura",
+"name": "Nondigram",
+"name_bn": "নন্দিগ্রাম",
+"slug": "nondigram",
+"division_bn": "রাজশাহী",
+"gov_url": "https://nondigram.bogra.gov.bd"
+},
+{
+"district": "Bogura",
+"name": "Shajahanpur",
+"name_bn": "শাজাহানপুর",
+"slug": "shajahanpur",
+"division_bn": "রাজশাহী",
+"gov_url": "https://shajahanpur.bogra.gov.bd"
+},
+{
+"district": "Bogura",
+"name": "Shariakandi",
+"name_bn": "সারিয়াকান্দি",
+"slug": "shariakandi",
+"division_bn": "রাজশাহী",
+"gov_url": "https://shariakandi.bogra.gov.bd"
+},
+{
+"district": "Bogura",
+"name": "Sherpur",
+"name_bn": "শেরপুর বগুড়া",
+"slug": "sherpur",
+"division_bn": "রাজশাহী",
+"gov_url": "https://sherpur.bogra.gov.bd"
+},
+{
+"district": "Bogura",
+"name": "Shibganj",
+"name_bn": "শিবগঞ্জ",
+"slug": "shibganj-bogra",
+"division_bn": "রাজশাহী",
+"gov_url": "https://shibganj.bogra.gov.bd"
+},
+{
+"district": "Bogura",
+"name": "Sonatala",
+"name_bn": "সোনাতলা",
+"slug": "sonatala",
+"division_bn": "রাজশাহী",
+"gov_url": "https://sonatala.bogra.gov.bd"
+},
+{
+"district": "Brahmanbaria",
+"name": "Akhaura",
+"name_bn": "আখাউড়া",
+"slug": "akhaura",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://akhaura.brahmanbaria.gov.bd"
+},
+{
+"district": "Brahmanbaria",
+"name": "Ashuganj",
+"name_bn": "আশুগঞ্জ",
+"slug": "ashuganj",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://ashuganj.brahmanbaria.gov.bd"
+},
+{
+"district": "Brahmanbaria",
+"name": "Bancharampur",
+"name_bn": "বাঞ্ছারামপুর",
+"slug": "bancharampur",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://bancharampur.brahmanbaria.gov.bd"
+},
+{
+"district": "Brahmanbaria",
+"name": "Bijoynagar",
+"name_bn": "বিজয়নগর",
+"slug": "bijoynagar",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://bijoynagar.brahmanbaria.gov.bd"
+},
+{
+"district": "Brahmanbaria",
+"name": "Brahmanbaria Sadar",
+"name_bn": "ব্রাহ্মণবাড়িয়া সদর",
+"slug": "sadar-brahmanbaria",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sadar.brahmanbaria.gov.bd"
+},
+{
+"district": "Brahmanbaria",
+"name": "Kasba",
+"name_bn": "কসবা",
+"slug": "kasba",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://kasba.brahmanbaria.gov.bd"
+},
+{
+"district": "Brahmanbaria",
+"name": "Nabinagar",
+"name_bn": "নবীনগর",
+"slug": "nabinagar",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://nabinagar.brahmanbaria.gov.bd"
+},
+{
+"district": "Brahmanbaria",
+"name": "Nasirnagar",
+"name_bn": "নাসিরনগর",
+"slug": "nasirnagar",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://nasirnagar.brahmanbaria.gov.bd"
+},
+{
+"district": "Brahmanbaria",
+"name": "Sarail",
+"name_bn": "সরাইল",
+"slug": "sarail",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sarail.brahmanbaria.gov.bd"
+},
+{
+"district": "Chandpur",
+"name": "Chandpur Sadar",
+"name_bn": "চাঁদপুর সদর",
+"slug": "sadar-chandpur",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sadar.chandpur.gov.bd"
+},
+{
+"district": "Chandpur",
+"name": "Faridgonj",
+"name_bn": "ফরিদগঞ্জ",
+"slug": "faridgonj",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://faridgonj.chandpur.gov.bd"
+},
+{
+"district": "Chandpur",
+"name": "Haimchar",
+"name_bn": "হাইমচর",
+"slug": "haimchar",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://haimchar.chandpur.gov.bd"
+},
+{
+"district": "Chandpur",
+"name": "Hajiganj",
+"name_bn": "হাজীগঞ্জ",
+"slug": "hajiganj",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://hajiganj.chandpur.gov.bd"
+},
+{
+"district": "Chandpur",
+"name": "Kachua",
+"name_bn": "কচুয়া",
+"slug": "kachua-chandpur",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://kachua.chandpur.gov.bd"
+},
+{
+"district": "Chandpur",
+"name": "Matlabnorth",
+"name_bn": "মতলব উত্তর",
+"slug": "matlabnorth",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://matlabnorth.chandpur.gov.bd"
+},
+{
+"district": "Chandpur",
+"name": "Matlabsouth",
+"name_bn": "মতলব দক্ষিণ,চাঁদপুর",
+"slug": "matlabsouth",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://matlabsouth.chandpur.gov.bd"
+},
+{
+"district": "Chandpur",
+"name": "Shahrasti",
+"name_bn": "শাহরাস্তি",
+"slug": "shahrasti",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://shahrasti.chandpur.gov.bd"
+},
+{
+"district": "Chapai Nawabganj",
+"name": "Bholahat",
+"name_bn": "ভোলাহাট",
+"slug": "bholahat",
+"division_bn": "রাজশাহী",
+"gov_url": "https://bholahat.chapainawabganj.gov.bd"
+},
+{
+"district": "Chapai Nawabganj",
+"name": "Chapainawabganjsadar",
+"name_bn": "চাঁপাইনবাবগঞ্জ সদর",
+"slug": "chapainawabganjsadar",
+"division_bn": "রাজশাহী",
+"gov_url": "https://chapainawabganjsadar.chapainawabganj.gov.bd"
+},
+{
+"district": "Chapai Nawabganj",
+"name": "Gomostapur",
+"name_bn": "গোমস্তাপুর",
+"slug": "gomostapur",
+"division_bn": "রাজশাহী",
+"gov_url": "https://gomostapur.chapainawabganj.gov.bd"
+},
+{
+"district": "Chapai Nawabganj",
+"name": "Nachol",
+"name_bn": "নাচোল",
+"slug": "nachol",
+"division_bn": "রাজশাহী",
+"gov_url": "https://nachol.chapainawabganj.gov.bd"
+},
+{
+"district": "Chapai Nawabganj",
+"name": "Shibganj",
+"name_bn": "শিবগঞ্জ",
+"slug": "shibganj-chapainawabganj",
+"division_bn": "রাজশাহী",
+"gov_url": "https://shibganj.chapainawabganj.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Anwara",
+"name_bn": "আনোয়ারা",
+"slug": "anwara",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://anwara.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Banshkhali",
+"name_bn": "বাঁশখালী",
+"slug": "banshkhali",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://banshkhali.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Boalkhali",
+"name_bn": "বোয়ালখালী",
+"slug": "boalkhali",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://boalkhali.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Chandanaish",
+"name_bn": "চন্দনাইশ",
+"slug": "chandanaish",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://chandanaish.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Fatikchhari",
+"name_bn": "ফটিকছড়ি",
+"slug": "fatikchhari",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://fatikchhari.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Hathazari",
+"name_bn": "হাটহাজারী",
+"slug": "hathazari",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://hathazari.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Karnafuli",
+"name_bn": "কর্ণফুলী",
+"slug": "karnafuli",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://karnafuli.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Lohagara",
+"name_bn": "লোহাগাড়া",
+"slug": "lohagara-chattogram",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://lohagara.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Mirsharai",
+"name_bn": "মীরসরাই",
+"slug": "mirsharai",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://mirsharai.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Patiya",
+"name_bn": "পটিয়া",
+"slug": "patiya",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://patiya.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Rangunia",
+"name_bn": "রাঙ্গুনিয়া",
+"slug": "rangunia",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://rangunia.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Raozan",
+"name_bn": "রাউজান",
+"slug": "raozan",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://raozan.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Sandwip",
+"name_bn": "সন্দ্বীপ",
+"slug": "sandwip",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sandwip.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Satkania",
+"name_bn": "সাতকানিয়া",
+"slug": "satkania",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://satkania.chattogram.gov.bd"
+},
+{
+"district": "Chattogram",
+"name": "Sitakunda",
+"name_bn": "সীতাকুন্ড",
+"slug": "sitakunda",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sitakunda.chattogram.gov.bd"
+},
+{
+"district": "Chuadanga",
+"name": "Alamdanga",
+"name_bn": "আলমডাঙ্গা",
+"slug": "alamdanga",
+"division_bn": "খুলনা",
+"gov_url": "https://alamdanga.chuadanga.gov.bd"
+},
+{
+"district": "Chuadanga",
+"name": "Chuadangasadar",
+"name_bn": "চুয়াডাঙ্গা সদর",
+"slug": "chuadangasadar",
+"division_bn": "খুলনা",
+"gov_url": "https://chuadangasadar.chuadanga.gov.bd"
+},
+{
+"district": "Chuadanga",
+"name": "Damurhuda",
+"name_bn": "দামুড়হুদা",
+"slug": "damurhuda",
+"division_bn": "খুলনা",
+"gov_url": "https://damurhuda.chuadanga.gov.bd"
+},
+{
+"district": "Chuadanga",
+"name": "Jibannagar",
+"name_bn": "জীবননগর",
+"slug": "jibannagar",
+"division_bn": "খুলনা",
+"gov_url": "https://jibannagar.chuadanga.gov.bd"
+},
+{
+"district": "Cox's Bazar",
+"name": "Chakaria",
+"name_bn": "চকরিয়া",
+"slug": "chakaria",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://chakaria.coxsbazar.gov.bd"
+},
+{
+"district": "Cox's Bazar",
+"name": "Cox's Bazar Sadar",
+"name_bn": "কক্সবাজার সদর",
+"slug": "sadar-coxsbazar",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sadar.coxsbazar.gov.bd"
+},
+{
+"district": "Cox's Bazar",
+"name": "Eidgaon",
+"name_bn": "ঈদগাঁও",
+"slug": "eidgaon",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://eidgaon.coxsbazar.gov.bd"
+},
+{
+"district": "Cox's Bazar",
+"name": "Kutubdia",
+"name_bn": "কুতুবদিয়া",
+"slug": "kutubdia",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://kutubdia.coxsbazar.gov.bd"
+},
+{
+"district": "Cox's Bazar",
+"name": "Moheshkhali",
+"name_bn": "মহেশখালী",
+"slug": "moheshkhali",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://moheshkhali.coxsbazar.gov.bd"
+},
+{
+"district": "Cox's Bazar",
+"name": "Pekua",
+"name_bn": "পেকুয়া",
+"slug": "pekua",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://pekua.coxsbazar.gov.bd"
+},
+{
+"district": "Cox's Bazar",
+"name": "Ramu",
+"name_bn": "রামু",
+"slug": "ramu",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://ramu.coxsbazar.gov.bd"
+},
+{
+"district": "Cox's Bazar",
+"name": "Teknaf",
+"name_bn": "টেকনাফ",
+"slug": "teknaf",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://teknaf.coxsbazar.gov.bd"
+},
+{
+"district": "Cox's Bazar",
+"name": "Ukhiya",
+"name_bn": "উখিয়া",
+"slug": "ukhiya",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://ukhiya.coxsbazar.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Barura",
+"name_bn": "বরুড়া",
+"slug": "barura",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://barura.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Brahmanpara",
+"name_bn": "ব্রাহ্মণপাড়া",
+"slug": "brahmanpara",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://brahmanpara.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Burichang",
+"name_bn": "বুড়িচং",
+"slug": "burichang",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://burichang.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Chandina",
+"name_bn": "চান্দিনা",
+"slug": "chandina",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://chandina.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Chauddagram",
+"name_bn": "চৌদ্দগ্রাম",
+"slug": "chauddagram",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://chauddagram.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Comillasadar",
+"name_bn": "আদর্শ সদর",
+"slug": "comillasadar",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://comillasadar.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Daudkandi",
+"name_bn": "দাউদকান্দি",
+"slug": "daudkandi",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://daudkandi.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Debidwar",
+"name_bn": "দেবিদ্বার",
+"slug": "debidwar",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://debidwar.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Homna",
+"name_bn": "হোমনা",
+"slug": "homna",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://homna.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Laksam",
+"name_bn": "লাকসাম",
+"slug": "laksam",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://laksam.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Lalmai",
+"name_bn": "লালমাই",
+"slug": "lalmai",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://lalmai.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Meghna",
+"name_bn": "মেঘনা",
+"slug": "meghna",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://meghna.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Monohargonj",
+"name_bn": "মনোহরগঞ্জ",
+"slug": "monohargonj",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://monohargonj.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Muradnagar",
+"name_bn": "মুরাদনগর",
+"slug": "muradnagar",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://muradnagar.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Nangalkot",
+"name_bn": "নাঙ্গলকোট",
+"slug": "nangalkot",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://nangalkot.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Sadarsouth",
+"name_bn": "সদর দক্ষিণ",
+"slug": "sadarsouth",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sadarsouth.comilla.gov.bd"
+},
+{
+"district": "Cumilla",
+"name": "Titas",
+"name_bn": "তিতাস",
+"slug": "titas",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://titas.comilla.gov.bd"
+},
+{
+"district": "Dhaka",
+"name": "Dhamrai",
+"name_bn": "ধামরাই",
+"slug": "dhamrai",
+"division_bn": "ঢাকা",
+"gov_url": "https://dhamrai.dhaka.gov.bd"
+},
+{
+"district": "Dhaka",
+"name": "Dohar",
+"name_bn": "দোহার",
+"slug": "dohar",
+"division_bn": "ঢাকা",
+"gov_url": "https://dohar.dhaka.gov.bd"
+},
+{
+"district": "Dhaka",
+"name": "Keraniganj",
+"name_bn": "কেরাণীগঞ্জ",
+"slug": "keraniganj",
+"division_bn": "ঢাকা",
+"gov_url": "https://keraniganj.dhaka.gov.bd"
+},
+{
+"district": "Dhaka",
+"name": "Nawabganj",
+"name_bn": "নবাবগঞ্জ ঢাকা",
+"slug": "nawabganj-dhaka",
+"division_bn": "ঢাকা",
+"gov_url": "https://nawabganj.dhaka.gov.bd"
+},
+{
+"district": "Dhaka",
+"name": "Savar",
+"name_bn": "সাভার",
+"slug": "savar",
+"division_bn": "ঢাকা",
+"gov_url": "https://savar.dhaka.gov.bd"
+},
+{
+"district": "Dinajpur",
+"name": "Birampur",
+"name_bn": "বিরামপুর",
+"slug": "birampur",
+"division_bn": "রংপুর",
+"gov_url": "https://birampur.dinajpur.gov.bd"
+},
+{
+"district": "Dinajpur",
+"name": "Birganj",
+"name_bn": "বীরগঞ্জ",
+"slug": "birganj",
+"division_bn": "রংপুর",
+"gov_url": "https://birganj.dinajpur.gov.bd"
+},
+{
+"district": "Dinajpur",
+"name": "Birol",
+"name_bn": "বিরল",
+"slug": "birol",
+"division_bn": "রংপুর",
+"gov_url": "https://birol.dinajpur.gov.bd"
+},
+{
+"district": "Dinajpur",
+"name": "Bochaganj",
+"name_bn": "বোচাগঞ্জ",
+"slug": "bochaganj",
+"division_bn": "রংপুর",
+"gov_url": "https://bochaganj.dinajpur.gov.bd"
+},
+{
+"district": "Dinajpur",
+"name": "Chirirbandar",
+"name_bn": "চিরিরবন্দর",
+"slug": "chirirbandar",
+"division_bn": "রংপুর",
+"gov_url": "https://chirirbandar.dinajpur.gov.bd"
+},
+{
+"district": "Dinajpur",
+"name": "Dinajpursadar",
+"name_bn": "দিনাজপুর সদর",
+"slug": "dinajpursadar",
+"division_bn": "রংপুর",
+"gov_url": "https://dinajpursadar.dinajpur.gov.bd"
+},
+{
+"district": "Dinajpur",
+"name": "Fulbari",
+"name_bn": "ফুলবাড়ী",
+"slug": "fulbari",
+"division_bn": "রংপুর",
+"gov_url": "https://fulbari.dinajpur.gov.bd"
+},
+{
+"district": "Dinajpur",
+"name": "Ghoraghat",
+"name_bn": "ঘোড়াঘাট",
+"slug": "ghoraghat",
+"division_bn": "রংপুর",
+"gov_url": "https://ghoraghat.dinajpur.gov.bd"
+},
+{
+"district": "Dinajpur",
+"name": "Hakimpur",
+"name_bn": "হাকিমপুর",
+"slug": "hakimpur",
+"division_bn": "রংপুর",
+"gov_url": "https://hakimpur.dinajpur.gov.bd"
+},
+{
+"district": "Dinajpur",
+"name": "Kaharol",
+"name_bn": "কাহারোল",
+"slug": "kaharol",
+"division_bn": "রংপুর",
+"gov_url": "https://kaharol.dinajpur.gov.bd"
+},
+{
+"district": "Dinajpur",
+"name": "Khansama",
+"name_bn": "খানসামা",
+"slug": "khansama",
+"division_bn": "রংপুর",
+"gov_url": "https://khansama.dinajpur.gov.bd"
+},
+{
+"district": "Dinajpur",
+"name": "Nawabganj",
+"name_bn": "নবাবগঞ্জ",
+"slug": "nawabganj-dinajpur",
+"division_bn": "রংপুর",
+"gov_url": "https://nawabganj.dinajpur.gov.bd"
+},
+{
+"district": "Dinajpur",
+"name": "Parbatipur",
+"name_bn": "পার্বতীপুর",
+"slug": "parbatipur",
+"division_bn": "রংপুর",
+"gov_url": "https://parbatipur.dinajpur.gov.bd"
+},
+{
+"district": "Faridpur",
+"name": "Alfadanga",
+"name_bn": "আলফাডাঙ্গা",
+"slug": "alfadanga",
+"division_bn": "ঢাকা",
+"gov_url": "https://alfadanga.faridpur.gov.bd"
+},
+{
+"district": "Faridpur",
+"name": "Bhanga",
+"name_bn": "ভাঙ্গা",
+"slug": "bhanga",
+"division_bn": "ঢাকা",
+"gov_url": "https://bhanga.faridpur.gov.bd"
+},
+{
+"district": "Faridpur",
+"name": "Boalmari",
+"name_bn": "বোয়ালমারী",
+"slug": "boalmari",
+"division_bn": "ঢাকা",
+"gov_url": "https://boalmari.faridpur.gov.bd"
+},
+{
+"district": "Faridpur",
+"name": "Charbhadrasan",
+"name_bn": "চরভদ্রাসন",
+"slug": "charbhadrasan",
+"division_bn": "ঢাকা",
+"gov_url": "https://charbhadrasan.faridpur.gov.bd"
+},
+{
+"district": "Faridpur",
+"name": "Faridpur Sadar",
+"name_bn": "ফরিদপুর সদর",
+"slug": "sadar-faridpur",
+"division_bn": "ঢাকা",
+"gov_url": "https://sadar.faridpur.gov.bd"
+},
+{
+"district": "Faridpur",
+"name": "Madhukhali",
+"name_bn": "মধুখালী",
+"slug": "madhukhali",
+"division_bn": "ঢাকা",
+"gov_url": "https://madhukhali.faridpur.gov.bd"
+},
+{
+"district": "Faridpur",
+"name": "Nagarkanda",
+"name_bn": "নগরকান্দা",
+"slug": "nagarkanda",
+"division_bn": "ঢাকা",
+"gov_url": "https://nagarkanda.faridpur.gov.bd"
+},
+{
+"district": "Faridpur",
+"name": "Sadarpur",
+"name_bn": "সদরপুর",
+"slug": "sadarpur",
+"division_bn": "ঢাকা",
+"gov_url": "https://sadarpur.faridpur.gov.bd"
+},
+{
+"district": "Faridpur",
+"name": "Saltha",
+"name_bn": "সালথা",
+"slug": "saltha",
+"division_bn": "ঢাকা",
+"gov_url": "https://saltha.faridpur.gov.bd"
+},
+{
+"district": "Feni",
+"name": "Chhagalnaiya",
+"name_bn": "ছাগলনাইয়া",
+"slug": "chhagalnaiya",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://chhagalnaiya.feni.gov.bd"
+},
+{
+"district": "Feni",
+"name": "Daganbhuiyan",
+"name_bn": "দাগনভূঞা",
+"slug": "daganbhuiyan",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://daganbhuiyan.feni.gov.bd"
+},
+{
+"district": "Feni",
+"name": "Feni Sadar",
+"name_bn": "ফেনী সদর",
+"slug": "sadar-feni",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sadar.feni.gov.bd"
+},
+{
+"district": "Feni",
+"name": "Fulgazi",
+"name_bn": "ফুলগাজী",
+"slug": "fulgazi",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://fulgazi.feni.gov.bd"
+},
+{
+"district": "Feni",
+"name": "Parshuram",
+"name_bn": "পরশুরাম",
+"slug": "parshuram",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://parshuram.feni.gov.bd"
+},
+{
+"district": "Feni",
+"name": "Sonagazi",
+"name_bn": "সোনাগাজী",
+"slug": "sonagazi",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sonagazi.feni.gov.bd"
+},
+{
+"district": "Gaibandha",
+"name": "Gaibandhasadar",
+"name_bn": "গাইবান্ধা সদর",
+"slug": "gaibandhasadar",
+"division_bn": "রংপুর",
+"gov_url": "https://gaibandhasadar.gaibandha.gov.bd"
+},
+{
+"district": "Gaibandha",
+"name": "Gobindaganj",
+"name_bn": "গোবিন্দগঞ্জ",
+"slug": "gobindaganj",
+"division_bn": "রংপুর",
+"gov_url": "https://gobindaganj.gaibandha.gov.bd"
+},
+{
+"district": "Gaibandha",
+"name": "Palashbari",
+"name_bn": "পলাশবাড়ী",
+"slug": "palashbari",
+"division_bn": "রংপুর",
+"gov_url": "https://palashbari.gaibandha.gov.bd"
+},
+{
+"district": "Gaibandha",
+"name": "Phulchari",
+"name_bn": "ফুলছড়ি",
+"slug": "phulchari",
+"division_bn": "রংপুর",
+"gov_url": "https://phulchari.gaibandha.gov.bd"
+},
+{
+"district": "Gaibandha",
+"name": "Sadullapur",
+"name_bn": "সাদুল্লাপুর",
+"slug": "sadullapur",
+"division_bn": "রংপুর",
+"gov_url": "https://sadullapur.gaibandha.gov.bd"
+},
+{
+"district": "Gaibandha",
+"name": "Saghata",
+"name_bn": "সাঘাটা",
+"slug": "saghata",
+"division_bn": "রংপুর",
+"gov_url": "https://saghata.gaibandha.gov.bd"
+},
+{
+"district": "Gaibandha",
+"name": "Sundarganj",
+"name_bn": "সুন্দরগঞ্জ",
+"slug": "sundarganj",
+"division_bn": "রংপুর",
+"gov_url": "https://sundarganj.gaibandha.gov.bd"
+},
+{
+"district": "Gazipur",
+"name": "Gazipur Sadar",
+"name_bn": "গাজীপুর সদর",
+"slug": "sadar-gazipur",
+"division_bn": "ঢাকা",
+"gov_url": "https://sadar.gazipur.gov.bd"
+},
+{
+"district": "Gazipur",
+"name": "Kaliakair",
+"name_bn": "কালিয়াকৈর",
+"slug": "kaliakair",
+"division_bn": "ঢাকা",
+"gov_url": "https://kaliakair.gazipur.gov.bd"
+},
+{
+"district": "Gazipur",
+"name": "Kaliganj",
+"name_bn": "কালীগঞ্জ",
+"slug": "kaliganj-gazipur",
+"division_bn": "ঢাকা",
+"gov_url": "https://kaliganj.gazipur.gov.bd"
+},
+{
+"district": "Gazipur",
+"name": "Kapasia",
+"name_bn": "কাপাসিয়া",
+"slug": "kapasia",
+"division_bn": "ঢাকা",
+"gov_url": "https://kapasia.gazipur.gov.bd"
+},
+{
+"district": "Gazipur",
+"name": "Sreepur",
+"name_bn": "শ্রীপুর",
+"slug": "sreepur-gazipur",
+"division_bn": "ঢাকা",
+"gov_url": "https://sreepur.gazipur.gov.bd"
+},
+{
+"district": "Gopalganj",
+"name": "Gopalganj Sadar",
+"name_bn": "গোপালগঞ্জ সদর",
+"slug": "sadar-gopalganj",
+"division_bn": "ঢাকা",
+"gov_url": "https://sadar.gopalganj.gov.bd"
+},
+{
+"district": "Gopalganj",
+"name": "Kashiani",
+"name_bn": "কাশিয়ানী",
+"slug": "kashiani",
+"division_bn": "ঢাকা",
+"gov_url": "https://kashiani.gopalganj.gov.bd"
+},
+{
+"district": "Gopalganj",
+"name": "Kotalipara",
+"name_bn": "কোটালীপাড়া",
+"slug": "kotalipara",
+"division_bn": "ঢাকা",
+"gov_url": "https://kotalipara.gopalganj.gov.bd"
+},
+{
+"district": "Gopalganj",
+"name": "Muksudpur",
+"name_bn": "মুকসুদপুর",
+"slug": "muksudpur",
+"division_bn": "ঢাকা",
+"gov_url": "https://muksudpur.gopalganj.gov.bd"
+},
+{
+"district": "Gopalganj",
+"name": "Tungipara",
+"name_bn": "টুঙ্গিপাড়া",
+"slug": "tungipara",
+"division_bn": "ঢাকা",
+"gov_url": "https://tungipara.gopalganj.gov.bd"
+},
+{
+"district": "Habiganj",
+"name": "Ajmiriganj",
+"name_bn": "আজমিরীগঞ্জ",
+"slug": "ajmiriganj",
+"division_bn": "সিলেট",
+"gov_url": "https://ajmiriganj.habiganj.gov.bd"
+},
+{
+"district": "Habiganj",
+"name": "Bahubal",
+"name_bn": "বাহুবল",
+"slug": "bahubal",
+"division_bn": "সিলেট",
+"gov_url": "https://bahubal.habiganj.gov.bd"
+},
+{
+"district": "Habiganj",
+"name": "Baniachong",
+"name_bn": "বানিয়াচং",
+"slug": "baniachong",
+"division_bn": "সিলেট",
+"gov_url": "https://baniachong.habiganj.gov.bd"
+},
+{
+"district": "Habiganj",
+"name": "Chunarughat",
+"name_bn": "চুনারুঘাট",
+"slug": "chunarughat",
+"division_bn": "সিলেট",
+"gov_url": "https://chunarughat.habiganj.gov.bd"
+},
+{
+"district": "Habiganj",
+"name": "Habiganjsadar",
+"name_bn": "হবিগঞ্জ সদর",
+"slug": "habiganjsadar",
+"division_bn": "সিলেট",
+"gov_url": "https://habiganjsadar.habiganj.gov.bd"
+},
+{
+"district": "Habiganj",
+"name": "Lakhai",
+"name_bn": "লাখাই",
+"slug": "lakhai",
+"division_bn": "সিলেট",
+"gov_url": "https://lakhai.habiganj.gov.bd"
+},
+{
+"district": "Habiganj",
+"name": "Madhabpur",
+"name_bn": "মাধবপুর",
+"slug": "madhabpur",
+"division_bn": "সিলেট",
+"gov_url": "https://madhabpur.habiganj.gov.bd"
+},
+{
+"district": "Habiganj",
+"name": "Nabiganj",
+"name_bn": "নবীগঞ্জ",
+"slug": "nabiganj",
+"division_bn": "সিলেট",
+"gov_url": "https://nabiganj.habiganj.gov.bd"
+},
+{
+"district": "Habiganj",
+"name": "Shayestaganj",
+"name_bn": "শায়েস্তাগঞ্জ",
+"slug": "shayestaganj",
+"division_bn": "সিলেট",
+"gov_url": "https://shayestaganj.habiganj.gov.bd"
+},
+{
+"district": "Jamalpur",
+"name": "Bokshiganj",
+"name_bn": "বকশীগঞ্জ",
+"slug": "bokshiganj",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://bokshiganj.jamalpur.gov.bd"
+},
+{
+"district": "Jamalpur",
+"name": "Dewangonj",
+"name_bn": "দেওয়ানগঞ্জ",
+"slug": "dewangonj",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://dewangonj.jamalpur.gov.bd"
+},
+{
+"district": "Jamalpur",
+"name": "Islampur",
+"name_bn": "ইসলামপুর",
+"slug": "islampur",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://islampur.jamalpur.gov.bd"
+},
+{
+"district": "Jamalpur",
+"name": "Jamalpursadar",
+"name_bn": "জামালপুর সদর",
+"slug": "jamalpursadar",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://jamalpursadar.jamalpur.gov.bd"
+},
+{
+"district": "Jamalpur",
+"name": "Madarganj",
+"name_bn": "মাদারগঞ্জ",
+"slug": "madarganj",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://madarganj.jamalpur.gov.bd"
+},
+{
+"district": "Jamalpur",
+"name": "Melandah",
+"name_bn": "মেলান্দহ",
+"slug": "melandah",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://melandah.jamalpur.gov.bd"
+},
+{
+"district": "Jamalpur",
+"name": "Sarishabari",
+"name_bn": "সরিষাবাড়ী",
+"slug": "sarishabari",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://sarishabari.jamalpur.gov.bd"
+},
+{
+"district": "Jashore",
+"name": "Abhaynagar",
+"name_bn": "অভয়নগর",
+"slug": "abhaynagar",
+"division_bn": "খুলনা",
+"gov_url": "https://abhaynagar.jashore.gov.bd"
+},
+{
+"district": "Jashore",
+"name": "Bagherpara",
+"name_bn": "বাঘারপাড়া",
+"slug": "bagherpara",
+"division_bn": "খুলনা",
+"gov_url": "https://bagherpara.jashore.gov.bd"
+},
+{
+"district": "Jashore",
+"name": "Chougachha",
+"name_bn": "চৌগাছা",
+"slug": "chougachha",
+"division_bn": "খুলনা",
+"gov_url": "https://chougachha.jashore.gov.bd"
+},
+{
+"district": "Jashore",
+"name": "Jashore Sadar",
+"name_bn": "যশোর সদর",
+"slug": "sadar-jashore",
+"division_bn": "খুলনা",
+"gov_url": "https://sadar.jashore.gov.bd"
+},
+{
+"district": "Jashore",
+"name": "Jhikargacha",
+"name_bn": "ঝিকরগাছা",
+"slug": "jhikargacha",
+"division_bn": "খুলনা",
+"gov_url": "https://jhikargacha.jashore.gov.bd"
+},
+{
+"district": "Jashore",
+"name": "Keshabpur",
+"name_bn": "কেশবপুর",
+"slug": "keshabpur",
+"division_bn": "খুলনা",
+"gov_url": "https://keshabpur.jashore.gov.bd"
+},
+{
+"district": "Jashore",
+"name": "Manirampur",
+"name_bn": "মণিরামপুর",
+"slug": "manirampur",
+"division_bn": "খুলনা",
+"gov_url": "https://manirampur.jashore.gov.bd"
+},
+{
+"district": "Jashore",
+"name": "Sharsha",
+"name_bn": "শার্শা",
+"slug": "sharsha",
+"division_bn": "খুলনা",
+"gov_url": "https://sharsha.jashore.gov.bd"
+},
+{
+"district": "Jhalokati",
+"name": "Jhalokati Sadar",
+"name_bn": "ঝালকাঠি সদর",
+"slug": "sadar-jhalakathi",
+"division_bn": "বরিশাল",
+"gov_url": "https://sadar.jhalakathi.gov.bd"
+},
+{
+"district": "Jhalokati",
+"name": "Kathalia",
+"name_bn": "কাঠালিয়া",
+"slug": "kathalia",
+"division_bn": "বরিশাল",
+"gov_url": "https://kathalia.jhalakathi.gov.bd"
+},
+{
+"district": "Jhalokati",
+"name": "Nalchity",
+"name_bn": "নলছিটি",
+"slug": "nalchity",
+"division_bn": "বরিশাল",
+"gov_url": "https://nalchity.jhalakathi.gov.bd"
+},
+{
+"district": "Jhalokati",
+"name": "Rajapur",
+"name_bn": "রাজাপুর",
+"slug": "rajapur",
+"division_bn": "বরিশাল",
+"gov_url": "https://rajapur.jhalakathi.gov.bd"
+},
+{
+"district": "Jhenaidah",
+"name": "Harinakundu",
+"name_bn": "হরিণাকুন্ডু",
+"slug": "harinakundu",
+"division_bn": "খুলনা",
+"gov_url": "https://harinakundu.jhenaidah.gov.bd"
+},
+{
+"district": "Jhenaidah",
+"name": "Jhenaidah Sadar",
+"name_bn": "ঝিনাইদহ সদর",
+"slug": "sadar-jhenaidah",
+"division_bn": "খুলনা",
+"gov_url": "https://sadar.jhenaidah.gov.bd"
+},
+{
+"district": "Jhenaidah",
+"name": "Kaliganj",
+"name_bn": "কালীগঞ্জ",
+"slug": "kaliganj-jhenaidah",
+"division_bn": "খুলনা",
+"gov_url": "https://kaliganj.jhenaidah.gov.bd"
+},
+{
+"district": "Jhenaidah",
+"name": "Kotchandpur",
+"name_bn": "কোটচাঁদপুর",
+"slug": "kotchandpur",
+"division_bn": "খুলনা",
+"gov_url": "https://kotchandpur.jhenaidah.gov.bd"
+},
+{
+"district": "Jhenaidah",
+"name": "Moheshpur",
+"name_bn": "মহেশপুর",
+"slug": "moheshpur",
+"division_bn": "খুলনা",
+"gov_url": "https://moheshpur.jhenaidah.gov.bd"
+},
+{
+"district": "Jhenaidah",
+"name": "Shailkupa",
+"name_bn": "শৈলকুপা",
+"slug": "shailkupa",
+"division_bn": "খুলনা",
+"gov_url": "https://shailkupa.jhenaidah.gov.bd"
+},
+{
+"district": "Joypurhat",
+"name": "Akkelpur",
+"name_bn": "আক্কেলপুর",
+"slug": "akkelpur",
+"division_bn": "রাজশাহী",
+"gov_url": "https://akkelpur.joypurhat.gov.bd"
+},
+{
+"district": "Joypurhat",
+"name": "Joypurhatsadar",
+"name_bn": "জয়পুরহাট সদর",
+"slug": "joypurhatsadar",
+"division_bn": "রাজশাহী",
+"gov_url": "https://joypurhatsadar.joypurhat.gov.bd"
+},
+{
+"district": "Joypurhat",
+"name": "Kalai",
+"name_bn": "কালাই",
+"slug": "kalai",
+"division_bn": "রাজশাহী",
+"gov_url": "https://kalai.joypurhat.gov.bd"
+},
+{
+"district": "Joypurhat",
+"name": "Khetlal",
+"name_bn": "ক্ষেতলাল",
+"slug": "khetlal",
+"division_bn": "রাজশাহী",
+"gov_url": "https://khetlal.joypurhat.gov.bd"
+},
+{
+"district": "Joypurhat",
+"name": "Panchbibi",
+"name_bn": "পাঁচবিবি",
+"slug": "panchbibi",
+"division_bn": "রাজশাহী",
+"gov_url": "https://panchbibi.joypurhat.gov.bd"
+},
+{
+"district": "Khagrachhari",
+"name": "Dighinala",
+"name_bn": "দীঘিনালা",
+"slug": "dighinala",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://dighinala.khagrachhari.gov.bd"
+},
+{
+"district": "Khagrachhari",
+"name": "Guimara",
+"name_bn": "গুইমারা",
+"slug": "guimara",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://guimara.khagrachhari.gov.bd"
+},
+{
+"district": "Khagrachhari",
+"name": "Khagrachhari Sadar",
+"name_bn": "খাগড়াছড়ি সদর",
+"slug": "sadar-khagrachhari",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sadar.khagrachhari.gov.bd"
+},
+{
+"district": "Khagrachhari",
+"name": "Laxmichhari",
+"name_bn": "লক্ষীছড়ি",
+"slug": "laxmichhari",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://laxmichhari.khagrachhari.gov.bd"
+},
+{
+"district": "Khagrachhari",
+"name": "Manikchari",
+"name_bn": "মানিকছড়ি",
+"slug": "manikchari",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://manikchari.khagrachhari.gov.bd"
+},
+{
+"district": "Khagrachhari",
+"name": "Matiranga",
+"name_bn": "মাটিরাঙ্গা",
+"slug": "matiranga",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://matiranga.khagrachhari.gov.bd"
+},
+{
+"district": "Khagrachhari",
+"name": "Mohalchari",
+"name_bn": "মহালছড়ি",
+"slug": "mohalchari",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://mohalchari.khagrachhari.gov.bd"
+},
+{
+"district": "Khagrachhari",
+"name": "Panchari",
+"name_bn": "পানছড়ি",
+"slug": "panchari",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://panchari.khagrachhari.gov.bd"
+},
+{
+"district": "Khagrachhari",
+"name": "Ramgarh",
+"name_bn": "রামগড়",
+"slug": "ramgarh",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://ramgarh.khagrachhari.gov.bd"
+},
+{
+"district": "Khulna",
+"name": "Botiaghata",
+"name_bn": "বটিয়াঘাটা",
+"slug": "botiaghata",
+"division_bn": "খুলনা",
+"gov_url": "https://botiaghata.khulna.gov.bd"
+},
+{
+"district": "Khulna",
+"name": "Dacope",
+"name_bn": "দাকোপ",
+"slug": "dacope",
+"division_bn": "খুলনা",
+"gov_url": "https://dacope.khulna.gov.bd"
+},
+{
+"district": "Khulna",
+"name": "Digholia",
+"name_bn": "দিঘলিয়া",
+"slug": "digholia",
+"division_bn": "খুলনা",
+"gov_url": "https://digholia.khulna.gov.bd"
+},
+{
+"district": "Khulna",
+"name": "Dumuria",
+"name_bn": "ডুমুরিয়া",
+"slug": "dumuria",
+"division_bn": "খুলনা",
+"gov_url": "https://dumuria.khulna.gov.bd"
+},
+{
+"district": "Khulna",
+"name": "Fultola",
+"name_bn": "ফুলতলা",
+"slug": "fultola",
+"division_bn": "খুলনা",
+"gov_url": "https://fultola.khulna.gov.bd"
+},
+{
+"district": "Khulna",
+"name": "Koyra",
+"name_bn": "কয়রা",
+"slug": "koyra",
+"division_bn": "খুলনা",
+"gov_url": "https://koyra.khulna.gov.bd"
+},
+{
+"district": "Khulna",
+"name": "Paikgasa",
+"name_bn": "পাইকগাছা",
+"slug": "paikgasa",
+"division_bn": "খুলনা",
+"gov_url": "https://paikgasa.khulna.gov.bd"
+},
+{
+"district": "Khulna",
+"name": "Rupsha",
+"name_bn": "রূপসা",
+"slug": "rupsha",
+"division_bn": "খুলনা",
+"gov_url": "https://rupsha.khulna.gov.bd"
+},
+{
+"district": "Khulna",
+"name": "Terokhada",
+"name_bn": "তেরখাদা",
+"slug": "terokhada",
+"division_bn": "খুলনা",
+"gov_url": "https://terokhada.khulna.gov.bd"
+},
+{
+"district": "Kishoreganj",
+"name": "Austagram",
+"name_bn": "অষ্টগ্রাম",
+"slug": "austagram",
+"division_bn": "ঢাকা",
+"gov_url": "https://austagram.kishoreganj.gov.bd"
+},
+{
+"district": "Kishoreganj",
+"name": "Bajitpur",
+"name_bn": "বাজিতপুর",
+"slug": "bajitpur",
+"division_bn": "ঢাকা",
+"gov_url": "https://bajitpur.kishoreganj.gov.bd"
+},
+{
+"district": "Kishoreganj",
+"name": "Bhairab",
+"name_bn": "ভৈরব",
+"slug": "bhairab",
+"division_bn": "ঢাকা",
+"gov_url": "https://bhairab.kishoreganj.gov.bd"
+},
+{
+"district": "Kishoreganj",
+"name": "Hossainpur",
+"name_bn": "হোসেনপুর",
+"slug": "hossainpur",
+"division_bn": "ঢাকা",
+"gov_url": "https://hossainpur.kishoreganj.gov.bd"
+},
+{
+"district": "Kishoreganj",
+"name": "Itna",
+"name_bn": "ইটনা",
+"slug": "itna",
+"division_bn": "ঢাকা",
+"gov_url": "https://itna.kishoreganj.gov.bd"
+},
+{
+"district": "Kishoreganj",
+"name": "Karimgonj",
+"name_bn": "করিমগঞ্জ",
+"slug": "karimgonj",
+"division_bn": "ঢাকা",
+"gov_url": "https://karimgonj.kishoreganj.gov.bd"
+},
+{
+"district": "Kishoreganj",
+"name": "Katiadi",
+"name_bn": "কটিয়াদী",
+"slug": "katiadi",
+"division_bn": "ঢাকা",
+"gov_url": "https://katiadi.kishoreganj.gov.bd"
+},
+{
+"district": "Kishoreganj",
+"name": "Kishoreganjsadar",
+"name_bn": "কিশোরগঞ্জ সদর",
+"slug": "kishoreganjsadar",
+"division_bn": "ঢাকা",
+"gov_url": "https://kishoreganjsadar.kishoreganj.gov.bd"
+},
+{
+"district": "Kishoreganj",
+"name": "Kuliarchar",
+"name_bn": "কুলিয়ারচর",
+"slug": "kuliarchar",
+"division_bn": "ঢাকা",
+"gov_url": "https://kuliarchar.kishoreganj.gov.bd"
+},
+{
+"district": "Kishoreganj",
+"name": "Mithamoin",
+"name_bn": "মিঠামইন",
+"slug": "mithamoin",
+"division_bn": "ঢাকা",
+"gov_url": "https://mithamoin.kishoreganj.gov.bd"
+},
+{
+"district": "Kishoreganj",
+"name": "Nikli",
+"name_bn": "নিকলী",
+"slug": "nikli",
+"division_bn": "ঢাকা",
+"gov_url": "https://nikli.kishoreganj.gov.bd"
+},
+{
+"district": "Kishoreganj",
+"name": "Pakundia",
+"name_bn": "পাকুন্দিয়া",
+"slug": "pakundia",
+"division_bn": "ঢাকা",
+"gov_url": "https://pakundia.kishoreganj.gov.bd"
+},
+{
+"district": "Kishoreganj",
+"name": "Tarail",
+"name_bn": "তাড়াইল",
+"slug": "tarail",
+"division_bn": "ঢাকা",
+"gov_url": "https://tarail.kishoreganj.gov.bd"
+},
+{
+"district": "Kurigram",
+"name": "Bhurungamari",
+"name_bn": "ভূরুঙ্গামারী",
+"slug": "bhurungamari",
+"division_bn": "রংপুর",
+"gov_url": "https://bhurungamari.kurigram.gov.bd"
+},
+{
+"district": "Kurigram",
+"name": "Charrajibpur",
+"name_bn": "চর রাজিবপুর",
+"slug": "charrajibpur",
+"division_bn": "রংপুর",
+"gov_url": "https://charrajibpur.kurigram.gov.bd"
+},
+{
+"district": "Kurigram",
+"name": "Chilmari",
+"name_bn": "চিলমারী",
+"slug": "chilmari",
+"division_bn": "রংপুর",
+"gov_url": "https://chilmari.kurigram.gov.bd"
+},
+{
+"district": "Kurigram",
+"name": "Kurigramsadar",
+"name_bn": "কুড়িগ্রাম সদর",
+"slug": "kurigramsadar",
+"division_bn": "রংপুর",
+"gov_url": "https://kurigramsadar.kurigram.gov.bd"
+},
+{
+"district": "Kurigram",
+"name": "Nageshwari",
+"name_bn": "নাগেশ্বরী",
+"slug": "nageshwari",
+"division_bn": "রংপুর",
+"gov_url": "https://nageshwari.kurigram.gov.bd"
+},
+{
+"district": "Kurigram",
+"name": "Phulbari",
+"name_bn": "ফুলবাড়ী",
+"slug": "phulbari",
+"division_bn": "রংপুর",
+"gov_url": "https://phulbari.kurigram.gov.bd"
+},
+{
+"district": "Kurigram",
+"name": "Rajarhat",
+"name_bn": "রাজারহাট",
+"slug": "rajarhat",
+"division_bn": "রংপুর",
+"gov_url": "https://rajarhat.kurigram.gov.bd"
+},
+{
+"district": "Kurigram",
+"name": "Rowmari",
+"name_bn": "রৌমারী",
+"slug": "rowmari",
+"division_bn": "রংপুর",
+"gov_url": "https://rowmari.kurigram.gov.bd"
+},
+{
+"district": "Kurigram",
+"name": "Ulipur",
+"name_bn": "উলিপুর",
+"slug": "ulipur",
+"division_bn": "রংপুর",
+"gov_url": "https://ulipur.kurigram.gov.bd"
+},
+{
+"district": "Kushtia",
+"name": "Bheramara",
+"name_bn": "ভেড়ামারা",
+"slug": "bheramara",
+"division_bn": "খুলনা",
+"gov_url": "https://bheramara.kushtia.gov.bd"
+},
+{
+"district": "Kushtia",
+"name": "Daulatpur",
+"name_bn": "দৌলতপুর",
+"slug": "daulatpur-kushtia",
+"division_bn": "খুলনা",
+"gov_url": "https://daulatpur.kushtia.gov.bd"
+},
+{
+"district": "Kushtia",
+"name": "Khoksa",
+"name_bn": "খোকসা",
+"slug": "khoksa",
+"division_bn": "খুলনা",
+"gov_url": "https://khoksa.kushtia.gov.bd"
+},
+{
+"district": "Kushtia",
+"name": "Kumarkhali",
+"name_bn": "কুমারখালী",
+"slug": "kumarkhali",
+"division_bn": "খুলনা",
+"gov_url": "https://kumarkhali.kushtia.gov.bd"
+},
+{
+"district": "Kushtia",
+"name": "Kushtiasadar",
+"name_bn": "কুষ্টিয়া সদর",
+"slug": "kushtiasadar",
+"division_bn": "খুলনা",
+"gov_url": "https://kushtiasadar.kushtia.gov.bd"
+},
+{
+"district": "Kushtia",
+"name": "Mirpur",
+"name_bn": "মিরপুর",
+"slug": "mirpur",
+"division_bn": "খুলনা",
+"gov_url": "https://mirpur.kushtia.gov.bd"
+},
+{
+"district": "Lakshmipur",
+"name": "Chandraganj",
+"name_bn": "চন্দ্রগঞ্জ",
+"slug": "chandraganj",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://chandraganj.lakshmipur.gov.bd"
+},
+{
+"district": "Lakshmipur",
+"name": "Kamalnagar",
+"name_bn": "কমলনগর",
+"slug": "kamalnagar",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://kamalnagar.lakshmipur.gov.bd"
+},
+{
+"district": "Lakshmipur",
+"name": "Lakshmipur Sadar",
+"name_bn": "লক্ষ্মীপুর সদর",
+"slug": "sadar-lakshmipur",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sadar.lakshmipur.gov.bd"
+},
+{
+"district": "Lakshmipur",
+"name": "Raipur",
+"name_bn": "রায়পুর",
+"slug": "raipur",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://raipur.lakshmipur.gov.bd"
+},
+{
+"district": "Lakshmipur",
+"name": "Ramganj",
+"name_bn": "রামগঞ্জ",
+"slug": "ramganj",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://ramganj.lakshmipur.gov.bd"
+},
+{
+"district": "Lakshmipur",
+"name": "Ramgati",
+"name_bn": "রামগতি",
+"slug": "ramgati",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://ramgati.lakshmipur.gov.bd"
+},
+{
+"district": "Lalmonirhat",
+"name": "Aditmari",
+"name_bn": "আদিতমারী",
+"slug": "aditmari",
+"division_bn": "রংপুর",
+"gov_url": "https://aditmari.lalmonirhat.gov.bd"
+},
+{
+"district": "Lalmonirhat",
+"name": "Hatibandha",
+"name_bn": "হাতীবান্ধা",
+"slug": "hatibandha",
+"division_bn": "রংপুর",
+"gov_url": "https://hatibandha.lalmonirhat.gov.bd"
+},
+{
+"district": "Lalmonirhat",
+"name": "Kaliganj",
+"name_bn": "কালীগঞ্জ",
+"slug": "kaliganj-lalmonirhat",
+"division_bn": "রংপুর",
+"gov_url": "https://kaliganj.lalmonirhat.gov.bd"
+},
+{
+"district": "Lalmonirhat",
+"name": "Lalmonirhat Sadar",
+"name_bn": "লালমনিরহাট সদর",
+"slug": "sadar-lalmonirhat",
+"division_bn": "রংপুর",
+"gov_url": "https://sadar.lalmonirhat.gov.bd"
+},
+{
+"district": "Lalmonirhat",
+"name": "Patgram",
+"name_bn": "পাটগ্রাম",
+"slug": "patgram",
+"division_bn": "রংপুর",
+"gov_url": "https://patgram.lalmonirhat.gov.bd"
+},
+{
+"district": "Madaripur",
+"name": "Dasar",
+"name_bn": "ডাসার",
+"slug": "dasar",
+"division_bn": "ঢাকা",
+"gov_url": "https://dasar.madaripur.gov.bd"
+},
+{
+"district": "Madaripur",
+"name": "Kalkini",
+"name_bn": "কালকিনি",
+"slug": "kalkini",
+"division_bn": "ঢাকা",
+"gov_url": "https://kalkini.madaripur.gov.bd"
+},
+{
+"district": "Madaripur",
+"name": "Madaripur Sadar",
+"name_bn": "মাদারীপুর সদর",
+"slug": "sadar-madaripur",
+"division_bn": "ঢাকা",
+"gov_url": "https://sadar.madaripur.gov.bd"
+},
+{
+"district": "Madaripur",
+"name": "Rajoir",
+"name_bn": "রাজৈর",
+"slug": "rajoir",
+"division_bn": "ঢাকা",
+"gov_url": "https://rajoir.madaripur.gov.bd"
+},
+{
+"district": "Madaripur",
+"name": "Shibchar",
+"name_bn": "শিবচর",
+"slug": "shibchar",
+"division_bn": "ঢাকা",
+"gov_url": "https://shibchar.madaripur.gov.bd"
+},
+{
+"district": "Magura",
+"name": "Magurasadar",
+"name_bn": "মাগুরা সদর",
+"slug": "magurasadar",
+"division_bn": "খুলনা",
+"gov_url": "https://magurasadar.magura.gov.bd"
+},
+{
+"district": "Magura",
+"name": "Mohammadpur",
+"name_bn": "মহম্মদপুর",
+"slug": "mohammadpur",
+"division_bn": "খুলনা",
+"gov_url": "https://mohammadpur.magura.gov.bd"
+},
+{
+"district": "Magura",
+"name": "Shalikha",
+"name_bn": "শালিখা",
+"slug": "shalikha",
+"division_bn": "খুলনা",
+"gov_url": "https://shalikha.magura.gov.bd"
+},
+{
+"district": "Magura",
+"name": "Sreepur",
+"name_bn": "শ্রীপুর",
+"slug": "sreepur-magura",
+"division_bn": "খুলনা",
+"gov_url": "https://sreepur.magura.gov.bd"
+},
+{
+"district": "Manikganj",
+"name": "Daulatpur",
+"name_bn": "দৌলতপুর",
+"slug": "daulatpur-manikganj",
+"division_bn": "ঢাকা",
+"gov_url": "https://daulatpur.manikganj.gov.bd"
+},
+{
+"district": "Manikganj",
+"name": "Gior",
+"name_bn": "ঘিওর",
+"slug": "gior",
+"division_bn": "ঢাকা",
+"gov_url": "https://gior.manikganj.gov.bd"
+},
+{
+"district": "Manikganj",
+"name": "Harirampur",
+"name_bn": "হরিরামপুর",
+"slug": "harirampur",
+"division_bn": "ঢাকা",
+"gov_url": "https://harirampur.manikganj.gov.bd"
+},
+{
+"district": "Manikganj",
+"name": "Manikganj Sadar",
+"name_bn": "মানিকগঞ্জ সদর",
+"slug": "sadar-manikganj",
+"division_bn": "ঢাকা",
+"gov_url": "https://sadar.manikganj.gov.bd"
+},
+{
+"district": "Manikganj",
+"name": "Saturia",
+"name_bn": "সাটুরিয়া",
+"slug": "saturia",
+"division_bn": "ঢাকা",
+"gov_url": "https://saturia.manikganj.gov.bd"
+},
+{
+"district": "Manikganj",
+"name": "Shibaloy",
+"name_bn": "শিবালয়",
+"slug": "shibaloy",
+"division_bn": "ঢাকা",
+"gov_url": "https://shibaloy.manikganj.gov.bd"
+},
+{
+"district": "Manikganj",
+"name": "Singair",
+"name_bn": "সিংগাইর",
+"slug": "singair",
+"division_bn": "ঢাকা",
+"gov_url": "https://singair.manikganj.gov.bd"
+},
+{
+"district": "Meherpur",
+"name": "Gangni",
+"name_bn": "গাংনী",
+"slug": "gangni",
+"division_bn": "খুলনা",
+"gov_url": "https://gangni.meherpur.gov.bd"
+},
+{
+"district": "Meherpur",
+"name": "Meherpursadar",
+"name_bn": "মেহেরপুর সদর",
+"slug": "meherpursadar",
+"division_bn": "খুলনা",
+"gov_url": "https://meherpursadar.meherpur.gov.bd"
+},
+{
+"district": "Meherpur",
+"name": "Mujibnagar",
+"name_bn": "মুজিবনগর",
+"slug": "mujibnagar",
+"division_bn": "খুলনা",
+"gov_url": "https://mujibnagar.meherpur.gov.bd"
+},
+{
+"district": "Moulvibazar",
+"name": "Barlekha",
+"name_bn": "বড়লেখা",
+"slug": "barlekha",
+"division_bn": "সিলেট",
+"gov_url": "https://barlekha.moulvibazar.gov.bd"
+},
+{
+"district": "Moulvibazar",
+"name": "Juri",
+"name_bn": "জুড়ী",
+"slug": "juri",
+"division_bn": "সিলেট",
+"gov_url": "https://juri.moulvibazar.gov.bd"
+},
+{
+"district": "Moulvibazar",
+"name": "Kamolganj",
+"name_bn": "কমলগঞ্জ",
+"slug": "kamolganj",
+"division_bn": "সিলেট",
+"gov_url": "https://kamolganj.moulvibazar.gov.bd"
+},
+{
+"district": "Moulvibazar",
+"name": "Kulaura",
+"name_bn": "কুলাউড়া",
+"slug": "kulaura",
+"division_bn": "সিলেট",
+"gov_url": "https://kulaura.moulvibazar.gov.bd"
+},
+{
+"district": "Moulvibazar",
+"name": "Moulvibazarsadar",
+"name_bn": "মৌলভীবাজার সদর",
+"slug": "moulvibazarsadar",
+"division_bn": "সিলেট",
+"gov_url": "https://moulvibazarsadar.moulvibazar.gov.bd"
+},
+{
+"district": "Moulvibazar",
+"name": "Rajnagar",
+"name_bn": "রাজনগর",
+"slug": "rajnagar",
+"division_bn": "সিলেট",
+"gov_url": "https://rajnagar.moulvibazar.gov.bd"
+},
+{
+"district": "Moulvibazar",
+"name": "Sreemangal",
+"name_bn": "শ্রীমঙ্গল",
+"slug": "sreemangal",
+"division_bn": "সিলেট",
+"gov_url": "https://sreemangal.moulvibazar.gov.bd"
+},
+{
+"district": "Munshiganj",
+"name": "Gajaria",
+"name_bn": "গজারিয়া",
+"slug": "gajaria",
+"division_bn": "ঢাকা",
+"gov_url": "https://gajaria.munshiganj.gov.bd"
+},
+{
+"district": "Munshiganj",
+"name": "Louhajanj",
+"name_bn": "লৌহজং",
+"slug": "louhajanj",
+"division_bn": "ঢাকা",
+"gov_url": "https://louhajanj.munshiganj.gov.bd"
+},
+{
+"district": "Munshiganj",
+"name": "Munshiganj Sadar",
+"name_bn": "মুন্সীগঞ্জ সদর",
+"slug": "sadar-munshiganj",
+"division_bn": "ঢাকা",
+"gov_url": "https://sadar.munshiganj.gov.bd"
+},
+{
+"district": "Munshiganj",
+"name": "Sirajdikhan",
+"name_bn": "সিরাজদিখান",
+"slug": "sirajdikhan",
+"division_bn": "ঢাকা",
+"gov_url": "https://sirajdikhan.munshiganj.gov.bd"
+},
+{
+"district": "Munshiganj",
+"name": "Sreenagar",
+"name_bn": "শ্রীনগর",
+"slug": "sreenagar",
+"division_bn": "ঢাকা",
+"gov_url": "https://sreenagar.munshiganj.gov.bd"
+},
+{
+"district": "Munshiganj",
+"name": "Tongibari",
+"name_bn": "টংগিবাড়ী",
+"slug": "tongibari",
+"division_bn": "ঢাকা",
+"gov_url": "https://tongibari.munshiganj.gov.bd"
+},
+{
+"district": "Mymensingh",
+"name": "Bhaluka",
+"name_bn": "ভালুকা",
+"slug": "bhaluka",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://bhaluka.mymensingh.gov.bd"
+},
+{
+"district": "Mymensingh",
+"name": "Dhobaura",
+"name_bn": "ধোবাউড়া",
+"slug": "dhobaura",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://dhobaura.mymensingh.gov.bd"
+},
+{
+"district": "Mymensingh",
+"name": "Fulbaria",
+"name_bn": "ফুলবাড়ীয়া",
+"slug": "fulbaria",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://fulbaria.mymensingh.gov.bd"
+},
+{
+"district": "Mymensingh",
+"name": "Gafargaon",
+"name_bn": "গফরগাঁও",
+"slug": "gafargaon",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://gafargaon.mymensingh.gov.bd"
+},
+{
+"district": "Mymensingh",
+"name": "Gouripur",
+"name_bn": "গৌরীপুর",
+"slug": "gouripur",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://gouripur.mymensingh.gov.bd"
+},
+{
+"district": "Mymensingh",
+"name": "Haluaghat",
+"name_bn": "হালুয়াঘাট",
+"slug": "haluaghat",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://haluaghat.mymensingh.gov.bd"
+},
+{
+"district": "Mymensingh",
+"name": "Iswarganj",
+"name_bn": "ঈশ্বরগঞ্জ",
+"slug": "iswarganj",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://iswarganj.mymensingh.gov.bd"
+},
+{
+"district": "Mymensingh",
+"name": "Muktagacha",
+"name_bn": "মুক্তাগাছা",
+"slug": "muktagacha",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://muktagacha.mymensingh.gov.bd"
+},
+{
+"district": "Mymensingh",
+"name": "Mymensinghsadar",
+"name_bn": "ময়মনসিংহ সদর",
+"slug": "mymensinghsadar",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://mymensinghsadar.mymensingh.gov.bd"
+},
+{
+"district": "Mymensingh",
+"name": "Nandail",
+"name_bn": "নান্দাইল",
+"slug": "nandail",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://nandail.mymensingh.gov.bd"
+},
+{
+"district": "Mymensingh",
+"name": "Phulpur",
+"name_bn": "ফুলপুর",
+"slug": "phulpur",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://phulpur.mymensingh.gov.bd"
+},
+{
+"district": "Mymensingh",
+"name": "Tarakanda",
+"name_bn": "তারাকান্দা",
+"slug": "tarakanda",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://tarakanda.mymensingh.gov.bd"
+},
+{
+"district": "Mymensingh",
+"name": "Trishal",
+"name_bn": "ত্রিশাল",
+"slug": "trishal",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://trishal.mymensingh.gov.bd"
+},
+{
+"district": "Naogaon",
+"name": "Atrai",
+"name_bn": "আত্রাই",
+"slug": "atrai",
+"division_bn": "রাজশাহী",
+"gov_url": "https://atrai.naogaon.gov.bd"
+},
+{
+"district": "Naogaon",
+"name": "Badalgachi",
+"name_bn": "বদলগাছী",
+"slug": "badalgachi",
+"division_bn": "রাজশাহী",
+"gov_url": "https://badalgachi.naogaon.gov.bd"
+},
+{
+"district": "Naogaon",
+"name": "Dhamoirhat",
+"name_bn": "ধামইরহাট",
+"slug": "dhamoirhat",
+"division_bn": "রাজশাহী",
+"gov_url": "https://dhamoirhat.naogaon.gov.bd"
+},
+{
+"district": "Naogaon",
+"name": "Manda",
+"name_bn": "মান্দা",
+"slug": "manda",
+"division_bn": "রাজশাহী",
+"gov_url": "https://manda.naogaon.gov.bd"
+},
+{
+"district": "Naogaon",
+"name": "Mohadevpur",
+"name_bn": "মহাদেবপুর",
+"slug": "mohadevpur",
+"division_bn": "রাজশাহী",
+"gov_url": "https://mohadevpur.naogaon.gov.bd"
+},
+{
+"district": "Naogaon",
+"name": "Naogaonsadar",
+"name_bn": "নওগাঁ সদর",
+"slug": "naogaonsadar",
+"division_bn": "রাজশাহী",
+"gov_url": "https://naogaonsadar.naogaon.gov.bd"
+},
+{
+"district": "Naogaon",
+"name": "Niamatpur",
+"name_bn": "নিয়ামতপুর",
+"slug": "niamatpur",
+"division_bn": "রাজশাহী",
+"gov_url": "https://niamatpur.naogaon.gov.bd"
+},
+{
+"district": "Naogaon",
+"name": "Patnitala",
+"name_bn": "পত্নীতলা",
+"slug": "patnitala",
+"division_bn": "রাজশাহী",
+"gov_url": "https://patnitala.naogaon.gov.bd"
+},
+{
+"district": "Naogaon",
+"name": "Porsha",
+"name_bn": "পোরশা",
+"slug": "porsha",
+"division_bn": "রাজশাহী",
+"gov_url": "https://porsha.naogaon.gov.bd"
+},
+{
+"district": "Naogaon",
+"name": "Raninagar",
+"name_bn": "রাণীনগর",
+"slug": "raninagar",
+"division_bn": "রাজশাহী",
+"gov_url": "https://raninagar.naogaon.gov.bd"
+},
+{
+"district": "Naogaon",
+"name": "Sapahar",
+"name_bn": "সাপাহার",
+"slug": "sapahar",
+"division_bn": "রাজশাহী",
+"gov_url": "https://sapahar.naogaon.gov.bd"
+},
+{
+"district": "Narail",
+"name": "Kalia",
+"name_bn": "কালিয়া",
+"slug": "kalia",
+"division_bn": "খুলনা",
+"gov_url": "https://kalia.narail.gov.bd"
+},
+{
+"district": "Narail",
+"name": "Lohagara",
+"name_bn": "লোহাগড়া",
+"slug": "lohagara-narail",
+"division_bn": "খুলনা",
+"gov_url": "https://lohagara.narail.gov.bd"
+},
+{
+"district": "Narail",
+"name": "Narailsadar",
+"name_bn": "নড়াইল সদর",
+"slug": "narailsadar",
+"division_bn": "খুলনা",
+"gov_url": "https://narailsadar.narail.gov.bd"
+},
+{
+"district": "Narayanganj",
+"name": "Araihazar",
+"name_bn": "আড়াইহাজার",
+"slug": "araihazar",
+"division_bn": "ঢাকা",
+"gov_url": "https://araihazar.narayanganj.gov.bd"
+},
+{
+"district": "Narayanganj",
+"name": "Bandar",
+"name_bn": "বন্দর",
+"slug": "bandar",
+"division_bn": "ঢাকা",
+"gov_url": "https://bandar.narayanganj.gov.bd"
+},
+{
+"district": "Narayanganj",
+"name": "Narayanganjsadar",
+"name_bn": "নারায়নগঞ্জ সদর",
+"slug": "narayanganjsadar",
+"division_bn": "ঢাকা",
+"gov_url": "https://narayanganjsadar.narayanganj.gov.bd"
+},
+{
+"district": "Narayanganj",
+"name": "Rupganj",
+"name_bn": "রূপগঞ্জ",
+"slug": "rupganj",
+"division_bn": "ঢাকা",
+"gov_url": "https://rupganj.narayanganj.gov.bd"
+},
+{
+"district": "Narayanganj",
+"name": "Sonargaon",
+"name_bn": "সোনারগাঁ",
+"slug": "sonargaon",
+"division_bn": "ঢাকা",
+"gov_url": "https://sonargaon.narayanganj.gov.bd"
+},
+{
+"district": "Narsingdi",
+"name": "Belabo",
+"name_bn": "বেলাবো",
+"slug": "belabo",
+"division_bn": "ঢাকা",
+"gov_url": "https://belabo.narsingdi.gov.bd"
+},
+{
+"district": "Narsingdi",
+"name": "Monohardi",
+"name_bn": "মনোহরদী",
+"slug": "monohardi",
+"division_bn": "ঢাকা",
+"gov_url": "https://monohardi.narsingdi.gov.bd"
+},
+{
+"district": "Narsingdi",
+"name": "Narsingdisadar",
+"name_bn": "নরসিংদী সদর",
+"slug": "narsingdisadar",
+"division_bn": "ঢাকা",
+"gov_url": "https://narsingdisadar.narsingdi.gov.bd"
+},
+{
+"district": "Narsingdi",
+"name": "Palash",
+"name_bn": "পলাশ",
+"slug": "palash",
+"division_bn": "ঢাকা",
+"gov_url": "https://palash.narsingdi.gov.bd"
+},
+{
+"district": "Narsingdi",
+"name": "Raipura",
+"name_bn": "রায়পুরা",
+"slug": "raipura",
+"division_bn": "ঢাকা",
+"gov_url": "https://raipura.narsingdi.gov.bd"
+},
+{
+"district": "Narsingdi",
+"name": "Shibpur",
+"name_bn": "শিবপুর",
+"slug": "shibpur",
+"division_bn": "ঢাকা",
+"gov_url": "https://shibpur.narsingdi.gov.bd"
+},
+{
+"district": "Natore",
+"name": "Bagatipara",
+"name_bn": "বাগাতিপাড়া",
+"slug": "bagatipara",
+"division_bn": "রাজশাহী",
+"gov_url": "https://bagatipara.natore.gov.bd"
+},
+{
+"district": "Natore",
+"name": "Baraigram",
+"name_bn": "বড়াইগ্রাম",
+"slug": "baraigram",
+"division_bn": "রাজশাহী",
+"gov_url": "https://baraigram.natore.gov.bd"
+},
+{
+"district": "Natore",
+"name": "Gurudaspur",
+"name_bn": "গুরুদাসপুর",
+"slug": "gurudaspur",
+"division_bn": "রাজশাহী",
+"gov_url": "https://gurudaspur.natore.gov.bd"
+},
+{
+"district": "Natore",
+"name": "Lalpur",
+"name_bn": "লালপুর",
+"slug": "lalpur",
+"division_bn": "রাজশাহী",
+"gov_url": "https://lalpur.natore.gov.bd"
+},
+{
+"district": "Natore",
+"name": "Naldanga",
+"name_bn": "নলডাঙ্গা",
+"slug": "naldanga",
+"division_bn": "রাজশাহী",
+"gov_url": "https://naldanga.natore.gov.bd"
+},
+{
+"district": "Natore",
+"name": "Natoresadar",
+"name_bn": "নাটোর সদর",
+"slug": "natoresadar",
+"division_bn": "রাজশাহী",
+"gov_url": "https://natoresadar.natore.gov.bd"
+},
+{
+"district": "Natore",
+"name": "Singra",
+"name_bn": "সিংড়া",
+"slug": "singra",
+"division_bn": "রাজশাহী",
+"gov_url": "https://singra.natore.gov.bd"
+},
+{
+"district": "Netrokona",
+"name": "Atpara",
+"name_bn": "আটপাড়া",
+"slug": "atpara",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://atpara.netrokona.gov.bd"
+},
+{
+"district": "Netrokona",
+"name": "Barhatta",
+"name_bn": "বারহাট্টা",
+"slug": "barhatta",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://barhatta.netrokona.gov.bd"
+},
+{
+"district": "Netrokona",
+"name": "Durgapur",
+"name_bn": "দুর্গাপুর",
+"slug": "durgapur-netrokona",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://durgapur.netrokona.gov.bd"
+},
+{
+"district": "Netrokona",
+"name": "Kalmakanda",
+"name_bn": "কলমাকান্দা",
+"slug": "kalmakanda",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://kalmakanda.netrokona.gov.bd"
+},
+{
+"district": "Netrokona",
+"name": "Kendua",
+"name_bn": "কেন্দুয়া",
+"slug": "kendua",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://kendua.netrokona.gov.bd"
+},
+{
+"district": "Netrokona",
+"name": "Khaliajuri",
+"name_bn": "খালিয়াজুরী",
+"slug": "khaliajuri",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://khaliajuri.netrokona.gov.bd"
+},
+{
+"district": "Netrokona",
+"name": "Madan",
+"name_bn": "মদন",
+"slug": "madan",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://madan.netrokona.gov.bd"
+},
+{
+"district": "Netrokona",
+"name": "Mohongonj",
+"name_bn": "মোহনগঞ্জ",
+"slug": "mohongonj",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://mohongonj.netrokona.gov.bd"
+},
+{
+"district": "Netrokona",
+"name": "Netrokonasadar",
+"name_bn": "নেত্রকোণা সদর",
+"slug": "netrokonasadar",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://netrokonasadar.netrokona.gov.bd"
+},
+{
+"district": "Netrokona",
+"name": "Purbadhala",
+"name_bn": "পূর্বধলা",
+"slug": "purbadhala",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://purbadhala.netrokona.gov.bd"
+},
+{
+"district": "Nilphamari",
+"name": "Dimla",
+"name_bn": "ডিমলা",
+"slug": "dimla",
+"division_bn": "রংপুর",
+"gov_url": "https://dimla.nilphamari.gov.bd"
+},
+{
+"district": "Nilphamari",
+"name": "Domar",
+"name_bn": "ডোমার",
+"slug": "domar",
+"division_bn": "রংপুর",
+"gov_url": "https://domar.nilphamari.gov.bd"
+},
+{
+"district": "Nilphamari",
+"name": "Jaldhaka",
+"name_bn": "জলঢাকা",
+"slug": "jaldhaka",
+"division_bn": "রংপুর",
+"gov_url": "https://jaldhaka.nilphamari.gov.bd"
+},
+{
+"district": "Nilphamari",
+"name": "Kishorganj",
+"name_bn": "কিশোরগঞ্জ",
+"slug": "kishorganj",
+"division_bn": "রংপুর",
+"gov_url": "https://kishorganj.nilphamari.gov.bd"
+},
+{
+"district": "Nilphamari",
+"name": "Nilphamarisadar",
+"name_bn": "নীলফামারী সদর",
+"slug": "nilphamarisadar",
+"division_bn": "রংপুর",
+"gov_url": "https://nilphamarisadar.nilphamari.gov.bd"
+},
+{
+"district": "Nilphamari",
+"name": "Syedpur",
+"name_bn": "সৈয়দপুর",
+"slug": "syedpur",
+"division_bn": "রংপুর",
+"gov_url": "https://syedpur.nilphamari.gov.bd"
+},
+{
+"district": "Noakhali",
+"name": "Begumganj",
+"name_bn": "বেগমগঞ্জ",
+"slug": "begumganj",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://begumganj.noakhali.gov.bd"
+},
+{
+"district": "Noakhali",
+"name": "Chatkhil",
+"name_bn": "চাটখিল",
+"slug": "chatkhil",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://chatkhil.noakhali.gov.bd"
+},
+{
+"district": "Noakhali",
+"name": "Companiganj",
+"name_bn": "কোম্পানীগঞ্জ",
+"slug": "companiganj-noakhali",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://companiganj.noakhali.gov.bd"
+},
+{
+"district": "Noakhali",
+"name": "Hatia",
+"name_bn": "হাতিয়া",
+"slug": "hatia",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://hatia.noakhali.gov.bd"
+},
+{
+"district": "Noakhali",
+"name": "Kabirhat",
+"name_bn": "কবিরহাট",
+"slug": "kabirhat",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://kabirhat.noakhali.gov.bd"
+},
+{
+"district": "Noakhali",
+"name": "Noakhali Sadar",
+"name_bn": "নোয়াখালী সদর",
+"slug": "sadar-noakhali",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sadar.noakhali.gov.bd"
+},
+{
+"district": "Noakhali",
+"name": "Senbug",
+"name_bn": "সেনবাগ",
+"slug": "senbug",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://senbug.noakhali.gov.bd"
+},
+{
+"district": "Noakhali",
+"name": "Sonaimuri",
+"name_bn": "সোনাইমুড়ী",
+"slug": "sonaimuri",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sonaimuri.noakhali.gov.bd"
+},
+{
+"district": "Noakhali",
+"name": "Subarnachar",
+"name_bn": "সুবর্ণচর",
+"slug": "subarnachar",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://subarnachar.noakhali.gov.bd"
+},
+{
+"district": "Pabna",
+"name": "Atghoria",
+"name_bn": "আটঘরিয়া",
+"slug": "atghoria",
+"division_bn": "রাজশাহী",
+"gov_url": "https://atghoria.pabna.gov.bd"
+},
+{
+"district": "Pabna",
+"name": "Bera",
+"name_bn": "বেড়া",
+"slug": "bera",
+"division_bn": "রাজশাহী",
+"gov_url": "https://bera.pabna.gov.bd"
+},
+{
+"district": "Pabna",
+"name": "Bhangura",
+"name_bn": "ভাঙ্গুড়া",
+"slug": "bhangura",
+"division_bn": "রাজশাহী",
+"gov_url": "https://bhangura.pabna.gov.bd"
+},
+{
+"district": "Pabna",
+"name": "Chatmohar",
+"name_bn": "চাটমোহর",
+"slug": "chatmohar",
+"division_bn": "রাজশাহী",
+"gov_url": "https://chatmohar.pabna.gov.bd"
+},
+{
+"district": "Pabna",
+"name": "Faridpur",
+"name_bn": "ফরিদপুর",
+"slug": "faridpur",
+"division_bn": "রাজশাহী",
+"gov_url": "https://faridpur.pabna.gov.bd"
+},
+{
+"district": "Pabna",
+"name": "Ishurdi",
+"name_bn": "ঈশ্বরদী",
+"slug": "ishurdi",
+"division_bn": "রাজশাহী",
+"gov_url": "https://ishurdi.pabna.gov.bd"
+},
+{
+"district": "Pabna",
+"name": "Pabnasadar",
+"name_bn": "পাবনা সদর",
+"slug": "pabnasadar",
+"division_bn": "রাজশাহী",
+"gov_url": "https://pabnasadar.pabna.gov.bd"
+},
+{
+"district": "Pabna",
+"name": "Santhia",
+"name_bn": "সাঁথিয়া",
+"slug": "santhia",
+"division_bn": "রাজশাহী",
+"gov_url": "https://santhia.pabna.gov.bd"
+},
+{
+"district": "Pabna",
+"name": "Sujanagar",
+"name_bn": "সুজানগর",
+"slug": "sujanagar",
+"division_bn": "রাজশাহী",
+"gov_url": "https://sujanagar.pabna.gov.bd"
+},
+{
+"district": "Panchagarh",
+"name": "Atwari",
+"name_bn": "আটোয়ারী",
+"slug": "atwari",
+"division_bn": "রংপুর",
+"gov_url": "https://atwari.panchagarh.gov.bd"
+},
+{
+"district": "Panchagarh",
+"name": "Boda",
+"name_bn": "বোদা",
+"slug": "boda",
+"division_bn": "রংপুর",
+"gov_url": "https://boda.panchagarh.gov.bd"
+},
+{
+"district": "Panchagarh",
+"name": "Debiganj",
+"name_bn": "দেবীগঞ্জ",
+"slug": "debiganj",
+"division_bn": "রংপুর",
+"gov_url": "https://debiganj.panchagarh.gov.bd"
+},
+{
+"district": "Panchagarh",
+"name": "Panchagarhsadar",
+"name_bn": "পঞ্চগড় সদর",
+"slug": "panchagarhsadar",
+"division_bn": "রংপুর",
+"gov_url": "https://panchagarhsadar.panchagarh.gov.bd"
+},
+{
+"district": "Panchagarh",
+"name": "Tetulia",
+"name_bn": "তেঁতুলিয়া",
+"slug": "tetulia",
+"division_bn": "রংপুর",
+"gov_url": "https://tetulia.panchagarh.gov.bd"
+},
+{
+"district": "Patuakhali",
+"name": "Bauphal",
+"name_bn": "বাউফল",
+"slug": "bauphal",
+"division_bn": "বরিশাল",
+"gov_url": "https://bauphal.patuakhali.gov.bd"
+},
+{
+"district": "Patuakhali",
+"name": "Dashmina",
+"name_bn": "দশমিনা",
+"slug": "dashmina",
+"division_bn": "বরিশাল",
+"gov_url": "https://dashmina.patuakhali.gov.bd"
+},
+{
+"district": "Patuakhali",
+"name": "Dumki",
+"name_bn": "দুমকী",
+"slug": "dumki",
+"division_bn": "বরিশাল",
+"gov_url": "https://dumki.patuakhali.gov.bd"
+},
+{
+"district": "Patuakhali",
+"name": "Galachipa",
+"name_bn": "গলাচিপা",
+"slug": "galachipa",
+"division_bn": "বরিশাল",
+"gov_url": "https://galachipa.patuakhali.gov.bd"
+},
+{
+"district": "Patuakhali",
+"name": "Kalapara",
+"name_bn": "কলাপাড়া",
+"slug": "kalapara",
+"division_bn": "বরিশাল",
+"gov_url": "https://kalapara.patuakhali.gov.bd"
+},
+{
+"district": "Patuakhali",
+"name": "Mirzaganj",
+"name_bn": "মির্জাগঞ্জ",
+"slug": "mirzaganj",
+"division_bn": "বরিশাল",
+"gov_url": "https://mirzaganj.patuakhali.gov.bd"
+},
+{
+"district": "Patuakhali",
+"name": "Patuakhali Sadar",
+"name_bn": "পটুয়াখালী সদর",
+"slug": "sadar-patuakhali",
+"division_bn": "বরিশাল",
+"gov_url": "https://sadar.patuakhali.gov.bd"
+},
+{
+"district": "Patuakhali",
+"name": "Rangabali",
+"name_bn": "রাঙ্গাবালী",
+"slug": "rangabali",
+"division_bn": "বরিশাল",
+"gov_url": "https://rangabali.patuakhali.gov.bd"
+},
+{
+"district": "Pirojpur",
+"name": "Bhandaria",
+"name_bn": "ভান্ডারিয়া",
+"slug": "bhandaria",
+"division_bn": "বরিশাল",
+"gov_url": "https://bhandaria.pirojpur.gov.bd"
+},
+{
+"district": "Pirojpur",
+"name": "Kawkhali",
+"name_bn": "কাউখালী",
+"slug": "kawkhali-pirojpur",
+"division_bn": "বরিশাল",
+"gov_url": "https://kawkhali.pirojpur.gov.bd"
+},
+{
+"district": "Pirojpur",
+"name": "Mathbaria",
+"name_bn": "মঠবাড়ীয়া",
+"slug": "mathbaria",
+"division_bn": "বরিশাল",
+"gov_url": "https://mathbaria.pirojpur.gov.bd"
+},
+{
+"district": "Pirojpur",
+"name": "Nazirpur",
+"name_bn": "নাজিরপুর",
+"slug": "nazirpur",
+"division_bn": "বরিশাল",
+"gov_url": "https://nazirpur.pirojpur.gov.bd"
+},
+{
+"district": "Pirojpur",
+"name": "Nesarabad",
+"name_bn": "নেছারাবাদ",
+"slug": "nesarabad",
+"division_bn": "বরিশাল",
+"gov_url": "https://nesarabad.pirojpur.gov.bd"
+},
+{
+"district": "Pirojpur",
+"name": "Pirojpur Sadar",
+"name_bn": "পিরোজপুর সদর",
+"slug": "sadar-pirojpur",
+"division_bn": "বরিশাল",
+"gov_url": "https://sadar.pirojpur.gov.bd"
+},
+{
+"district": "Pirojpur",
+"name": "Zianagar",
+"name_bn": "জিয়ানগর",
+"slug": "zianagar",
+"division_bn": "বরিশাল",
+"gov_url": "https://zianagar.pirojpur.gov.bd"
+},
+{
+"district": "Rajbari",
+"name": "Baliakandi",
+"name_bn": "বালিয়াকান্দি",
+"slug": "baliakandi",
+"division_bn": "ঢাকা",
+"gov_url": "https://baliakandi.rajbari.gov.bd"
+},
+{
+"district": "Rajbari",
+"name": "Goalanda",
+"name_bn": "গোয়ালন্দ",
+"slug": "goalanda",
+"division_bn": "ঢাকা",
+"gov_url": "https://goalanda.rajbari.gov.bd"
+},
+{
+"district": "Rajbari",
+"name": "Kalukhali",
+"name_bn": "কালুখালী",
+"slug": "kalukhali",
+"division_bn": "ঢাকা",
+"gov_url": "https://kalukhali.rajbari.gov.bd"
+},
+{
+"district": "Rajbari",
+"name": "Pangsa",
+"name_bn": "পাংশা",
+"slug": "pangsa",
+"division_bn": "ঢাকা",
+"gov_url": "https://pangsa.rajbari.gov.bd"
+},
+{
+"district": "Rajbari",
+"name": "Rajbari Sadar",
+"name_bn": "রাজবাড়ী সদর",
+"slug": "sadar-rajbari",
+"division_bn": "ঢাকা",
+"gov_url": "https://sadar.rajbari.gov.bd"
+},
+{
+"district": "Rajshahi",
+"name": "Bagha",
+"name_bn": "বাঘা",
+"slug": "bagha",
+"division_bn": "রাজশাহী",
+"gov_url": "https://bagha.rajshahi.gov.bd"
+},
+{
+"district": "Rajshahi",
+"name": "Bagmara",
+"name_bn": "বাগমারা",
+"slug": "bagmara",
+"division_bn": "রাজশাহী",
+"gov_url": "https://bagmara.rajshahi.gov.bd"
+},
+{
+"district": "Rajshahi",
+"name": "Charghat",
+"name_bn": "চারঘাট",
+"slug": "charghat",
+"division_bn": "রাজশাহী",
+"gov_url": "https://charghat.rajshahi.gov.bd"
+},
+{
+"district": "Rajshahi",
+"name": "Durgapur",
+"name_bn": "দুর্গাপুর",
+"slug": "durgapur-rajshahi",
+"division_bn": "রাজশাহী",
+"gov_url": "https://durgapur.rajshahi.gov.bd"
+},
+{
+"district": "Rajshahi",
+"name": "Godagari",
+"name_bn": "গোদাগাড়ী",
+"slug": "godagari",
+"division_bn": "রাজশাহী",
+"gov_url": "https://godagari.rajshahi.gov.bd"
+},
+{
+"district": "Rajshahi",
+"name": "Mohonpur",
+"name_bn": "মোহনপুর",
+"slug": "mohonpur",
+"division_bn": "রাজশাহী",
+"gov_url": "https://mohonpur.rajshahi.gov.bd"
+},
+{
+"district": "Rajshahi",
+"name": "Paba",
+"name_bn": "পবা",
+"slug": "paba",
+"division_bn": "রাজশাহী",
+"gov_url": "https://paba.rajshahi.gov.bd"
+},
+{
+"district": "Rajshahi",
+"name": "Puthia",
+"name_bn": "পুঠিয়া",
+"slug": "puthia",
+"division_bn": "রাজশাহী",
+"gov_url": "https://puthia.rajshahi.gov.bd"
+},
+{
+"district": "Rajshahi",
+"name": "Tanore",
+"name_bn": "তানোর",
+"slug": "tanore",
+"division_bn": "রাজশাহী",
+"gov_url": "https://tanore.rajshahi.gov.bd"
+},
+{
+"district": "Rangamati",
+"name": "Baghaichari",
+"name_bn": "বাঘাইছড়ি",
+"slug": "baghaichari",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://baghaichari.rangamati.gov.bd"
+},
+{
+"district": "Rangamati",
+"name": "Barkal",
+"name_bn": "বরকল",
+"slug": "barkal",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://barkal.rangamati.gov.bd"
+},
+{
+"district": "Rangamati",
+"name": "Belaichari",
+"name_bn": "বিলাইছড়ি",
+"slug": "belaichari",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://belaichari.rangamati.gov.bd"
+},
+{
+"district": "Rangamati",
+"name": "Juraichari",
+"name_bn": "জুরাছড়ি",
+"slug": "juraichari",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://juraichari.rangamati.gov.bd"
+},
+{
+"district": "Rangamati",
+"name": "Kaptai",
+"name_bn": "কাপ্তাই",
+"slug": "kaptai",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://kaptai.rangamati.gov.bd"
+},
+{
+"district": "Rangamati",
+"name": "Kawkhali",
+"name_bn": "কাউখালী",
+"slug": "kawkhali-rangamati",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://kawkhali.rangamati.gov.bd"
+},
+{
+"district": "Rangamati",
+"name": "Langadu",
+"name_bn": "লংগদু",
+"slug": "langadu",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://langadu.rangamati.gov.bd"
+},
+{
+"district": "Rangamati",
+"name": "Naniarchar",
+"name_bn": "নানিয়ারচর",
+"slug": "naniarchar",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://naniarchar.rangamati.gov.bd"
+},
+{
+"district": "Rangamati",
+"name": "Rajasthali",
+"name_bn": "রাজস্থলী",
+"slug": "rajasthali",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://rajasthali.rangamati.gov.bd"
+},
+{
+"district": "Rangamati",
+"name": "Rangamati Sadar",
+"name_bn": "রাঙ্গামাটি সদর",
+"slug": "sadar-rangamati",
+"division_bn": "চট্টগ্রাম",
+"gov_url": "https://sadar.rangamati.gov.bd"
+},
+{
+"district": "Rangpur",
+"name": "Badargonj",
+"name_bn": "বদরগঞ্জ",
+"slug": "badargonj",
+"division_bn": "রংপুর",
+"gov_url": "https://badargonj.rangpur.gov.bd"
+},
+{
+"district": "Rangpur",
+"name": "Gangachara",
+"name_bn": "গংগাচড়া",
+"slug": "gangachara",
+"division_bn": "রংপুর",
+"gov_url": "https://gangachara.rangpur.gov.bd"
+},
+{
+"district": "Rangpur",
+"name": "Kaunia",
+"name_bn": "কাউনিয়া",
+"slug": "kaunia",
+"division_bn": "রংপুর",
+"gov_url": "https://kaunia.rangpur.gov.bd"
+},
+{
+"district": "Rangpur",
+"name": "Mithapukur",
+"name_bn": "মিঠাপুকুর",
+"slug": "mithapukur",
+"division_bn": "রংপুর",
+"gov_url": "https://mithapukur.rangpur.gov.bd"
+},
+{
+"district": "Rangpur",
+"name": "Pirgacha",
+"name_bn": "পীরগাছা",
+"slug": "pirgacha",
+"division_bn": "রংপুর",
+"gov_url": "https://pirgacha.rangpur.gov.bd"
+},
+{
+"district": "Rangpur",
+"name": "Pirgonj",
+"name_bn": "পীরগঞ্জ",
+"slug": "pirgonj",
+"division_bn": "রংপুর",
+"gov_url": "https://pirgonj.rangpur.gov.bd"
+},
+{
+"district": "Rangpur",
+"name": "Rangpursadar",
+"name_bn": "রংপুর সদর",
+"slug": "rangpursadar",
+"division_bn": "রংপুর",
+"gov_url": "https://rangpursadar.rangpur.gov.bd"
+},
+{
+"district": "Rangpur",
+"name": "Taragonj",
+"name_bn": "তারাগঞ্জ",
+"slug": "taragonj",
+"division_bn": "রংপুর",
+"gov_url": "https://taragonj.rangpur.gov.bd"
+},
+{
+"district": "Satkhira",
+"name": "Assasuni",
+"name_bn": "আশাশুনি",
+"slug": "assasuni",
+"division_bn": "খুলনা",
+"gov_url": "https://assasuni.satkhira.gov.bd"
+},
+{
+"district": "Satkhira",
+"name": "Debhata",
+"name_bn": "দেবহাটা",
+"slug": "debhata",
+"division_bn": "খুলনা",
+"gov_url": "https://debhata.satkhira.gov.bd"
+},
+{
+"district": "Satkhira",
+"name": "Kalaroa",
+"name_bn": "কলারোয়া",
+"slug": "kalaroa",
+"division_bn": "খুলনা",
+"gov_url": "https://kalaroa.satkhira.gov.bd"
+},
+{
+"district": "Satkhira",
+"name": "Kaliganj",
+"name_bn": "কালিগঞ্জ",
+"slug": "kaliganj-satkhira",
+"division_bn": "খুলনা",
+"gov_url": "https://kaliganj.satkhira.gov.bd"
+},
+{
+"district": "Satkhira",
+"name": "Satkhirasadar",
+"name_bn": "সাতক্ষীরা সদর",
+"slug": "satkhirasadar",
+"division_bn": "খুলনা",
+"gov_url": "https://satkhirasadar.satkhira.gov.bd"
+},
+{
+"district": "Satkhira",
+"name": "Shyamnagar",
+"name_bn": "শ্যামনগর",
+"slug": "shyamnagar",
+"division_bn": "খুলনা",
+"gov_url": "https://shyamnagar.satkhira.gov.bd"
+},
+{
+"district": "Satkhira",
+"name": "Tala",
+"name_bn": "তালা",
+"slug": "tala",
+"division_bn": "খুলনা",
+"gov_url": "https://tala.satkhira.gov.bd"
+},
+{
+"district": "Shariatpur",
+"name": "Bhedarganj",
+"name_bn": "ভেদরগঞ্জ",
+"slug": "bhedarganj",
+"division_bn": "ঢাকা",
+"gov_url": "https://bhedarganj.shariatpur.gov.bd"
+},
+{
+"district": "Shariatpur",
+"name": "Damudya",
+"name_bn": "ডামুড্যা",
+"slug": "damudya",
+"division_bn": "ঢাকা",
+"gov_url": "https://damudya.shariatpur.gov.bd"
+},
+{
+"district": "Shariatpur",
+"name": "Gosairhat",
+"name_bn": "গোসাইরহাট",
+"slug": "gosairhat",
+"division_bn": "ঢাকা",
+"gov_url": "https://gosairhat.shariatpur.gov.bd"
+},
+{
+"district": "Shariatpur",
+"name": "Naria",
+"name_bn": "নড়িয়া",
+"slug": "naria",
+"division_bn": "ঢাকা",
+"gov_url": "https://naria.shariatpur.gov.bd"
+},
+{
+"district": "Shariatpur",
+"name": "Shariatpur Sadar",
+"name_bn": "শরিয়তপুর সদর",
+"slug": "sadar-shariatpur",
+"division_bn": "ঢাকা",
+"gov_url": "https://sadar.shariatpur.gov.bd"
+},
+{
+"district": "Shariatpur",
+"name": "Zajira",
+"name_bn": "জাজিরা",
+"slug": "zajira",
+"division_bn": "ঢাকা",
+"gov_url": "https://zajira.shariatpur.gov.bd"
+},
+{
+"district": "Sherpur",
+"name": "Jhenaigati",
+"name_bn": "ঝিনাইগাতী",
+"slug": "jhenaigati",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://jhenaigati.sherpur.gov.bd"
+},
+{
+"district": "Sherpur",
+"name": "Nalitabari",
+"name_bn": "নালিতাবাড়ী",
+"slug": "nalitabari",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://nalitabari.sherpur.gov.bd"
+},
+{
+"district": "Sherpur",
+"name": "Nokla",
+"name_bn": "নকলা",
+"slug": "nokla",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://nokla.sherpur.gov.bd"
+},
+{
+"district": "Sherpur",
+"name": "Sherpursadar",
+"name_bn": "শেরপুর সদর",
+"slug": "sherpursadar",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://sherpursadar.sherpur.gov.bd"
+},
+{
+"district": "Sherpur",
+"name": "Sreebordi",
+"name_bn": "শ্রীবরদী",
+"slug": "sreebordi",
+"division_bn": "ময়মনসিংহ",
+"gov_url": "https://sreebordi.sherpur.gov.bd"
+},
+{
+"district": "Sirajganj",
+"name": "Belkuchi",
+"name_bn": "বেলকুচি",
+"slug": "belkuchi",
+"division_bn": "রাজশাহী",
+"gov_url": "https://belkuchi.sirajganj.gov.bd"
+},
+{
+"district": "Sirajganj",
+"name": "Chauhali",
+"name_bn": "চৌহালি",
+"slug": "chauhali",
+"division_bn": "রাজশাহী",
+"gov_url": "https://chauhali.sirajganj.gov.bd"
+},
+{
+"district": "Sirajganj",
+"name": "Kamarkhand",
+"name_bn": "কামারখন্দ",
+"slug": "kamarkhand",
+"division_bn": "রাজশাহী",
+"gov_url": "https://kamarkhand.sirajganj.gov.bd"
+},
+{
+"district": "Sirajganj",
+"name": "Kazipur",
+"name_bn": "কাজীপুর",
+"slug": "kazipur",
+"division_bn": "রাজশাহী",
+"gov_url": "https://kazipur.sirajganj.gov.bd"
+},
+{
+"district": "Sirajganj",
+"name": "Raigonj",
+"name_bn": "রায়গঞ্জ",
+"slug": "raigonj",
+"division_bn": "রাজশাহী",
+"gov_url": "https://raigonj.sirajganj.gov.bd"
+},
+{
+"district": "Sirajganj",
+"name": "Shahjadpur",
+"name_bn": "শাহজাদপুর",
+"slug": "shahjadpur",
+"division_bn": "রাজশাহী",
+"gov_url": "https://shahjadpur.sirajganj.gov.bd"
+},
+{
+"district": "Sirajganj",
+"name": "Sirajganjsadar",
+"name_bn": "সিরাজগঞ্জ সদর",
+"slug": "sirajganjsadar",
+"division_bn": "রাজশাহী",
+"gov_url": "https://sirajganjsadar.sirajganj.gov.bd"
+},
+{
+"district": "Sirajganj",
+"name": "Tarash",
+"name_bn": "তাড়াশ",
+"slug": "tarash",
+"division_bn": "রাজশাহী",
+"gov_url": "https://tarash.sirajganj.gov.bd"
+},
+{
+"district": "Sirajganj",
+"name": "Ullapara",
+"name_bn": "উল্লাপাড়া",
+"slug": "ullapara",
+"division_bn": "রাজশাহী",
+"gov_url": "https://ullapara.sirajganj.gov.bd"
+},
+{
+"district": "Sunamganj",
+"name": "Bishwambarpur",
+"name_bn": "বিশ্বম্ভরপুর",
+"slug": "bishwambarpur",
+"division_bn": "সিলেট",
+"gov_url": "https://bishwambarpur.sunamganj.gov.bd"
+},
+{
+"district": "Sunamganj",
+"name": "Chhatak",
+"name_bn": "ছাতক",
+"slug": "chhatak",
+"division_bn": "সিলেট",
+"gov_url": "https://chhatak.sunamganj.gov.bd"
+},
+{
+"district": "Sunamganj",
+"name": "Derai",
+"name_bn": "দিরাই",
+"slug": "derai",
+"division_bn": "সিলেট",
+"gov_url": "https://derai.sunamganj.gov.bd"
+},
+{
+"district": "Sunamganj",
+"name": "Dharmapasha",
+"name_bn": "ধর্মপাশা",
+"slug": "dharmapasha",
+"division_bn": "সিলেট",
+"gov_url": "https://dharmapasha.sunamganj.gov.bd"
+},
+{
+"district": "Sunamganj",
+"name": "Dowarabazar",
+"name_bn": "দোয়ারাবাজার",
+"slug": "dowarabazar",
+"division_bn": "সিলেট",
+"gov_url": "https://dowarabazar.sunamganj.gov.bd"
+},
+{
+"district": "Sunamganj",
+"name": "Jagannathpur",
+"name_bn": "জগন্নাথপুর",
+"slug": "jagannathpur",
+"division_bn": "সিলেট",
+"gov_url": "https://jagannathpur.sunamganj.gov.bd"
+},
+{
+"district": "Sunamganj",
+"name": "Jamalganj",
+"name_bn": "জামালগঞ্জ",
+"slug": "jamalganj",
+"division_bn": "সিলেট",
+"gov_url": "https://jamalganj.sunamganj.gov.bd"
+},
+{
+"district": "Sunamganj",
+"name": "Madhyanagar",
+"name_bn": "মধ্যনগর",
+"slug": "madhyanagar",
+"division_bn": "সিলেট",
+"gov_url": "https://madhyanagar.sunamganj.gov.bd"
+},
+{
+"district": "Sunamganj",
+"name": "Shalla",
+"name_bn": "শাল্লা",
+"slug": "shalla",
+"division_bn": "সিলেট",
+"gov_url": "https://shalla.sunamganj.gov.bd"
+},
+{
+"district": "Sunamganj",
+"name": "Shantiganj",
+"name_bn": "শান্তিগঞ্জ",
+"slug": "shantiganj",
+"division_bn": "সিলেট",
+"gov_url": "https://shantiganj.sunamganj.gov.bd"
+},
+{
+"district": "Sunamganj",
+"name": "Sunamganj Sadar",
+"name_bn": "সুনামগঞ্জ সদর",
+"slug": "sadar-sunamganj",
+"division_bn": "সিলেট",
+"gov_url": "https://sadar.sunamganj.gov.bd"
+},
+{
+"district": "Sunamganj",
+"name": "Tahirpur",
+"name_bn": "তাহিরপুর",
+"slug": "tahirpur",
+"division_bn": "সিলেট",
+"gov_url": "https://tahirpur.sunamganj.gov.bd"
+},
+{
+"district": "Sylhet",
+"name": "Balaganj",
+"name_bn": "বালাগঞ্জ",
+"slug": "balaganj",
+"division_bn": "সিলেট",
+"gov_url": "https://balaganj.sylhet.gov.bd"
+},
+{
+"district": "Sylhet",
+"name": "Beanibazar",
+"name_bn": "বিয়ানীবাজার",
+"slug": "beanibazar",
+"division_bn": "সিলেট",
+"gov_url": "https://beanibazar.sylhet.gov.bd"
+},
+{
+"district": "Sylhet",
+"name": "Bishwanath",
+"name_bn": "বিশ্বনাথ",
+"slug": "bishwanath",
+"division_bn": "সিলেট",
+"gov_url": "https://bishwanath.sylhet.gov.bd"
+},
+{
+"district": "Sylhet",
+"name": "Companiganj",
+"name_bn": "কোম্পানীগঞ্জ",
+"slug": "companiganj-sylhet",
+"division_bn": "সিলেট",
+"gov_url": "https://companiganj.sylhet.gov.bd"
+},
+{
+"district": "Sylhet",
+"name": "Dakshinsurma",
+"name_bn": "দক্ষিণ সুরমা",
+"slug": "dakshinsurma",
+"division_bn": "সিলেট",
+"gov_url": "https://dakshinsurma.sylhet.gov.bd"
+},
+{
+"district": "Sylhet",
+"name": "Fenchuganj",
+"name_bn": "ফেঞ্চুগঞ্জ",
+"slug": "fenchuganj",
+"division_bn": "সিলেট",
+"gov_url": "https://fenchuganj.sylhet.gov.bd"
+},
+{
+"district": "Sylhet",
+"name": "Golapganj",
+"name_bn": "গোলাপগঞ্জ",
+"slug": "golapganj",
+"division_bn": "সিলেট",
+"gov_url": "https://golapganj.sylhet.gov.bd"
+},
+{
+"district": "Sylhet",
+"name": "Gowainghat",
+"name_bn": "গোয়াইনঘাট",
+"slug": "gowainghat",
+"division_bn": "সিলেট",
+"gov_url": "https://gowainghat.sylhet.gov.bd"
+},
+{
+"district": "Sylhet",
+"name": "Jaintiapur",
+"name_bn": "জৈন্তাপুর",
+"slug": "jaintiapur",
+"division_bn": "সিলেট",
+"gov_url": "https://jaintiapur.sylhet.gov.bd"
+},
+{
+"district": "Sylhet",
+"name": "Kanaighat",
+"name_bn": "কানাইঘাট",
+"slug": "kanaighat",
+"division_bn": "সিলেট",
+"gov_url": "https://kanaighat.sylhet.gov.bd"
+},
+{
+"district": "Sylhet",
+"name": "Osmaninagar",
+"name_bn": "ওসমানী নগর",
+"slug": "osmaninagar",
+"division_bn": "সিলেট",
+"gov_url": "https://osmaninagar.sylhet.gov.bd"
+},
+{
+"district": "Sylhet",
+"name": "Sylhetsadar",
+"name_bn": "সিলেট সদর",
+"slug": "sylhetsadar",
+"division_bn": "সিলেট",
+"gov_url": "https://sylhetsadar.sylhet.gov.bd"
+},
+{
+"district": "Sylhet",
+"name": "Zakiganj",
+"name_bn": "জকিগঞ্জ",
+"slug": "zakiganj",
+"division_bn": "সিলেট",
+"gov_url": "https://zakiganj.sylhet.gov.bd"
+},
+{
+"district": "Tangail",
+"name": "Basail",
+"name_bn": "বাসাইল",
+"slug": "basail",
+"division_bn": "ঢাকা",
+"gov_url": "https://basail.tangail.gov.bd"
+},
+{
+"district": "Tangail",
+"name": "Bhuapur",
+"name_bn": "ভূঞাপুর",
+"slug": "bhuapur",
+"division_bn": "ঢাকা",
+"gov_url": "https://bhuapur.tangail.gov.bd"
+},
+{
+"district": "Tangail",
+"name": "Delduar",
+"name_bn": "দেলদুয়ার",
+"slug": "delduar",
+"division_bn": "ঢাকা",
+"gov_url": "https://delduar.tangail.gov.bd"
+},
+{
+"district": "Tangail",
+"name": "Dhanbari",
+"name_bn": "ধনবাড়ী",
+"slug": "dhanbari",
+"division_bn": "ঢাকা",
+"gov_url": "https://dhanbari.tangail.gov.bd"
+},
+{
+"district": "Tangail",
+"name": "Ghatail",
+"name_bn": "ঘাটাইল",
+"slug": "ghatail",
+"division_bn": "ঢাকা",
+"gov_url": "https://ghatail.tangail.gov.bd"
+},
+{
+"district": "Tangail",
+"name": "Gopalpur",
+"name_bn": "গোপালপুর",
+"slug": "gopalpur",
+"division_bn": "ঢাকা",
+"gov_url": "https://gopalpur.tangail.gov.bd"
+},
+{
+"district": "Tangail",
+"name": "Kalihati",
+"name_bn": "কালিহাতী",
+"slug": "kalihati",
+"division_bn": "ঢাকা",
+"gov_url": "https://kalihati.tangail.gov.bd"
+},
+{
+"district": "Tangail",
+"name": "Madhupur",
+"name_bn": "মধুপুর",
+"slug": "madhupur",
+"division_bn": "ঢাকা",
+"gov_url": "https://madhupur.tangail.gov.bd"
+},
+{
+"district": "Tangail",
+"name": "Mirzapur",
+"name_bn": "মির্জাপুর",
+"slug": "mirzapur",
+"division_bn": "ঢাকা",
+"gov_url": "https://mirzapur.tangail.gov.bd"
+},
+{
+"district": "Tangail",
+"name": "Nagarpur",
+"name_bn": "নাগরপুর",
+"slug": "nagarpur",
+"division_bn": "ঢাকা",
+"gov_url": "https://nagarpur.tangail.gov.bd"
+},
+{
+"district": "Tangail",
+"name": "Sakhipur",
+"name_bn": "সখিপুর",
+"slug": "sakhipur",
+"division_bn": "ঢাকা",
+"gov_url": "https://sakhipur.tangail.gov.bd"
+},
+{
+"district": "Tangail",
+"name": "Tangailsadar",
+"name_bn": "টাঙ্গাইল সদর",
+"slug": "tangailsadar",
+"division_bn": "ঢাকা",
+"gov_url": "https://tangailsadar.tangail.gov.bd"
+},
+{
+"district": "Thakurgaon",
+"name": "Baliadangi",
+"name_bn": "বালিয়াডাঙ্গী",
+"slug": "baliadangi",
+"division_bn": "রংপুর",
+"gov_url": "https://baliadangi.thakurgaon.gov.bd"
+},
+{
+"district": "Thakurgaon",
+"name": "Bhulli",
+"name_bn": "ভূল্লী",
+"slug": "bhulli",
+"division_bn": "রংপুর",
+"gov_url": "https://bhulli.thakurgaon.gov.bd"
+},
+{
+"district": "Thakurgaon",
+"name": "Haripur",
+"name_bn": "হরিপুর",
+"slug": "haripur",
+"division_bn": "রংপুর",
+"gov_url": "https://haripur.thakurgaon.gov.bd"
+},
+{
+"district": "Thakurgaon",
+"name": "Pirganj",
+"name_bn": "পীরগঞ্জ",
+"slug": "pirganj",
+"division_bn": "রংপুর",
+"gov_url": "https://pirganj.thakurgaon.gov.bd"
+},
+{
+"district": "Thakurgaon",
+"name": "Ranisankail",
+"name_bn": "রাণীশংকৈল",
+"slug": "ranisankail",
+"division_bn": "রংপুর",
+"gov_url": "https://ranisankail.thakurgaon.gov.bd"
+},
+{
+"district": "Thakurgaon",
+"name": "Ruhia",
+"name_bn": "রুহিয়া",
+"slug": "ruhia",
+"division_bn": "রংপুর",
+"gov_url": "https://ruhia.thakurgaon.gov.bd"
+},
+{
+"district": "Thakurgaon",
+"name": "Thakurgaonsadar",
+"name_bn": "ঠাকুরগাঁও সদর",
+"slug": "thakurgaonsadar",
+"division_bn": "রংপুর",
+"gov_url": "https://thakurgaonsadar.thakurgaon.gov.bd"
+}
+]

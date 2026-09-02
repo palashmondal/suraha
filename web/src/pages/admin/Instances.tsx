@@ -7,10 +7,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   MenuItem,
   Paper,
-  Switch,
   Table,
   TableBody,
   TableCell,
@@ -192,6 +190,18 @@ interface Credential {
   temp_password: string;
 }
 
+interface UpazilaOption {
+  id: number;
+  name: string;
+  name_bn: string;
+  slug: string;
+  taken: boolean;
+}
+
+// Location is picked, never typed: বিভাগ → জেলা → উপজেলা, each step filtering the next. The
+// subdomain is not an input at all — every upazila carries its own slug in the catalogue, unique
+// nationwide (nine upazila names recur across districts, so those are qualified with the
+// district). Upazilas already provisioned are shown disabled rather than failing on submit.
 function CreateInstanceDialog({
   open,
   districts,
@@ -205,31 +215,40 @@ function CreateInstanceDialog({
   onClose: () => void;
   onCreated: (creds: Credential[]) => void;
 }) {
-  const [slug, setSlug] = useState('');
-  const [nameBn, setNameBn] = useState('');
-  const [name, setName] = useState('');
-  const [districtId, setDistrictId] = useState<string>('');
-  const [divisionId, setDivisionId] = useState<string>('');
-  const [newDistrict, setNewDistrict] = useState(false);
-  const [districtBn, setDistrictBn] = useState('');
-  const [districtEn, setDistrictEn] = useState('');
+  const [divisionId, setDivisionId] = useState('');
+  const [districtId, setDistrictId] = useState('');
+  const [upazilas, setUpazilas] = useState<UpazilaOption[]>([]);
+  const [upazilaId, setUpazilaId] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    if (!districtId) {
+      setUpazilas([]);
+      return;
+    }
+    api<{ upazilas: UpazilaOption[] }>(`/registry/upazila-options?district_id=${districtId}`)
+      .then((r) => setUpazilas(r.upazilas))
+      .catch(() => setUpazilas([]));
+  }, [districtId]);
+
+  const chosen = upazilas.find((u) => String(u.id) === upazilaId);
+  // The instance console only runs on the central host, so its own host IS the base domain.
+  const domain = chosen ? `${chosen.slug}.${window.location.host}` : '';
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!chosen) return;
     setErr(null);
     setBusy(true);
     try {
       const res = await api<{ credentials: Credential[] }>('/upazilas', {
         method: 'POST',
         body: {
-          slug,
-          name,
-          name_bn: nameBn,
-          ...(newDistrict
-            ? { district_name: districtEn, district_name_bn: districtBn, division_id: Number(divisionId) }
-            : { district_id: Number(districtId) }),
+          slug: chosen.slug,
+          name: chosen.name,
+          name_bn: chosen.name_bn,
+          district_id: Number(districtId),
         },
       });
       onCreated(res.credentials ?? []);
@@ -247,21 +266,6 @@ function CreateInstanceDialog({
       <Box component="form" onSubmit={submit}>
         <DialogContent sx={{ display: 'grid', gap: 2 }}>
           {err && <Alert severity="error">{err}</Alert>}
-          <TextField
-            label={S.instances.slug}
-            value={slug}
-            onChange={(e) => setSlug(e.target.value.toLowerCase())}
-            placeholder="golachipa"
-            required
-            fullWidth
-          />
-          <TextField label={S.instances.nameBn} value={nameBn} onChange={(e) => setNameBn(e.target.value)} required fullWidth />
-          <TextField label={S.instances.nameEn} value={name} onChange={(e) => setName(e.target.value)} required fullWidth />
-
-          <FormControlLabel
-            control={<Switch checked={newDistrict} onChange={(e) => setNewDistrict(e.target.checked)} />}
-            label={S.instances.newDistrict}
-          />
 
           <TextField
             select
@@ -270,46 +274,66 @@ function CreateInstanceDialog({
             onChange={(e) => {
               setDivisionId(e.target.value);
               setDistrictId('');
+              setUpazilaId('');
             }}
             required
             fullWidth
           >
             {divisions.map((v) => (
-              <MenuItem key={v.id} value={String(v.id)}>
-                {v.name_bn}
+              <MenuItem key={v.id} value={String(v.id)}>{v.name_bn}</MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            select
+            label={S.instances.district}
+            value={districtId}
+            onChange={(e) => {
+              setDistrictId(e.target.value);
+              setUpazilaId('');
+            }}
+            required
+            fullWidth
+            disabled={!divisionId}
+            helperText={divisionId ? undefined : S.instances.divisionFirst}
+          >
+            {districts
+              .filter((d) => String(d.division_id) === divisionId)
+              .map((d) => (
+                <MenuItem key={d.id} value={String(d.id)}>{d.name_bn}</MenuItem>
+              ))}
+          </TextField>
+
+          <TextField
+            select
+            label={S.instances.upazila}
+            value={upazilaId}
+            onChange={(e) => setUpazilaId(e.target.value)}
+            required
+            fullWidth
+            disabled={!districtId}
+            helperText={districtId ? undefined : S.instances.districtFirst}
+          >
+            {upazilas.map((u) => (
+              <MenuItem key={u.id} value={String(u.id)} disabled={u.taken}>
+                {u.name_bn}
+                {u.taken ? ` — ${S.instances.alreadyTaken}` : ''}
               </MenuItem>
             ))}
           </TextField>
 
-          {newDistrict ? (
-            <>
-              <TextField label={S.instances.districtBn} value={districtBn} onChange={(e) => setDistrictBn(e.target.value)} required fullWidth />
-              <TextField label={S.instances.districtEn} value={districtEn} onChange={(e) => setDistrictEn(e.target.value)} required fullWidth />
-            </>
-          ) : (
-            <TextField
-              select
-              label={S.instances.district}
-              value={districtId}
-              onChange={(e) => setDistrictId(e.target.value)}
-              required
-              fullWidth
-              disabled={!divisionId}
-              helperText={divisionId ? undefined : S.instances.divisionFirst}
-            >
-              {districts
-                .filter((d) => String(d.division_id) === divisionId)
-                .map((d) => (
-                  <MenuItem key={d.id} value={String(d.id)}>
-                    {d.name_bn}
-                  </MenuItem>
-                ))}
-            </TextField>
-          )}
+          <TextField
+            label={S.instances.subdomainAuto}
+            value={domain}
+            InputProps={{ readOnly: true, sx: { fontFamily: 'monospace', direction: 'ltr' } }}
+            fullWidth
+          />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={onClose} disabled={busy}>{S.instances.cancel}</Button>
-          <Button type="submit" variant="contained" disabled={busy}>{S.instances.create}</Button>
+          <Button type="submit" variant="contained" disabled={busy || !chosen}>
+            {S.instances.create}
+          </Button>
         </DialogActions>
       </Box>
     </Dialog>

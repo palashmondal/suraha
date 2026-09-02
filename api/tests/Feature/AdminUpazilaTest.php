@@ -221,6 +221,51 @@ class AdminUpazilaTest extends TestCase
         );
     }
 
+    /**
+     * The console never invents a subdomain: it submits the slug the catalogue assigns, which is
+     * the upazila's own gov.bd label. Labels recur across districts (every district has a `sadar`;
+     * Kaliganj is in four), so those are district-qualified — if that broke, two upazilas would
+     * collide on one subdomain.
+     */
+    public function test_upazila_catalogue_slugs_are_unique_nationwide(): void
+    {
+        $slugs = \App\Models\UpazilaRef::pluck('slug');
+
+        // 499 upazilas, per the national portal's own published count.
+        $this->assertCount(499, $slugs);
+        $this->assertCount(499, $slugs->unique(), 'every upazila needs its own subdomain');
+
+        // A bare colliding label must never survive as a slug: 28 upazilas carry the gov.bd
+        // label `sadar`, so all of them have to be district-qualified.
+        $this->assertNull(\App\Models\UpazilaRef::where('slug', 'sadar')->first());
+        $this->assertSame(28, \App\Models\UpazilaRef::where('slug', 'like', 'sadar-%')->count());
+
+        // Kaliganj exists in four districts; each must resolve to a distinct subdomain.
+        $kaliganj = \App\Models\UpazilaRef::where('name', 'Kaliganj')->pluck('slug');
+        $this->assertCount(4, $kaliganj);
+        $this->assertCount(4, $kaliganj->unique());
+    }
+
+    /** Options are district-scoped and flag the ones already provisioned. */
+    public function test_upazila_options_are_scoped_and_flag_taken(): void
+    {
+        Sanctum::actingAs($this->seal());
+        $khulna = \App\Models\District::where('name', 'Khulna')->firstOrFail();
+
+        $options = $this->getJson(self::ADMIN."/api/registry/upazila-options?district_id={$khulna->id}")
+            ->assertOk()
+            ->json('upazilas');
+
+        $this->assertNotEmpty($options);
+        $bySlug = collect($options)->keyBy('slug');
+        // Dumuria is seeded as a live instance, so it must come back flagged.
+        $this->assertTrue($bySlug['dumuria']['taken']);
+        $this->assertFalse($bySlug->first(fn ($o) => $o['slug'] !== 'dumuria')['taken']);
+
+        $this->getJson(self::ADMIN.'/api/registry/upazila-options?district_id=999999')
+            ->assertStatus(422);
+    }
+
     /** The roster's বিভাগ column reads this nested payload. */
     public function test_upazila_payload_carries_its_division(): void
     {
