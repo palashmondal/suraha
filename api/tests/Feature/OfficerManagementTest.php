@@ -141,10 +141,10 @@ class OfficerManagementTest extends TestCase
         ])->assertCreated();
     }
 
-    /** The directory is the whole upazila: its staff, its citizens, and its district's DC. */
-    public function test_user_directory_covers_the_upazila_and_its_dc(): void
+    /** SEAL sees the whole upazila: its staff, its citizens, and its district's DC. */
+    public function test_seal_directory_covers_the_upazila_and_its_dc(): void
     {
-        Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
+        Sanctum::actingAs(User::where('username', 'admin')->firstOrFail());
 
         $roles = collect($this->getJson(self::GALACHIPA.'/api/users')->assertOk()->json('data'))
             ->pluck('role');
@@ -153,14 +153,109 @@ class OfficerManagementTest extends TestCase
             $this->assertContains($role, $roles, "directory is missing {$role}");
         }
 
-        // Filters narrow it server-side.
         $this->getJson(self::GALACHIPA.'/api/users?role=dc')
             ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.role', 'dc');
+    }
 
-        // Another upazila's staff never appear.
+    /**
+     * A UNO's directory omits their own account and the DC's: neither is theirs to edit — the
+     * UNO uses their profile, the DC is managed from the SEAL console. authorizeManage refuses
+     * both anyway, so listing them would only offer a row that 403s.
+     */
+    public function test_uno_directory_hides_the_uno_and_the_dc(): void
+    {
+        Sanctum::actingAs($this->uno());
+
+        $roles = collect($this->getJson(self::GALACHIPA.'/api/users')->assertOk()->json('data'))
+            ->pluck('role');
+
+        $this->assertNotContains('dc', $roles);
+        $this->assertNotContains('uno', $roles);
+        foreach (['up_sochib', 'fwa', 'investigating_officer', 'citizen'] as $role) {
+            $this->assertContains($role, $roles, "directory is missing {$role}");
+        }
+
+        // Another upazila's staff never appear either.
         $this->assertNotContains(
             'dumuria',
             collect($this->getJson(self::GALACHIPA.'/api/users')->json('data'))->pluck('tenant_id'),
         );
+    }
+
+    /** Only SEAL may touch a DC account; a UNO is refused even by id. */
+    public function test_uno_cannot_edit_the_dc(): void
+    {
+        $dc = User::where('username', 'dc_patuakhali')->firstOrFail();
+
+        Sanctum::actingAs($this->uno());
+        $this->putJson(self::GALACHIPA."/api/officers/{$dc->id}", [
+            'name' => 'x', 'designation' => 'y', 'phone' => '01788880001', 'email' => 'dc.hijack@example.com',
+        ])->assertStatus(403);
+
+        Sanctum::actingAs(User::where('username', 'admin')->firstOrFail());
+        $this->putJson(self::GALACHIPA."/api/officers/{$dc->id}", [
+            'name' => 'জেলা প্রশাসক', 'designation' => 'জেলা প্রশাসক',
+            'phone' => '01788880002', 'email' => 'dc.patuakhali@example.com',
+        ])->assertOk();
+    }
+
+    /**
+     * Editing an account changes how to reach someone and where they serve — never who they are.
+     * Username and role are the identity every other screen refers to, so they stay put.
+     */
+    public function test_editing_an_officer_keeps_username_and_role_fixed(): void
+    {
+        $union = \App\Models\Union::where('tenant_id', 'galachipa')->firstOrFail();
+        $fwa = User::where('username', 'fwa_galachipa')->firstOrFail();
+        $original = ['username' => $fwa->username, 'role' => $fwa->role->value];
+
+        Sanctum::actingAs($this->uno());
+        $this->putJson(self::GALACHIPA."/api/officers/{$fwa->id}", [
+            'name' => 'সংশোধিত নাম',
+            'designation' => 'পরিবার কল্যাণ সহকারী',
+            'phone' => '01799990001',
+            'email' => 'edited.fwa@example.com',
+            'union_id' => $union->id,
+            'ward_no' => 7,
+            // Ignored: identity is not editable.
+            'username' => 'hijacked',
+            'role' => 'uno',
+        ])->assertOk()
+            ->assertJsonPath('data.name', 'সংশোধিত নাম')
+            ->assertJsonPath('data.ward_no', 7)
+            ->assertJsonPath('data.username', $original['username'])
+            ->assertJsonPath('data.role', $original['role']);
+    }
+
+    /** An empty password box means "leave it", not "blank it". */
+    public function test_editing_without_a_password_leaves_the_old_one_working(): void
+    {
+        $union = \App\Models\Union::where('tenant_id', 'galachipa')->firstOrFail();
+        $sochib = User::where('username', 'sochib_galachipa')->firstOrFail();
+
+        Sanctum::actingAs($this->uno());
+        $this->putJson(self::GALACHIPA."/api/officers/{$sochib->id}", [
+            'name' => $sochib->name, 'designation' => 'ইউপি সচিব',
+            'phone' => '01799990002', 'email' => 'sochib.edited@example.com',
+            'union_id' => $union->id, 'password' => '',
+        ])->assertOk();
+
+        $this->postJson(self::GALACHIPA.'/api/auth/officer/login', [
+            'username' => 'sochib_galachipa', 'password' => 'password',
+        ])->assertOk();
+    }
+
+    /** A UNO may not reach into another upazila's staff. */
+    public function test_uno_cannot_edit_an_officer_from_another_upazila(): void
+    {
+        $outsider = User::create([
+            'name' => 'ডুমুরিয়া কর্মকর্তা', 'username' => 'fwa_out', 'password' => bcrypt('secret123'),
+            'role' => 'fwa', 'tenant_id' => 'dumuria', 'is_active' => true,
+        ]);
+
+        Sanctum::actingAs($this->uno());
+        $this->putJson(self::GALACHIPA."/api/officers/{$outsider->id}", [
+            'name' => 'x', 'designation' => 'y', 'phone' => '01799990003', 'email' => 'out@example.com',
+        ])->assertStatus(403);
     }
 }

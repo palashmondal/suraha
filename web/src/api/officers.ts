@@ -31,5 +31,8 @@ export const getAssignableRoles = () => api<{ roles: AssignableRole[] }>('/offic
 export const createOfficer = (body: Record<string, unknown>) =>
   api<{ data: Officer }>('/officers', { method: 'POST', body });
 
+export const updateOfficer = (id: number, body: Record<string, unknown>) =>
+  api<{ data: Officer }>(`/officers/${id}`, { method: 'PUT', body });
+
 export const setOfficerActive = (id: number, is_active: boolean) =>
   api<{ data: Officer }>(`/officers/${id}/status`, { method: 'PATCH', body: { is_active } });
