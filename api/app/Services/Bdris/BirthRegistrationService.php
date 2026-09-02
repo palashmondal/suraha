@@ -122,9 +122,9 @@ class BirthRegistrationService
         }
 
         $crest = CertificateAssets::seal('bd-govt-seal.png');
-        // The Registrar General's seal is the watermark. Until that file is dropped in, the
-        // national seal stands in rather than leaving a blank page behind the text.
-        $watermark = CertificateAssets::seal('registrar-seal.png') ?? $crest;
+        // The Registrar General's seal, centred behind the identity rows. Falls back to the
+        // national seal if the file is ever missing, so the page is never blank behind the text.
+        $watermark = CertificateAssets::seal('bdris_logo.png') ?? $crest;
 
         $qr = CertificateAssets::qr($this->verifyUrl($reg));
         $barcode = $reg->registration_no ? CertificateAssets::barcode($reg->registration_no) : '';
