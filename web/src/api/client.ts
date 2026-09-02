@@ -1,7 +1,7 @@
 // Thin fetch wrapper for the Suraha API (Milestone 2 — Bearer-token auth).
 //
 // The API base defaults to the SAME host as the SPA on port 8000, so the upazila subdomain
-// (e.g. golachipa.lvh.me) carries through to the API and tenancy resolves automatically in
+// (e.g. galachipa.lvh.me) carries through to the API and tenancy resolves automatically in
 // dev. Override with VITE_API_BASE for other setups.
 const API_BASE: string =
   (import.meta.env.VITE_API_BASE as string | undefined) ??

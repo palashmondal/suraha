@@ -18,7 +18,7 @@ class AppointmentTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://golachipa.lvh.me';
+    private const GOLACHIPA = 'http://galachipa.lvh.me';
 
     protected function setUp(): void
     {
@@ -28,7 +28,7 @@ class AppointmentTest extends TestCase
 
     private function uno(): User
     {
-        return User::where('username', 'uno_golachipa')->firstOrFail();
+        return User::where('username', 'uno_galachipa')->firstOrFail();
     }
 
     public function test_tabs_reflect_seeded_data(): void
@@ -54,7 +54,7 @@ class AppointmentTest extends TestCase
 
     public function test_uno_accepts_with_a_modified_time(): void
     {
-        $id = Upazila::find('golachipa')->run(fn () => Appointment::factory()->create()->id);
+        $id = Upazila::find('galachipa')->run(fn () => Appointment::factory()->create()->id);
         Sanctum::actingAs($this->uno());
 
         // UNO accepts but modifies the proposed time to fit the schedule.
@@ -72,7 +72,7 @@ class AppointmentTest extends TestCase
     public function test_accepted_appointment_appears_on_the_uno_schedule(): void
     {
         $slot = now()->addWeek()->toDateString();
-        $id = Upazila::find('golachipa')->run(fn () => Appointment::factory()->create(['appointment_date' => $slot])->id);
+        $id = Upazila::find('galachipa')->run(fn () => Appointment::factory()->create(['appointment_date' => $slot])->id);
         Sanctum::actingAs($this->uno());
         $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/approve", ['appointment_date' => $slot])->assertOk();
 
@@ -83,7 +83,7 @@ class AppointmentTest extends TestCase
 
     public function test_uno_rejects(): void
     {
-        $id = Upazila::find('golachipa')->run(fn () => Appointment::factory()->create()->id);
+        $id = Upazila::find('galachipa')->run(fn () => Appointment::factory()->create()->id);
         Sanctum::actingAs($this->uno());
 
         $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/reject", ['decision_note' => 'সময় নেই'])
@@ -92,9 +92,9 @@ class AppointmentTest extends TestCase
 
     public function test_dc_is_read_only(): void
     {
-        $id = Upazila::find('golachipa')->run(fn () => Appointment::factory()->create()->id);
-        Sanctum::actingAs(User::where('username', 'dc_barishal')->firstOrFail());
-        $this->postJson('http://lvh.me/api/appointments/'.$id.'/approve', [], ['X-Upazila' => 'golachipa'])
+        $id = Upazila::find('galachipa')->run(fn () => Appointment::factory()->create()->id);
+        Sanctum::actingAs(User::where('username', 'dc_patuakhali')->firstOrFail());
+        $this->postJson('http://lvh.me/api/appointments/'.$id.'/approve', [], ['X-Upazila' => 'galachipa'])
             ->assertStatus(403);
     }
 }

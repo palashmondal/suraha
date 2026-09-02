@@ -22,7 +22,7 @@ return new class extends Migration
         Schema::create('upazila_refs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('district_id')->constrained()->cascadeOnDelete();
-            $table->string('name');       // e.g. "Golachipa"
+            $table->string('name');       // e.g. "Galachipa"
             $table->string('name_bn');    // e.g. "গলাচিপা"
             $table->string('slug')->unique();
             $table->timestamps();

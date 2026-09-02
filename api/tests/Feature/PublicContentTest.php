@@ -20,7 +20,7 @@ class PublicContentTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://golachipa.lvh.me';
+    private const GOLACHIPA = 'http://galachipa.lvh.me';
 
     protected function setUp(): void
     {
@@ -30,7 +30,7 @@ class PublicContentTest extends TestCase
 
     private function uno(): User
     {
-        return User::where('username', 'uno_golachipa')->firstOrFail();
+        return User::where('username', 'uno_galachipa')->firstOrFail();
     }
 
     public function test_public_sliders_returns_only_active(): void
@@ -58,12 +58,12 @@ class PublicContentTest extends TestCase
         ], ['Accept' => 'application/json'])
             ->assertCreated()->assertJsonPath('data.title', 'নতুন সচেতনতা');
 
-        $this->assertDatabaseHas('sliders', ['title' => 'নতুন সচেতনতা', 'tenant_id' => 'golachipa']);
+        $this->assertDatabaseHas('sliders', ['title' => 'নতুন সচেতনতা', 'tenant_id' => 'galachipa']);
     }
 
     public function test_uno_toggles_and_deletes_a_slider(): void
     {
-        $slider = Upazila::find('golachipa')->run(fn () => Slider::factory()->create());
+        $slider = Upazila::find('galachipa')->run(fn () => Slider::factory()->create());
         Sanctum::actingAs($this->uno());
 
         $this->post(self::GOLACHIPA."/api/manage/sliders/{$slider->id}", ['is_active' => false], ['Accept' => 'application/json'])
@@ -80,7 +80,7 @@ class PublicContentTest extends TestCase
             'type' => 'phone', 'title' => 'বিদ্যুৎ অফিস', 'value' => '01611112222',
         ])->assertCreated();
 
-        $this->assertDatabaseHas('general_infos', ['title' => 'বিদ্যুৎ অফিস', 'tenant_id' => 'golachipa']);
+        $this->assertDatabaseHas('general_infos', ['title' => 'বিদ্যুৎ অফিস', 'tenant_id' => 'galachipa']);
     }
 
     public function test_citizen_cannot_manage(): void

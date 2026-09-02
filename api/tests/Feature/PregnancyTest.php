@@ -16,7 +16,7 @@ class PregnancyTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://golachipa.lvh.me';
+    private const GOLACHIPA = 'http://galachipa.lvh.me';
     private const DUMURIA = 'http://dumuria.lvh.me';
 
     protected function setUp(): void
@@ -27,7 +27,7 @@ class PregnancyTest extends TestCase
 
     private function fwa(): User
     {
-        return User::where('username', 'fwa_golachipa')->firstOrFail();
+        return User::where('username', 'fwa_galachipa')->firstOrFail();
     }
 
     public function test_list_returns_seeded_records_with_tab_counts(): void
@@ -36,7 +36,7 @@ class PregnancyTest extends TestCase
 
         $res = $this->getJson(self::GOLACHIPA.'/api/pregnancies')->assertOk();
 
-        // 18 seeded in Golachipa (12 not delivered, 6 delivered).
+        // 18 seeded in Galachipa (12 not delivered, 6 delivered).
         $tabs = collect($res->json('tabs'))->keyBy('key');
         $this->assertSame(18, $tabs['all']['total']);
         $this->assertSame(12, $tabs['not_delivered']['total']);
@@ -77,7 +77,7 @@ class PregnancyTest extends TestCase
 
         $this->assertDatabaseHas('pregnancies', [
             'mother_name_bn' => 'নতুন প্রসূতি',
-            'tenant_id' => 'golachipa',
+            'tenant_id' => 'galachipa',
             'created_by' => $this->fwa()->id,
         ]);
     }
@@ -111,11 +111,11 @@ class PregnancyTest extends TestCase
 
     public function test_read_only_dc_cannot_create(): void
     {
-        Sanctum::actingAs(User::where('username', 'dc_barishal')->firstOrFail());
-        // DC switches into Golachipa via header, but writes are blocked server-side.
+        Sanctum::actingAs(User::where('username', 'dc_patuakhali')->firstOrFail());
+        // DC switches into Galachipa via header, but writes are blocked server-side.
         $this->postJson('http://lvh.me/api/pregnancies', [
             'mother_name_bn' => 'x',
-        ], ['X-Upazila' => 'golachipa'])->assertStatus(403);
+        ], ['X-Upazila' => 'galachipa'])->assertStatus(403);
     }
 
     public function test_citizen_cannot_access_pregnancies(): void

@@ -46,7 +46,7 @@ class AdminUpazilaTest extends TestCase
         Sanctum::actingAs($this->seal());
         $this->getJson(self::ADMIN.'/api/upazilas')
             ->assertOk()
-            ->assertJsonCount(2, 'data'); // golachipa + dumuria from the seeder
+            ->assertJsonCount(2, 'data'); // galachipa + dumuria from the seeder
     }
 
     public function test_seal_can_create_a_new_upazila_instance(): void
@@ -72,10 +72,10 @@ class AdminUpazilaTest extends TestCase
     {
         Sanctum::actingAs($this->seal());
 
-        // Barishal already has dc_barishal from the seeder → no new DC provisioned.
-        $barishalId = \App\Models\District::where('name', 'Barishal')->value('id');
+        // Kalapara is in Patuakhali, which already has dc_patuakhali → no second DC provisioned.
+        $patuakhaliId = \App\Models\District::where('name', 'Patuakhali')->value('id');
         $res = $this->postJson(self::ADMIN.'/api/upazilas', [
-            'slug' => 'kalapara', 'name' => 'Kalapara', 'name_bn' => 'কলাপাড়া', 'district_id' => $barishalId,
+            'slug' => 'kalapara', 'name' => 'Kalapara', 'name_bn' => 'কলাপাড়া', 'district_id' => $patuakhaliId,
         ])->assertCreated();
 
         $this->assertDatabaseHas('users', ['username' => 'uno_kalapara', 'role' => 'uno', 'tenant_id' => 'kalapara']);
@@ -96,15 +96,15 @@ class AdminUpazilaTest extends TestCase
         Sanctum::actingAs($this->seal());
 
         $res = $this->postJson(self::ADMIN.'/api/upazilas', [
-            'slug' => 'sadar', 'name' => 'Sadar', 'name_bn' => 'সদর',
-            'district_name' => 'Patuakhali', 'district_name_bn' => 'পটুয়াখালী',
+            'slug' => 'bhola-sadar', 'name' => 'Bhola Sadar', 'name_bn' => 'ভোলা সদর',
+            'district_name' => 'Bhola', 'district_name_bn' => 'ভোলা',
             'division_id' => Division::where('name', 'Barishal')->value('id'),
         ])->assertCreated();
 
         $roles = collect($res->json('credentials'))->pluck('role')->all();
         $this->assertContains('uno', $roles);
-        $this->assertContains('dc', $roles); // brand-new district → DC provisioned
-        $this->assertDatabaseHas('users', ['username' => 'dc_patuakhali', 'role' => 'dc']);
+        $this->assertContains('dc', $roles); // district with no DC yet → one is provisioned
+        $this->assertDatabaseHas('users', ['username' => 'dc_bhola', 'role' => 'dc']);
     }
 
     public function test_new_upazila_can_create_district_inline(): void
@@ -126,7 +126,7 @@ class AdminUpazilaTest extends TestCase
     {
         Sanctum::actingAs($this->seal());
         $this->postJson(self::ADMIN.'/api/upazilas', [
-            'slug' => 'golachipa', // already exists
+            'slug' => 'galachipa', // already exists
             'name' => 'X', 'name_bn' => 'এক্স', 'district_id' => 1,
         ])->assertStatus(422);
     }
@@ -141,7 +141,7 @@ class AdminUpazilaTest extends TestCase
 
     public function test_non_seal_cannot_manage_instances(): void
     {
-        Sanctum::actingAs(User::where('username', 'uno_golachipa')->firstOrFail());
+        Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
         $this->getJson(self::ADMIN.'/api/upazilas')->assertStatus(403);
         $this->postJson(self::ADMIN.'/api/upazilas', [
             'slug' => 'x', 'name' => 'X', 'name_bn' => 'এক্স', 'district_id' => 1,
@@ -159,8 +159,8 @@ class AdminUpazilaTest extends TestCase
             ->assertOk()->assertJsonPath('upazila', null);
 
         // Same admin host, different X-Upazila → different tenant resolved.
-        $this->getJson(self::ADMIN.'/api/registry/active-upazila', ['X-Upazila' => 'golachipa'])
-            ->assertOk()->assertJsonPath('upazila.id', 'golachipa');
+        $this->getJson(self::ADMIN.'/api/registry/active-upazila', ['X-Upazila' => 'galachipa'])
+            ->assertOk()->assertJsonPath('upazila.id', 'galachipa');
 
         $this->getJson(self::ADMIN.'/api/registry/active-upazila', ['X-Upazila' => 'dumuria'])
             ->assertOk()->assertJsonPath('upazila.id', 'dumuria');
@@ -168,30 +168,25 @@ class AdminUpazilaTest extends TestCase
 
     public function test_tenant_scoped_user_cannot_switch_via_header(): void
     {
-        // A UNO bound to golachipa may not borrow dumuria's context via the header.
-        Sanctum::actingAs(User::where('username', 'uno_golachipa')->firstOrFail());
+        // A UNO bound to galachipa may not borrow dumuria's context via the header.
+        Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
         $this->getJson(self::ADMIN.'/api/registry/active-upazila', ['X-Upazila' => 'dumuria'])
             ->assertStatus(403);
     }
 
     public function test_dc_can_switch_within_district_only(): void
     {
-        Sanctum::actingAs(User::where('username', 'dc_barishal')->firstOrFail());
+        // Galachipa is in Patuakhali, Dumuria in Khulna — so each DC sees exactly its own.
+        Sanctum::actingAs(User::where('username', 'dc_patuakhali')->firstOrFail());
+        $this->getJson(self::ADMIN.'/api/registry/active-upazila', ['X-Upazila' => 'galachipa'])
+            ->assertOk()->assertJsonPath('upazila.id', 'galachipa');
+        $this->getJson(self::ADMIN.'/api/registry/active-upazila', ['X-Upazila' => 'dumuria'])
+            ->assertStatus(403);
 
-        // Both seeded upazilas are in Barishal → allowed.
+        Sanctum::actingAs(User::where('username', 'dc_khulna')->firstOrFail());
         $this->getJson(self::ADMIN.'/api/registry/active-upazila', ['X-Upazila' => 'dumuria'])
             ->assertOk()->assertJsonPath('upazila.id', 'dumuria');
-
-        // Create an out-of-district upazila, then the DC must be refused it.
-        Sanctum::actingAs($this->seal());
-        $this->postJson(self::ADMIN.'/api/upazilas', [
-            'slug' => 'mirpur', 'name' => 'Mirpur', 'name_bn' => 'মিরপুর',
-            'district_name' => 'Kushtia', 'district_name_bn' => 'কুষ্টিয়া',
-            'division_id' => Division::where('name', 'Khulna')->value('id'),
-        ])->assertCreated();
-
-        Sanctum::actingAs(User::where('username', 'dc_barishal')->firstOrFail());
-        $this->getJson(self::ADMIN.'/api/registry/active-upazila', ['X-Upazila' => 'mirpur'])
+        $this->getJson(self::ADMIN.'/api/registry/active-upazila', ['X-Upazila' => 'galachipa'])
             ->assertStatus(403);
     }
 
@@ -271,10 +266,10 @@ class AdminUpazilaTest extends TestCase
     {
         Sanctum::actingAs($this->seal());
 
-        $this->getJson(self::ADMIN.'/api/upazilas/golachipa')
+        $this->getJson(self::ADMIN.'/api/upazilas/galachipa')
             ->assertOk()
-            ->assertJsonPath('data.district.name_bn', 'বরিশাল')
+            ->assertJsonPath('data.district.name_bn', 'পটুয়াখালী')
             ->assertJsonPath('data.district.division.name_bn', 'বরিশাল')
-            ->assertJsonPath('data.domain', 'golachipa.suraha.net');
+            ->assertJsonPath('data.domain', 'galachipa.suraha.net');
     }
 }

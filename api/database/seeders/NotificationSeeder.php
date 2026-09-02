@@ -8,19 +8,19 @@ use App\Models\Upazila;
 use Illuminate\Database\Seeder;
 
 /**
- * Sample notifications for Golachipa so the bell + "সকল নোটিফিকেশন" page aren't empty on first
+ * Sample notifications for Galachipa so the bell + "সকল নোটিফিকেশন" page aren't empty on first
  * login. Real notifications are emitted when citizens/FWA file things (§9).
  */
 class NotificationSeeder extends Seeder
 {
     public function run(): void
     {
-        $golachipa = Upazila::find('golachipa');
-        if (! $golachipa) {
+        $galachipa = Upazila::find('galachipa');
+        if (! $galachipa) {
             return;
         }
 
-        tenancy()->initialize($golachipa);
+        tenancy()->initialize($galachipa);
 
         // 20 demo notifications across modules, targeted to the UNO (the role most likely viewing
         // the dashboard). Spread over the last ~10 days; the older half is already read.

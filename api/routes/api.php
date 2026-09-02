@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 | API routes (Milestone 2 — Auth & Multi-tenancy)
 |--------------------------------------------------------------------------
 | Every route runs through the `tenant` middleware, which resolves the upazila from the
-| request subdomain (golachipa.suraha.net). On a central domain (SEAL/DC admin, or
+| request subdomain (galachipa.suraha.net). On a central domain (SEAL/DC admin, or
 | localhost during dev) it proceeds without a tenant; an unknown subdomain 404s.
 | Auth is Bearer-token (Sanctum); no cookies/CSRF.
 */

@@ -12,7 +12,7 @@
 You are the engineering agent building **Suraha** (Bangla: **সুরাহা**) for the **SEAL Foundation**.
 Suraha is a centralized, multi-tenant web platform that digitizes field administration and citizen
 services at the **upazila** (sub-district) level of Bangladesh. Each upazila is served on its own
-subdomain (e.g. `golachipa.suraha.net`, `dumuria.suraha.gov.bd`).
+subdomain (e.g. `galachipa.suraha.net`, `dumuria.suraha.gov.bd`).
 
 **Non-negotiable rules:**
 

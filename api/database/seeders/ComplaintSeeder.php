@@ -15,14 +15,14 @@ class ComplaintSeeder extends Seeder
 {
     public function run(): void
     {
-        $golachipa = Upazila::find('golachipa');
-        if (! $golachipa) {
+        $galachipa = Upazila::find('galachipa');
+        if (! $galachipa) {
             return;
         }
 
-        tenancy()->initialize($golachipa);
+        tenancy()->initialize($galachipa);
 
-        $investigatorId = User::where('username', 'tdonto_golachipa')->value('id');
+        $investigatorId = User::where('username', 'tdonto_galachipa')->value('id');
         $withOfficer = fn () => ['investigating_officer_id' => $investigatorId];
 
         $pending = Complaint::factory()->count(5)->create();                                   // পর্যালোচনাধীন

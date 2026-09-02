@@ -23,36 +23,41 @@ class DatabaseSeeder extends Seeder
         $this->call(DivisionSeeder::class);
         $this->call(DistrictSeeder::class);
         $this->call(UpazilaRefSeeder::class);
-        $barishal = District::where('name', 'Barishal')->firstOrFail();
+        // Real districts, per the national portal: Galachipa is in Patuakhali (Barishal division),
+        // Dumuria in Khulna. They sit in different districts on purpose — that is what makes the
+        // DC's district scope testable.
+        $patuakhali = District::where('name', 'Patuakhali')->firstOrFail();
+        $khulna = District::where('name', 'Khulna')->firstOrFail();
 
-        $golachipa = $this->upazila('golachipa', 'Golachipa', 'গলাচিপা', $barishal->id, [
-            ['Golachipa Sadar', 'গলাচিপা সদর', 'union', 9],
+        $galachipa = $this->upazila('galachipa', 'Galachipa', 'গলাচিপা', $patuakhali->id, [
+            ['Galachipa Sadar', 'গলাচিপা সদর', 'union', 9],
             ['Panpatty', 'পানপট্টি', 'union', 9],
-            ['Golachipa Pourashava', 'গলাচিপা পৌরসভা', 'pourashava', 9],
+            ['Galachipa Pourashava', 'গলাচিপা পৌরসভা', 'pourashava', 9],
         ]);
 
-        $dumuria = $this->upazila('dumuria', 'Dumuria', 'ডুমুরিয়া', $barishal->id, [
+        $dumuria = $this->upazila('dumuria', 'Dumuria', 'ডুমুরিয়া', $khulna->id, [
             ['Dumuria Sadar', 'ডুমুরিয়া সদর', 'union', 9],
             ['Rudaghara', 'রুদাঘরা', 'union', 9],
         ]);
 
         // ---- Cross-tenant officers -----------------------------------
         $this->officer('admin', 'সুরাহা অ্যাডমিন', Role::SEAL_ADMIN, tenantId: null);
-        $this->officer('dc_barishal', 'জেলা প্রশাসক, বরিশাল', Role::DC, tenantId: null, districtId: $barishal->id);
+        $this->officer('dc_patuakhali', 'জেলা প্রশাসক, পটুয়াখালী', Role::DC, tenantId: null, districtId: $patuakhali->id);
+        $this->officer('dc_khulna', 'জেলা প্রশাসক, খুলনা', Role::DC, tenantId: null, districtId: $khulna->id);
 
-        // ---- Golachipa officers (one per tenant-bound role) ----------
-        $sadar = Union::where('tenant_id', $golachipa->id)->where('name', 'Golachipa Sadar')->first();
-        $this->officer('uno_golachipa', 'ইউএনও, গলাচিপা', Role::UNO, tenantId: $golachipa->id, designation: 'উপজেলা নির্বাহী কর্মকর্তা');
-        $this->officer('sochib_golachipa', 'ইউপি সচিব, গলাচিপা সদর', Role::UP_SOCHIB, tenantId: $golachipa->id, unionId: $sadar?->id, designation: 'ইউপি সচিব');
-        $this->officer('fwa_golachipa', 'পরিবার কল্যাণ সহকারী', Role::FWA, tenantId: $golachipa->id, unionId: $sadar?->id, wardNo: 3, designation: 'পরিবার কল্যাণ সহকারী');
-        $this->officer('tdonto_golachipa', 'তদন্ত কর্মকর্তা', Role::INVESTIGATING_OFFICER, tenantId: $golachipa->id, designation: 'তদন্ত কর্মকর্তা');
+        // ---- Galachipa officers (one per tenant-bound role) ----------
+        $sadar = Union::where('tenant_id', $galachipa->id)->where('name', 'Galachipa Sadar')->first();
+        $this->officer('uno_galachipa', 'ইউএনও, গলাচিপা', Role::UNO, tenantId: $galachipa->id, designation: 'উপজেলা নির্বাহী কর্মকর্তা');
+        $this->officer('sochib_galachipa', 'ইউপি সচিব, গলাচিপা সদর', Role::UP_SOCHIB, tenantId: $galachipa->id, unionId: $sadar?->id, designation: 'ইউপি সচিব');
+        $this->officer('fwa_galachipa', 'পরিবার কল্যাণ সহকারী', Role::FWA, tenantId: $galachipa->id, unionId: $sadar?->id, wardNo: 3, designation: 'পরিবার কল্যাণ সহকারী');
+        $this->officer('tdonto_galachipa', 'তদন্ত কর্মকর্তা', Role::INVESTIGATING_OFFICER, tenantId: $galachipa->id, designation: 'তদন্ত কর্মকর্তা');
 
-        // ---- Sample citizen in Golachipa -----------------------------
+        // ---- Sample citizen in Galachipa -----------------------------
         User::create([
             'name' => 'নাগরিক (নমুনা)',
             'phone' => '01700000000',
             'role' => Role::CITIZEN->value,
-            'tenant_id' => $golachipa->id,
+            'tenant_id' => $galachipa->id,
             'phone_verified_at' => now(),
             'is_active' => true,
         ]);

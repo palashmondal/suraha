@@ -16,7 +16,7 @@ class ReportTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://golachipa.lvh.me';
+    private const GOLACHIPA = 'http://galachipa.lvh.me';
     private const ADMIN = 'http://lvh.me';
 
     protected function setUp(): void
@@ -27,7 +27,7 @@ class ReportTest extends TestCase
 
     public function test_officer_gets_own_upazila_report_with_union_comparison(): void
     {
-        Sanctum::actingAs(User::where('username', 'uno_golachipa')->firstOrFail());
+        Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
         $res = $this->getJson(self::GOLACHIPA.'/api/reports')->assertOk();
 
         $res->assertJsonPath('scope.level', 'tenant');
@@ -47,7 +47,7 @@ class ReportTest extends TestCase
 
     public function test_delivery_and_resolution_rates_are_percentages(): void
     {
-        Sanctum::actingAs(User::where('username', 'uno_golachipa')->firstOrFail());
+        Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
         $k = $this->getJson(self::GOLACHIPA.'/api/reports')->json('kpis');
 
         // 6 of 18 delivered ≈ 33.3%.
@@ -58,7 +58,7 @@ class ReportTest extends TestCase
 
     public function test_date_filter_narrows_counts(): void
     {
-        Sanctum::actingAs(User::where('username', 'uno_golachipa')->firstOrFail());
+        Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
         // A window far in the past excludes today's seeded rows.
         $res = $this->getJson(self::GOLACHIPA.'/api/reports?from=2020-01-01&to=2020-12-31')->assertOk();
         $this->assertSame(0, $res->json('kpis.pregnancies_total'));
@@ -71,7 +71,7 @@ class ReportTest extends TestCase
 
         $res->assertJsonPath('scope.level', 'global');
         $this->assertNull($res->json('by_union'));
-        $this->assertCount(2, $res->json('by_upazila')); // golachipa + dumuria
+        $this->assertCount(2, $res->json('by_upazila')); // galachipa + dumuria
     }
 
     public function test_citizen_cannot_access_reports(): void

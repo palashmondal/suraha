@@ -19,12 +19,12 @@ class BirthRegistrationSeeder extends Seeder
 {
     public function run(): void
     {
-        $golachipa = Upazila::find('golachipa');
-        if (! $golachipa) {
+        $galachipa = Upazila::find('galachipa');
+        if (! $galachipa) {
             return;
         }
 
-        tenancy()->initialize($golachipa);
+        tenancy()->initialize($galachipa);
 
         // Approve 3 delivered pregnancies → BDRIS entered + certificate.
         $service = app(BirthRegistrationService::class);

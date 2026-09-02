@@ -21,7 +21,7 @@ class BirthRegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://golachipa.lvh.me';
+    private const GOLACHIPA = 'http://galachipa.lvh.me';
 
     protected function setUp(): void
     {
@@ -31,12 +31,12 @@ class BirthRegistrationTest extends TestCase
 
     private function sochib(): User
     {
-        return User::where('username', 'sochib_golachipa')->firstOrFail();
+        return User::where('username', 'sochib_galachipa')->firstOrFail();
     }
 
     private function deliveredPregnancyId(): int
     {
-        return Upazila::find('golachipa')->run(fn () =>
+        return Upazila::find('galachipa')->run(fn () =>
             Pregnancy::where('delivery_status', DeliveryStatus::DELIVERED->value)
                 ->whereDoesntHave('birthRegistration')->value('id')
                 ?? Pregnancy::where('delivery_status', DeliveryStatus::DELIVERED->value)->value('id'));
@@ -57,7 +57,7 @@ class BirthRegistrationTest extends TestCase
     public function test_sochib_approves_delivered_pregnancy_and_gets_bdris_number(): void
     {
         // Create a fresh delivered pregnancy to approve.
-        $id = Upazila::find('golachipa')->run(function () {
+        $id = Upazila::find('galachipa')->run(function () {
             return Pregnancy::factory()->delivered()->create(['mother_name_bn' => 'পরীক্ষা মা'])->id;
         });
 
@@ -73,7 +73,7 @@ class BirthRegistrationTest extends TestCase
 
     public function test_approval_is_idempotent_per_pregnancy(): void
     {
-        $id = Upazila::find('golachipa')->run(fn () =>
+        $id = Upazila::find('galachipa')->run(fn () =>
             Pregnancy::factory()->delivered()->create()->id);
 
         Sanctum::actingAs($this->sochib());
@@ -86,7 +86,7 @@ class BirthRegistrationTest extends TestCase
 
     public function test_cannot_approve_a_not_delivered_pregnancy(): void
     {
-        $id = Upazila::find('golachipa')->run(fn () =>
+        $id = Upazila::find('galachipa')->run(fn () =>
             Pregnancy::factory()->create()->id); // not delivered
 
         Sanctum::actingAs($this->sochib());
@@ -95,7 +95,7 @@ class BirthRegistrationTest extends TestCase
 
     public function test_certificate_is_downloadable(): void
     {
-        $id = Upazila::find('golachipa')->run(fn () =>
+        $id = Upazila::find('galachipa')->run(fn () =>
             Pregnancy::factory()->delivered()->create()->id);
 
         Sanctum::actingAs($this->sochib());
@@ -108,7 +108,7 @@ class BirthRegistrationTest extends TestCase
 
     public function test_fwa_cannot_manage_birth_registrations(): void
     {
-        Sanctum::actingAs(User::where('username', 'fwa_golachipa')->firstOrFail());
+        Sanctum::actingAs(User::where('username', 'fwa_galachipa')->firstOrFail());
         $this->getJson(self::GOLACHIPA.'/api/birth-registrations')->assertStatus(403);
     }
 }

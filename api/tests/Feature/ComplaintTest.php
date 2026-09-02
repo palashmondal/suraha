@@ -22,7 +22,7 @@ class ComplaintTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://golachipa.lvh.me';
+    private const GOLACHIPA = 'http://galachipa.lvh.me';
 
     protected function setUp(): void
     {
@@ -32,17 +32,17 @@ class ComplaintTest extends TestCase
 
     private function uno(): User
     {
-        return User::where('username', 'uno_golachipa')->firstOrFail();
+        return User::where('username', 'uno_galachipa')->firstOrFail();
     }
 
     private function investigator(): User
     {
-        return User::where('username', 'tdonto_golachipa')->firstOrFail();
+        return User::where('username', 'tdonto_galachipa')->firstOrFail();
     }
 
     private function newComplaintId(): int
     {
-        return Upazila::find('golachipa')->run(function () {
+        return Upazila::find('galachipa')->run(function () {
             $c = Complaint::factory()->create();
             $c->events()->create(['type' => 'filed']);
 
@@ -167,10 +167,10 @@ class ComplaintTest extends TestCase
     public function test_dc_is_read_only_on_complaints(): void
     {
         $id = $this->newComplaintId();
-        Sanctum::actingAs(User::where('username', 'dc_barishal')->firstOrFail());
+        Sanctum::actingAs(User::where('username', 'dc_patuakhali')->firstOrFail());
         // View allowed via header switch, but accepting/appointing is blocked.
         $this->postJson('http://lvh.me/api/complaints/'.$id.'/accept', [
             'investigating_officer_id' => $this->investigator()->id, 'due_date' => now()->addWeek()->toDateString(),
-        ], ['X-Upazila' => 'golachipa'])->assertStatus(403);
+        ], ['X-Upazila' => 'galachipa'])->assertStatus(403);
     }
 }

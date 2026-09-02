@@ -26,7 +26,7 @@ suraha/
 ## Architecture
 
 - **Multi-tenancy** — a single central database; each **upazila is a tenant** resolved from the
-  request subdomain (`golachipa.suraha.net` → tenant `golachipa`) via `stancl/tenancy`. Tenant rows
+  request subdomain (`galachipa.suraha.net` → tenant `galachipa`) via `stancl/tenancy`. Tenant rows
   are scoped by a `tenant_id` global scope (no per-tenant databases). Cross-tenant roles (SEAL/DC)
   work on the **central host** (`suraha.net`, which is also the national public site) and switch
   upazila in-app via an `X-Upazila` header — without changing the URL. (The old `admin.*` host is
@@ -112,32 +112,32 @@ Defaults to SQLite for dev (no PostgreSQL needed to try it):
 cd api
 composer install
 php artisan key:generate
-php artisan migrate:fresh --seed   # Golachipa + Dumuria (Barishal), officers, DC, SEAL, citizen, demo data
+php artisan migrate:fresh --seed   # Galachipa + Dumuria (Barishal), officers, DC, SEAL, citizen, demo data
 php artisan serve --host=0.0.0.0 --port=8000
 php artisan test                   # run the feature suite
 ```
 
-Officer logins (all password `password`): `admin`, `uno_golachipa`, `fwa_golachipa`,
-`tdonto_golachipa`, … Citizen: mobile + OTP (dev code returned by the API).
+Officer logins (all password `password`): `admin`, `uno_galachipa`, `fwa_galachipa`,
+`tdonto_galachipa`, `dc_patuakhali`, `dc_khulna`. Citizen: mobile + OTP (dev code returned by the API).
 
 ### 3. Tenant subdomains
 
 The SPA calls the API on the **same host, port 8000**, so the upazila subdomain flows through
 automatically. Three ways to resolve subdomains locally:
 
-- **Zero-setup:** use `*.lvh.me` → `golachipa.lvh.me:5173` / `lvh.me:5173` (resolves to
+- **Zero-setup:** use `*.lvh.me` → `galachipa.lvh.me:5173` / `lvh.me:5173` (resolves to
   127.0.0.1 with no config).
 - **`/etc/hosts` (simplest for the real domain).** No wildcards in hosts files, so add the central
   host plus one line per provisioned upazila:
   ```bash
   sudo tee -a /etc/hosts <<'EOF'
   127.0.0.1	suraha.net
-  127.0.0.1	golachipa.suraha.net
+  127.0.0.1	galachipa.suraha.net
   127.0.0.1	dumuria.suraha.net
   EOF
   ```
   `scripts/dev.sh` does this automatically, reading the `domains` table — rerun it after
-  provisioning a new upazila. Then open `http://golachipa.suraha.net:5173`.
+  provisioning a new upazila. Then open `http://galachipa.suraha.net:5173`.
 - **Real domain, wildcard (`*.suraha.net`)** via dnsmasq — no per-upazila hosts edits:
   ```bash
   brew install dnsmasq
@@ -145,7 +145,7 @@ automatically. Three ways to resolve subdomains locally:
   sudo brew services start dnsmasq
   sudo mkdir -p /etc/resolver && echo 'nameserver 127.0.0.1' | sudo tee /etc/resolver/suraha.net
   ```
-  Then open `http://golachipa.suraha.net:5173`. To drop the `:5173`, serve the frontend on port
+  Then open `http://galachipa.suraha.net:5173`. To drop the `:5173`, serve the frontend on port
   80 (e.g. a ServBay/Caddy reverse proxy `*.suraha.net:80 → 127.0.0.1:5173`, or `sudo npx vite
   --host --port 80`). `api/.env` sets `APP_URL`/`ASSET_URL` to `suraha.net` so uploaded assets
   (slider images, avatars) resolve.
