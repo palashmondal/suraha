@@ -21,7 +21,6 @@ import {
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
-import { bn } from '../../utils/bnNum';
 import { api, ApiError } from '../../api/client';
 import StatusPill from '../../components/StatusPill';
 import PaginationBar from '../../components/PaginationBar';
@@ -33,7 +32,6 @@ interface UpazilaRow {
   name_bn: string;
   is_active: boolean;
   district?: { id: number; name: string; name_bn: string; division?: Division | null };
-  unions_count?: number;
   domain: string;
   created_at: string | null;
 }
@@ -110,7 +108,6 @@ export default function Instances() {
               <TableCell>{S.instances.colDistrict}</TableCell>
               <TableCell>{S.instances.colDivision}</TableCell>
               <TableCell>{S.instances.colSubdomain}</TableCell>
-              <TableCell align="center">{S.instances.colUnions}</TableCell>
               <TableCell>{S.instances.colStatus}</TableCell>
             </TableRow>
           </TableHead>
@@ -128,7 +125,6 @@ export default function Instances() {
                 <TableCell sx={{ direction: 'ltr', fontFamily: 'monospace', fontSize: 13 }}>
                   {u.domain}
                 </TableCell>
-                <TableCell align="center">{bn(u.unions_count ?? 0)}</TableCell>
                 <TableCell>
                   <StatusPill
                     label={u.is_active ? S.instances.active : S.instances.inactive}
@@ -139,7 +135,7 @@ export default function Instances() {
             ))}
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ color: 'text.secondary', py: 4 }}>
+                <TableCell colSpan={5} align="center" sx={{ color: 'text.secondary', py: 4 }}>
                   {loading ? S.common.loading : S.common.noData}
                 </TableCell>
               </TableRow>
