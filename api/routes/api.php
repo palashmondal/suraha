@@ -11,6 +11,7 @@ use App\Http\Controllers\OfficerController;
 use App\Http\Controllers\PregnancyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistryController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SuggestionController;
 use Illuminate\Support\Facades\Route;
 
@@ -180,6 +181,9 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
                 Route::post('suggestions/{suggestion}/reject', [SuggestionController::class, 'reject']);
             });
         });
+
+        // Unified search across every module of one upazila (the UNO's top-bar box).
+        Route::middleware('role:uno,seal_admin')->get('search', [SearchController::class, 'index']);
 
         // Upazila switcher — SEAL (all) / DC (own district) / others (own only).
         Route::get('registry/switchable-upazilas', [RegistryController::class, 'switchableUpazilas']);

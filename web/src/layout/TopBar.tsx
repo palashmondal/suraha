@@ -24,6 +24,7 @@ import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import { bnStrings as S } from '../i18n';
 import { useColorMode } from '../theme/ColorModeContext';
 import NotificationMenu from '../components/NotificationMenu';
+import UnifiedSearch from '../components/UnifiedSearch';
 import { getNotifications, markAllNotificationsRead, markNotificationRead, type AppNotification } from '../api/notifications';
 import { useAuth } from '../auth/AuthContext';
 import { useSelectedTenant } from '../tenant/SelectedTenantContext';
@@ -47,6 +48,7 @@ export default function TopBar() {
   // The switcher makes sense wherever a cross-tenant user has no fixed tenant: SEAL on the
   // central host, the DC on its district host. Both pick an upazila via the X-Upazila header.
   // On a upazila subdomain the tenant is pinned by the URL, so NO ONE sees the switcher.
+  const isUno = user?.role === 'uno';
   const isAggregateHost = host?.kind === 'central' || host?.kind === 'district';
   const canSwitch = user ? user.scope !== 'tenant' && isAggregateHost : false;
 
@@ -124,6 +126,9 @@ export default function TopBar() {
       {/* Left spacer — with the matching one on the right, this centres the switcher in the bar
           rather than leaving it hard against the sidebar. */}
       <Box sx={{ flex: 1, minWidth: 0 }} />
+
+      {/* A UNO has no upazila to switch, so the centre slot carries their search instead. */}
+      {isUno && <UnifiedSearch />}
 
       {/* Upazila switcher — cross-tenant roles only (SEAL/DC) */}
       {canSwitch && (
