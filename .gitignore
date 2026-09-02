@@ -41,3 +41,6 @@ Icon
 
 # TS incremental build info
 web/tsconfig.tsbuildinfo
+
+# scripts/dev.sh service logs
+.dev-logs/
