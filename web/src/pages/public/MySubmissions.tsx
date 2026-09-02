@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box, Container, Paper, Stack, Typography } from '@mui/material';
 import { bnStrings as S } from '../../i18n';
-import { bn } from '../../utils/bnNum';
+import { bnDate } from '../../utils/bnNum';
 import PublicLayout from './PublicLayout';
 import StatusPill from '../../components/StatusPill';
 import EmptyState from '../../components/EmptyState';
@@ -34,7 +34,7 @@ export default function MySubmissions() {
             <Paper key={s.token} elevation={0} sx={{ p: 2.5, borderRadius: '14px', border: (t) => `1px solid ${t.palette.divider}` }}>
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>{s.type_label}{s.date ? ` · ${bn(s.date)}` : ''}</Typography>
+                  <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>{s.type_label}{s.date ? ` · ${bnDate(s.date)}` : ''}</Typography>
                   <Typography sx={{ fontWeight: 600 }} noWrap>{s.title}</Typography>
                   <Typography sx={{ fontSize: 13, fontFamily: 'monospace', color: 'primary.main' }}>{s.token}</Typography>
                 </Box>

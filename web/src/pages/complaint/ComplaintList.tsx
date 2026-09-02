@@ -4,7 +4,7 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
-import { bn } from '../../utils/bnNum';
+import { bn, bnDate } from '../../utils/bnNum';
 import PageHeader from '../../components/PageHeader';
 import TableTabs, { type TableTab } from '../../components/TableTabs';
 import DataTable, { type Column } from '../../components/DataTable';
@@ -61,7 +61,7 @@ export default function ComplaintList() {
 
   const columns: Column<Complaint>[] = [
     { key: 'title', header: S.complaint.colTitle, render: (r) => <span style={{ fontWeight: 600 }}>{r.title}</span> },
-    { key: 'complaint_date', header: S.complaint.colDate, render: (r) => (r.complaint_date ? bn(r.complaint_date) : '—') },
+    { key: 'complaint_date', header: S.complaint.colDate, render: (r) => (r.complaint_date ? bnDate(r.complaint_date) : '—') },
     { key: 'complaint_time', header: S.complaint.colTime, render: (r) => (r.complaint_time ? bn(r.complaint_time) : '—') },
     { key: 'complainant_name', header: S.complaint.colComplainant },
     {

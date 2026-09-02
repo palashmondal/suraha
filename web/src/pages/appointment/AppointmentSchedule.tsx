@@ -4,7 +4,7 @@ import EventRoundedIcon from '@mui/icons-material/EventRounded';
 import ScheduleRoundedIcon from '@mui/icons-material/ScheduleRounded';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
-import { bn } from '../../utils/bnNum';
+import { bn, bnDate } from '../../utils/bnNum';
 import PageHeader from '../../components/PageHeader';
 import EmptyState from '../../components/EmptyState';
 import LoadingState from '../../components/LoadingState';
@@ -44,7 +44,7 @@ export default function AppointmentSchedule() {
           <Box key={date}>
             <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
               <EventRoundedIcon sx={{ color: 'primary.main' }} />
-              <Typography sx={{ fontWeight: 800 }}>{bn(date)}</Typography>
+              <Typography sx={{ fontWeight: 800 }}>{bnDate(date)}</Typography>
               <Chip size="small" label={`${bn(items.length)} ${S.appointment.countSuffix}`} />
             </Stack>
             <Stack spacing={1}>

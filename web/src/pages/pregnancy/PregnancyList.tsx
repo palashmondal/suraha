@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
-import { bn } from '../../utils/bnNum';
+import { bn, bnDate } from '../../utils/bnNum';
 import PageHeader from '../../components/PageHeader';
 import TableTabs, { type TableTab } from '../../components/TableTabs';
 import DataTable, { type Column } from '../../components/DataTable';
@@ -66,7 +66,7 @@ export default function PregnancyList() {
     {
       key: 'expected',
       header: S.pregnancy.colExpected,
-      render: (r) => (r.expected_delivery_date ? bn(r.expected_delivery_date) : '—'),
+      render: (r) => (r.expected_delivery_date ? bnDate(r.expected_delivery_date) : '—'),
     },
   ];
 

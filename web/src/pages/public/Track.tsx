@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, Box, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
 import { bnStrings as S } from '../../i18n';
-import { bn } from '../../utils/bnNum';
+import { bn, bnDate } from '../../utils/bnNum';
 import PublicLayout from './PublicLayout';
 import StatusPill from '../../components/StatusPill';
 import StatusTimeline, { type TimelineNode } from '../../components/StatusTimeline';
@@ -63,7 +63,7 @@ export default function Track() {
             </Stack>
             <Typography sx={{ fontSize: 19, fontWeight: 700 }}>{result.title}</Typography>
             <Typography sx={{ fontSize: 13.5, color: 'text.secondary', mb: 2 }}>
-              {result.applicant}{result.date ? ` · ${bn(result.date)}` : ''}
+              {result.applicant}{result.date ? ` · ${bnDate(result.date)}` : ''}
             </Typography>
             <StatusTimeline nodes={nodes} />
           </Paper>

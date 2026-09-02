@@ -7,7 +7,7 @@ import ModuleSummaryCard from '../components/ModuleSummaryCard';
 import SectionCard from '../components/SectionCard';
 import EmptyState from '../components/EmptyState';
 import { bnStrings as S } from '../i18n';
-import { bn } from '../utils/bnNum';
+import { bn, bnDate } from '../utils/bnNum';
 import { useAuth } from '../auth/AuthContext';
 import { useSelectedTenant } from '../tenant/SelectedTenantContext';
 import { getDashboardStats, type DashboardStats } from '../api/dashboard';
@@ -155,7 +155,7 @@ export default function Dashboard() {
               action={<Button size="small" variant="outlined" color="inherit" onClick={() => navigate('/appointment')} sx={{ borderRadius: '8px', borderColor: 'divider', color: 'text.secondary', px: 2 }}>{S.common.all}</Button>}
             >
               {appointments.length === 0 ? <EmptyState /> : appointments.map((a, i) => (
-                <ListRow key={a.id} title={a.purpose} who={a.applicant_name} date={a.appointment_date ? bn(a.appointment_date) : ''} last={i === appointments.length - 1} />
+                <ListRow key={a.id} title={a.purpose} who={a.applicant_name} date={a.appointment_date ? bnDate(a.appointment_date) : ''} last={i === appointments.length - 1} />
               ))}
             </SectionCard>
           )}
@@ -166,7 +166,7 @@ export default function Dashboard() {
               action={<Button size="small" variant="outlined" color="inherit" onClick={() => navigate('/complaint')} sx={{ borderRadius: '8px', borderColor: 'divider', color: 'text.secondary', px: 2 }}>{S.common.all}</Button>}
             >
               {complaints.length === 0 ? <EmptyState /> : complaints.map((c, i) => (
-                <ListRow key={c.id} title={c.title} who={c.complainant_name} date={c.complaint_date ? bn(c.complaint_date) : ''} last={i === complaints.length - 1} />
+                <ListRow key={c.id} title={c.title} who={c.complainant_name} date={c.complaint_date ? bnDate(c.complaint_date) : ''} last={i === complaints.length - 1} />
               ))}
             </SectionCard>
           )}

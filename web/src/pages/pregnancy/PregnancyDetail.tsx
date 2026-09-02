@@ -14,7 +14,7 @@ import {
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import { useNavigate, useParams } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
-import { bn } from '../../utils/bnNum';
+import { bnDate } from '../../utils/bnNum';
 import DetailRow from '../../components/DetailRow';
 import SummaryPanel from '../../components/SummaryPanel';
 import AppDialog from '../../components/AppDialog';
@@ -25,7 +25,9 @@ import { approvePregnancy } from '../../api/birthReg';
 import { useAuth } from '../../auth/AuthContext';
 
 const yn = (v: boolean | null) => (v == null ? '—' : v ? S.pregnancy.yes : S.pregnancy.no);
-const dash = (v: string | number | null) => (v == null || v === '' ? '—' : bn(v));
+// bnDate leaves anything that is not an ISO date alone, so this stays safe for the plain
+// numbers and text it is also used for.
+const dash = (v: string | number | null) => (v == null || v === '' ? '—' : bnDate(String(v)));
 
 export default function PregnancyDetail() {
   const { id } = useParams<{ id: string }>();

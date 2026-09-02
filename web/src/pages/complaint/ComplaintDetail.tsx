@@ -6,7 +6,7 @@ import PictureAsPdfRoundedIcon from '@mui/icons-material/PictureAsPdfRounded';
 import { useNavigate, useParams } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
 import { ApiError } from '../../api/client';
-import { bn } from '../../utils/bnNum';
+import { bn, bnDate } from '../../utils/bnNum';
 import SectionTitle from '../../components/SectionTitle';
 import DetailRow from '../../components/DetailRow';
 import SummaryPanel from '../../components/SummaryPanel';
@@ -83,7 +83,7 @@ export default function ComplaintDetail() {
           <SectionTitle>{S.complaint.secDetails}</SectionTitle>
           <Box sx={{ mt: 1 }}>
             <DetailRow label={S.complaint.fTitle} value={c.title} />
-            <DetailRow label={S.complaint.colDate} value={c.complaint_date ? bn(c.complaint_date) : '—'} />
+            <DetailRow label={S.complaint.colDate} value={c.complaint_date ? bnDate(c.complaint_date) : '—'} />
             <DetailRow label={S.complaint.colTime} value={c.complaint_time ? bn(c.complaint_time) : '—'} />
             <DetailRow label={S.complaint.fDesc} value={c.description ?? '—'} divider={false} />
           </Box>
@@ -99,8 +99,8 @@ export default function ComplaintDetail() {
           title={c.complainant_name}
           lines={[
             { label: S.complaint.fOfficer, value: c.investigating_officer ?? '—' },
-            { label: S.complaint.dueDate, value: c.due_date ? bn(c.due_date) : '—' },
-            { label: S.complaint.hearingDateLabel, value: c.hearing_date ? bn(c.hearing_date) : '—' },
+            { label: S.complaint.dueDate, value: c.due_date ? bnDate(c.due_date) : '—' },
+            { label: S.complaint.hearingDateLabel, value: c.hearing_date ? bnDate(c.hearing_date) : '—' },
           ]}
         >
           <Stack spacing={1}>
@@ -162,12 +162,12 @@ function ProcessTimeline({ entries }: { entries: TimelineEntry[] }) {
             {typeof e.meta?.officer_name === 'string' && (
               <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
                 {S.complaint.fOfficer}: {e.meta.officer_name}
-                {typeof e.meta?.due_date === 'string' && ` · ${S.complaint.dueDate}: ${bn(e.meta.due_date)}`}
+                {typeof e.meta?.due_date === 'string' && ` · ${S.complaint.dueDate}: ${bnDate(e.meta.due_date)}`}
               </Typography>
             )}
             {typeof e.meta?.hearing_date === 'string' && (
               <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>
-                {S.complaint.hearingOn}: {bn(e.meta.hearing_date)}
+                {S.complaint.hearingOn}: {bnDate(e.meta.hearing_date)}
               </Typography>
             )}
             {e.comment && (

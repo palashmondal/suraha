@@ -3,7 +3,7 @@ import { Alert, Box, Button, IconButton, Paper, Stack, Typography } from '@mui/m
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import { useNavigate, useParams } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
-import { bn } from '../../utils/bnNum';
+import { bn, bnDate } from '../../utils/bnNum';
 import SectionTitle from '../../components/SectionTitle';
 import DetailRow from '../../components/DetailRow';
 import SummaryPanel from '../../components/SummaryPanel';
@@ -59,7 +59,7 @@ export default function AppointmentDetail() {
           <SectionTitle>{S.appointment.secRequest}</SectionTitle>
           <Box sx={{ mt: 1 }}>
             <DetailRow label={S.appointment.fPurpose} value={a.purpose} />
-            <DetailRow label={decided ? S.appointment.confirmDate : S.appointment.proposedDate} value={a.appointment_date ? bn(a.appointment_date) : '—'} />
+            <DetailRow label={decided ? S.appointment.confirmDate : S.appointment.proposedDate} value={a.appointment_date ? bnDate(a.appointment_date) : '—'} />
             <DetailRow label={decided ? S.appointment.confirmTime : S.appointment.proposedTime} value={a.appointment_time ? bn(a.appointment_time) : '—'} />
             <DetailRow label={S.appointment.fDesc} value={a.description ?? '—'} divider={!!a.decision_note} />
             {a.decision_note && <DetailRow label={S.appointment.decision} value={a.decision_note} divider={false} />}
@@ -71,7 +71,7 @@ export default function AppointmentDetail() {
         <SummaryPanel
           title={a.applicant_name}
           lines={[
-            { label: decided ? S.appointment.confirmDate : S.appointment.proposedDate, value: a.appointment_date ? bn(a.appointment_date) : '—' },
+            { label: decided ? S.appointment.confirmDate : S.appointment.proposedDate, value: a.appointment_date ? bnDate(a.appointment_date) : '—' },
             { label: decided ? S.appointment.confirmTime : S.appointment.proposedTime, value: a.appointment_time ? bn(a.appointment_time) : '—' },
           ]}
         >

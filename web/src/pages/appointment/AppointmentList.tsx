@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
-import { bn } from '../../utils/bnNum';
+import { bn, bnDate } from '../../utils/bnNum';
 import PageHeader from '../../components/PageHeader';
 import TableTabs, { type TableTab } from '../../components/TableTabs';
 import DataTable, { type Column } from '../../components/DataTable';
@@ -54,7 +54,7 @@ export default function AppointmentList() {
   }));
 
   const columns: Column<Appointment>[] = [
-    { key: 'appointment_date', header: S.appointment.colDate, render: (r) => (r.appointment_date ? bn(r.appointment_date) : '—') },
+    { key: 'appointment_date', header: S.appointment.colDate, render: (r) => (r.appointment_date ? bnDate(r.appointment_date) : '—') },
     { key: 'appointment_time', header: S.appointment.colTime, render: (r) => (r.appointment_time ? bn(r.appointment_time) : '—') },
     { key: 'purpose', header: S.appointment.colPurpose, render: (r) => <span style={{ fontWeight: 600 }}>{r.purpose}</span> },
     { key: 'description', header: S.appointment.colDesc, render: (r) => r.description ?? '—' },
