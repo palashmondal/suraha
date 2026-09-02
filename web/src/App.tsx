@@ -30,6 +30,7 @@ import GeneralInfoManage from './pages/content/GeneralInfoManage';
 import Reports from './pages/reports/Reports';
 import NotificationsPage from './pages/NotificationsPage';
 import { useAuth } from './auth/AuthContext';
+import { useHostContext } from './tenant/host';
 
 function Spinner() {
   return (
@@ -67,6 +68,10 @@ function Home() {
 }
 
 export default function App() {
+  // Resolves the host once for the whole app, which is also what sets the tab title
+  // (see tenant/host.ts). Routes that never render TopBar still get the right title.
+  useHostContext();
+
   return (
     <Routes>
       {/* Public (per-subdomain) */}

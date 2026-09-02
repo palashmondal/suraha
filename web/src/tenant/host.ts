@@ -6,17 +6,29 @@ import { getHostContext, type HostContext } from '../api/registry';
 let cached: HostContext | null = null;
 let inflight: Promise<HostContext> | null = null;
 
+// The tab title names the upazila on its own subdomain (সুরাহা - গলাচিপা উপজেলা) and stays plain
+// সুরাহা on the central host. It is the same on every page of a host, and host context resolves
+// once per page load, so setting it here covers the whole app with no per-route wiring.
+// index.html carries the plain title as the pre-hydration default.
+function applyDocumentTitle(ctx: HostContext): void {
+  document.title = ctx.kind === 'upazila' && ctx.name_bn
+    ? `সুরাহা - ${ctx.name_bn} উপজেলা`
+    : 'সুরাহা';
+}
+
 function load(): Promise<HostContext> {
   if (cached) return Promise.resolve(cached);
   if (!inflight) {
     inflight = getHostContext()
       .then((ctx) => {
         cached = ctx;
+        applyDocumentTitle(ctx);
         return ctx;
       })
       .catch(() => {
         // Fall back to central so the UI stays usable if the lookup fails.
         cached = { kind: 'central', slug: null, name_bn: null };
+        applyDocumentTitle(cached);
         return cached;
       })
       .finally(() => {
