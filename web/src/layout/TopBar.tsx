@@ -24,7 +24,7 @@ import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import { bnStrings as S } from '../i18n';
 import { useColorMode } from '../theme/ColorModeContext';
 import NotificationMenu from '../components/NotificationMenu';
-import { getNotifications, markAllNotificationsRead, type AppNotification } from '../api/notifications';
+import { getNotifications, markAllNotificationsRead, markNotificationRead, type AppNotification } from '../api/notifications';
 import { useAuth } from '../auth/AuthContext';
 import { useSelectedTenant } from '../tenant/SelectedTenantContext';
 import { useHostContext } from '../tenant/host';
@@ -90,6 +90,18 @@ export default function TopBar() {
   const chooseAll = () => {
     setSelectedUpazila(null); // clears X-Upazila → API returns the cross-tenant aggregate
     setAnchor(null);
+  };
+
+  // Opening a notification takes you to the record it is about. Marking it read is fire-and-
+  // forget: the navigation should not wait on it, and a failure there is not worth blocking on.
+  const openNotification = (n: AppNotification) => {
+    setNotifAnchor(null);
+
+    if (n.unread) {
+      markNotificationRead(n.id).then(loadNotifs).catch(() => {});
+    }
+
+    if (n.link) navigate(n.link);
   };
 
   const doLogout = async () => {
@@ -180,6 +192,7 @@ export default function TopBar() {
         unreadCount={unread}
         onMarkAll={async () => { await markAllNotificationsRead(); loadNotifs(); }}
         onViewAll={() => { setNotifAnchor(null); navigate('/notifications'); }}
+        onOpen={openNotification}
       />
 
       {/* Profile: name (bigger) + designation on the left, picture rightmost; opens menu */}

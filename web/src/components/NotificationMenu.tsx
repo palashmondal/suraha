@@ -12,6 +12,7 @@ export default function NotificationMenu({
   unreadCount,
   onMarkAll,
   onViewAll,
+  onOpen,
 }: {
   anchorEl: HTMLElement | null;
   onClose: () => void;
@@ -19,6 +20,8 @@ export default function NotificationMenu({
   unreadCount: number;
   onMarkAll: () => void;
   onViewAll: () => void;
+  /** Opening a notification marks it read and, when it points somewhere, goes there. */
+  onOpen: (n: AppNotification) => void;
 }) {
   const theme = useTheme();
 
@@ -73,13 +76,15 @@ export default function NotificationMenu({
           return (
             <Box key={n.id}>
               <Box
-                onClick={onClose}
+                onClick={() => onOpen(n)}
                 sx={{
                   px: 2,
                   py: 1.5,
                   display: 'flex',
                   gap: 1.5,
                   alignItems: 'flex-start',
+                  // A notification with no record behind it can still be marked read, so every
+                  // row stays clickable.
                   cursor: 'pointer',
                   bgcolor: n.unread
                     ? theme.palette.mode === 'light'
