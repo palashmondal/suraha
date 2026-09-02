@@ -39,9 +39,9 @@ const complaints: Complaint[] = [
 
 const tabs: TableTab[] = [
   { key: 'all', label: 'সকল অভিযোগ', total: 124 },
-  { key: 'pending', label: 'নিষ্পত্তিহীন', total: 25, newCount: 4, newTone: 'pending' },
-  { key: 'scheduled', label: 'শিডিউল যুক্ত', total: 36, newCount: 4, newTone: 'info' },
-  { key: 'done', label: 'নিষ্পত্তি সম্পন্ন', total: 36, newCount: 4, newTone: 'success' },
+  { key: 'pending', label: 'নিষ্পত্তিহীন', total: 25, tone: 'pending' },
+  { key: 'scheduled', label: 'শিডিউল যুক্ত', total: 36, tone: 'info' },
+  { key: 'done', label: 'নিষ্পত্তি সম্পন্ন', total: 36, tone: 'success' },
 ];
 
 function Block({ title, children }: { title: string; children: React.ReactNode }) {

@@ -5,13 +5,18 @@ import type { StatusTone } from './StatusPill';
 export interface TableTab {
   key: string;
   label: string;
-  total?: number; // kept for API compatibility; no longer rendered inline
-  newCount?: number; // shown as a small circular count badge next to the label
-  newTone?: StatusTone; // badge colour (default danger/red)
+  /** How many records the tab holds — what the badge shows. */
+  total?: number;
+  /** Badge colour (default danger/red). */
+  tone?: StatusTone;
 }
 
-// Tab bar above a list table. Each tab is a Bangla label with an optional circular count badge;
-// the active tab gets bold text and a purple underline (see প্রসূতি তালিকা design reference).
+// Tab bar above a list table: a Bangla label with a circular count of what the tab holds, the
+// active one bold and underlined (প্রসূতি তালিকা design reference).
+//
+// The badge used to show records added in the last seven days, which read as the tab's own count
+// and was wrong by that much — ডেলিভারি হয়েছে said ১ beside nineteen delivered mothers. Every
+// other list passed only a total and so showed no badge at all.
 export default function TableTabs({
   tabs,
   active,
@@ -34,7 +39,7 @@ export default function TableTabs({
     >
       {tabs.map((t) => {
         const isActive = t.key === active;
-        const badge = t.newTone ? theme.suraha.status[t.newTone] : theme.suraha.status.danger;
+        const badge = t.tone ? theme.suraha.status[t.tone] : theme.suraha.status.danger;
         return (
           <Box
             key={t.key}
@@ -62,7 +67,7 @@ export default function TableTabs({
             >
               {t.label}
             </Typography>
-            {t.newCount ? (
+            {t.total !== undefined ? (
               <Box
                 component="span"
                 sx={{
@@ -79,7 +84,7 @@ export default function TableTabs({
                   color: badge.fg,
                 }}
               >
-                {bn(t.newCount)}
+                {bn(t.total)}
               </Box>
             ) : null}
           </Box>

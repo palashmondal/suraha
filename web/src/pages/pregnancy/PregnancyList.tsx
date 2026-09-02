@@ -48,8 +48,7 @@ export default function PregnancyList() {
     key: t.key,
     label: TAB_LABEL[t.key] ?? t.key,
     total: t.total,
-    newCount: t.new || undefined,
-    newTone: TAB_TONE[t.key],
+    tone: TAB_TONE[t.key],
   }));
 
   const columns: Column<Pregnancy>[] = [
