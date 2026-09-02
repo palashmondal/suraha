@@ -50,7 +50,7 @@ export default function AppointmentList() {
     key: t.key,
     label: TAB_LABEL[t.key] ?? t.key,
     total: t.total,
-    newTone: TAB_TONE[t.key],
+    tone: TAB_TONE[t.key],
   }));
 
   const columns: Column<Appointment>[] = [

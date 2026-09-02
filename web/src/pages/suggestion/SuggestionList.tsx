@@ -65,7 +65,7 @@ export default function SuggestionList() {
       <PageHeader title={S.suggestion.listTitle} />
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-        <TableTabs tabs={tabs.map((t): TableTab => ({ key: t.key, label: TAB_LABEL[t.key] ?? t.key, total: t.total, newTone: TAB_TONE[t.key] }))} active={status} onChange={setStatus} />
+        <TableTabs tabs={tabs.map((t): TableTab => ({ key: t.key, label: TAB_LABEL[t.key] ?? t.key, total: t.total, tone: TAB_TONE[t.key] }))} active={status} onChange={setStatus} />
         <Box sx={{ flex: 1 }} />
         <TextField select size="small" label={S.suggestion.colKind} value={kind} onChange={(e) => setKind(e.target.value)} sx={{ minWidth: 190 }}>
           <MenuItem value="">{S.suggestion.allKinds}</MenuItem>
