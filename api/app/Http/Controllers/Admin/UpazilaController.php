@@ -8,6 +8,8 @@ use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UpazilaResource;
 use App\Models\District;
+use App\Models\Union;
+use App\Models\UnionRef;
 use App\Models\Upazila;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -74,6 +76,11 @@ class UpazilaController extends Controller
             ]);
             $upazila->domains()->create(['domain' => $data['slug']]);
 
+            // Give the new instance its real unions straight away. They are what an FWA or UP
+            // Sochib is posted to and what every pregnancy, complaint and appointment is filed
+            // under, so an upazila with an empty union list cannot actually be worked.
+            $this->seedUnions($upazila);
+
             $credentials = [];
 
             // UNO — one per upazila, always.
@@ -104,6 +111,36 @@ class UpazilaController extends Controller
             'data' => new UpazilaResource($upazila->load('district.division')),
             'credentials' => $credentials, // shown once — save now
         ], 201);
+    }
+
+    /**
+     * Copy an upazila's unions from the national catalogue into its own tenant-scoped table.
+     * Idempotent, so re-running it on an existing instance fills gaps without duplicating.
+     */
+    public function seedUnions(Upazila $upazila): int
+    {
+        $refs = UnionRef::whereHas('upazilaRef', fn ($q) => $q->where('slug', $upazila->getTenantKey()))
+            ->orderBy('name')
+            ->get();
+
+        $existing = Union::where('tenant_id', $upazila->getTenantKey())->pluck('name')->all();
+        $new = $refs->reject(fn (UnionRef $r) => in_array($r->name, $existing, true));
+
+        foreach ($new as $ref) {
+            // tenant_id is not fillable, and BelongsToTenant only auto-fills it from an
+            // initialized tenant — which there is none of on the central host where SEAL
+            // provisions. So set it on the instance rather than passing it to create().
+            $union = new Union([
+                'name' => $ref->name,
+                'name_bn' => $ref->name_bn,
+                'type' => 'union',
+                'ward_count' => 9,
+            ]);
+            $union->tenant_id = $upazila->getTenantKey();
+            $union->save();
+        }
+
+        return $new->count();
     }
 
     /**

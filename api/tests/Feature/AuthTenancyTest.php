@@ -45,12 +45,18 @@ class AuthTenancyTest extends TestCase
 
     public function test_unions_are_tenant_scoped(): void
     {
-        // Galachipa has 3 unions, Dumuria 2 — each subdomain sees only its own.
-        $this->getJson(self::GALACHIPA.'/api/registry/unions')
-            ->assertOk()->assertJsonCount(3, 'unions');
+        // Counts come from the national catalogue — Galachipa has 12 unions, Dumuria 14 — so this
+        // asserts the boundary rather than a hand-picked number: each subdomain sees its own set
+        // and none of the other's.
+        $galachipa = collect($this->getJson(self::GALACHIPA.'/api/registry/unions')
+            ->assertOk()->json('unions'))->pluck('name_bn');
+        $dumuria = collect($this->getJson(self::DUMURIA.'/api/registry/unions')
+            ->assertOk()->json('unions'))->pluck('name_bn');
 
-        $this->getJson(self::DUMURIA.'/api/registry/unions')
-            ->assertOk()->assertJsonCount(2, 'unions');
+        $this->assertNotEmpty($galachipa);
+        $this->assertNotEmpty($dumuria);
+        $this->assertContains('পানপট্টি', $galachipa);      // a real Galachipa union
+        $this->assertEmpty($galachipa->intersect($dumuria), 'one upazila is showing another\'s unions');
     }
 
     public function test_officer_can_log_in_on_their_upazila(): void
