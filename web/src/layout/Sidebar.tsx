@@ -39,8 +39,8 @@ import { bnStrings as S } from '../i18n';
 import { useAuth } from '../auth/AuthContext';
 
 export const SIDEBAR_WIDTH = 264;
-/** Collapsed rail: wide enough for the pill around a 24px icon, nothing more. */
-export const SIDEBAR_RAIL = 76;
+/** Collapsed rail: sized so the brand still reads, not just the icon pills. */
+export const SIDEBAR_RAIL = 88;
 const COLLAPSE_KEY = 'suraha.sidebar.collapsed';
 
 type Child = { key: string; label: string; icon: React.ReactNode; route?: string; managerOnly?: boolean };
@@ -319,8 +319,8 @@ export default function Sidebar() {
           src="/logo.png"
           alt={S.appName}
           sx={{
-            width: collapsed ? 38 : 52,
-            height: collapsed ? 38 : 52,
+            width: collapsed ? 50 : 52,
+            height: collapsed ? 50 : 52,
             transition: 'width 180ms ease, height 180ms ease',
           }}
         />
@@ -329,7 +329,7 @@ export default function Sidebar() {
           noWrap
           sx={{
             flex: collapsed ? 'none' : 1,
-            fontSize: collapsed ? 14 : 27,
+            fontSize: collapsed ? 17 : 27,
             fontWeight: 700,
             lineHeight: 1.2,
             transition: 'color 120ms ease',
