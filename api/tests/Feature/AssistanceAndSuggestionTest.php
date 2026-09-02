@@ -234,4 +234,33 @@ class AssistanceAndSuggestionTest extends TestCase
         $names = collect($this->getJson(self::GALACHIPA.'/api/search?q='.urlencode('গোপন প্রস্তাব').'')->json('results'))->pluck('name');
         $this->assertNotContains('অজ্ঞাতনামা তথ্যদাতা', $names);
     }
+
+    /**
+     * Each role searches only what it can already open. Offering an FWA a complaint would hand
+     * them a result that 403s on click, and show them a record they may not read on the way.
+     */
+    public function test_search_is_scoped_to_what_the_role_may_open(): void
+    {
+        \App\Models\Upazila::find('galachipa')->run(function () {
+            \App\Models\Pregnancy::factory()->create(['mother_name_bn' => 'শাপলা বেগম']);
+            \App\Models\Complaint::factory()->create(['complainant_name' => 'শাপলা বেগম']);
+            \App\Models\Assistance::factory()->create(['applicant_name' => 'শাপলা বেগম']);
+        });
+
+        $labels = function (string $username): array {
+            Sanctum::actingAs(User::where('username', $username)->firstOrFail());
+
+            return collect($this->getJson(self::GALACHIPA.'/api/search?q='.urlencode('শাপলা'))->assertOk()->json('results'))
+                ->pluck('label')->unique()->sort()->values()->all();
+        };
+
+        // An FWA sees mothers and nothing else.
+        $this->assertSame(['মায়ের নাম'], $labels('fwa_galachipa'));
+
+        // The UNO sees the same person across every module.
+        $uno = $labels('uno_galachipa');
+        $this->assertContains('মায়ের নাম', $uno);
+        $this->assertContains('অভিযোগ', $uno);
+        $this->assertContains('মানবিক সহায়তা', $uno);
+    }
 }

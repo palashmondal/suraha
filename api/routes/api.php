@@ -183,7 +183,7 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
         });
 
         // Unified search across every module of one upazila (the UNO's top-bar box).
-        Route::middleware('role:uno,seal_admin')->get('search', [SearchController::class, 'index']);
+        Route::middleware('role:fwa,up_sochib,uno,seal_admin')->get('search', [SearchController::class, 'index']);
 
         // Upazila switcher — SEAL (all) / DC (own district) / others (own only).
         Route::get('registry/switchable-upazilas', [RegistryController::class, 'switchableUpazilas']);
