@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Button, Chip, MenuItem, Paper, Snackbar, TextField, Typography, useTheme } from '@mui/material';
+import { Box, Chip, IconButton, MenuItem, Snackbar, TextField, Tooltip, Typography, useTheme } from '@mui/material';
 import PictureAsPdfRoundedIcon from '@mui/icons-material/PictureAsPdfRounded';
 import GridOnRoundedIcon from '@mui/icons-material/GridOnRounded';
 import { bnStrings as S } from '../../i18n';
@@ -52,25 +52,65 @@ export default function Reports() {
 
   return (
     <Box sx={{ display: 'grid', gap: 2.5 }}>
-      {/* Header + filters + export stubs */}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5 }}>
-        <Typography variant="h5" sx={{ mr: 1 }}>{S.reports.title}</Typography>
-        {isAggregate && <Chip size="small" color="primary" variant="outlined" label={`${r.scope.label} (${bn(r.scope.upazila_count)}${S.dashboard.upazilaCount})`} />}
-        <Box sx={{ flex: 1 }} />
-        <Button variant="outlined" startIcon={<PictureAsPdfRoundedIcon />} onClick={() => setToast(true)}>{S.reports.exportPdf}</Button>
-        <Button variant="outlined" startIcon={<GridOnRoundedIcon />} onClick={() => setToast(true)}>{S.reports.exportExcel}</Button>
-      </Box>
+      {/* Title, filters and exports on one line — the filters describe what the page is showing,
+          so they belong with its heading rather than in a panel of their own. They wrap to their
+          own row on narrow screens instead of squeezing. */}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, rowGap: 2 }}>
+        <Typography variant="h5" sx={{ mr: 0.5 }}>{S.reports.title}</Typography>
+        {isAggregate && (
+          <Chip
+            size="small"
+            color="primary"
+            variant="outlined"
+            label={`${r.scope.label} (${bn(r.scope.upazila_count)}${S.dashboard.upazilaCount})`}
+          />
+        )}
 
-      <Paper elevation={0} sx={{ p: 2, borderRadius: '14px', border: `1px solid ${theme.palette.divider}`, display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-        <TextField type="date" label={S.reports.from} size="small" InputLabelProps={{ shrink: true }} value={from} onChange={(e) => setFrom(e.target.value)} />
-        <TextField type="date" label={S.reports.to} size="small" InputLabelProps={{ shrink: true }} value={to} onChange={(e) => setTo(e.target.value)} />
+        <Box sx={{ flex: 1, minWidth: 16 }} />
+
+        <TextField
+          type="date"
+          label={S.reports.from}
+          size="small"
+          InputLabelProps={{ shrink: true }}
+          value={from}
+          onChange={(e) => setFrom(e.target.value)}
+          sx={{ width: 160 }}
+        />
+        <TextField
+          type="date"
+          label={S.reports.to}
+          size="small"
+          InputLabelProps={{ shrink: true }}
+          value={to}
+          onChange={(e) => setTo(e.target.value)}
+          sx={{ width: 160 }}
+        />
         {!isAggregate && (
-          <TextField select label={S.reports.union} size="small" sx={{ minWidth: 180 }} value={unionId} onChange={(e) => setUnionId(e.target.value)}>
+          <TextField
+            select
+            label={S.reports.union}
+            size="small"
+            sx={{ minWidth: 170 }}
+            value={unionId}
+            onChange={(e) => setUnionId(e.target.value)}
+          >
             <MenuItem value="">{S.reports.allUnions}</MenuItem>
             {unions.map((u) => <MenuItem key={u.id} value={String(u.id)}>{u.name_bn}</MenuItem>)}
           </TextField>
         )}
-      </Paper>
+
+        <Tooltip title={S.reports.exportPdf}>
+          <IconButton onClick={() => setToast(true)} sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: '10px' }}>
+            <PictureAsPdfRoundedIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title={S.reports.exportExcel}>
+          <IconButton onClick={() => setToast(true)} sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: '10px' }}>
+            <GridOnRoundedIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
 
       {/* KPI tiles */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3,1fr)', md: 'repeat(6,1fr)' }, gap: 1.5 }}>
