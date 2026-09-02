@@ -211,6 +211,9 @@ class AuthTenancyTest extends TestCase
             'username' => 'new_uno',
             'password' => 'secret123',
             'role' => Role::UNO->value,
+            'designation' => 'উপজেলা নির্বাহী কর্মকর্তা',
+            'phone' => '01744444444',
+            'email' => 'new.uno@example.com',
             'tenant_id' => 'dumuria',
         ])->assertCreated()->assertJsonPath('data.role', 'uno');
     }

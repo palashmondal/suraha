@@ -109,12 +109,23 @@ class OfficerController extends Controller
             'username' => ['required', 'string', 'max:60', Rule::unique('users', 'username')],
             'password' => ['required', 'string', 'min:8'],
             'role' => ['required', Rule::in($assignable)],
-            'designation' => ['nullable', 'string', 'max:120'],
-            'phone' => ['nullable', 'string', 'regex:/^01[0-9]{9}$/', Rule::unique('users', 'phone')],
+            'designation' => ['required', 'string', 'max:120'],
+            'phone' => ['required', 'string', 'regex:/^01[0-9]{9}$/', Rule::unique('users', 'phone')],
+            'email' => ['required', 'email', 'max:120', Rule::unique('users', 'email')],
+            'is_active' => ['nullable', 'boolean'],
             'tenant_id' => ['nullable', 'string', Rule::exists('tenants', 'id')],
             'district_id' => ['nullable', 'integer', Rule::exists('districts', 'id')],
-            'union_id' => ['nullable', 'integer', Rule::exists('unions', 'id')],
-            'ward_no' => ['nullable', 'integer', 'min:1', 'max:99'],
+            // Where an officer works is part of who they are: a UP Sochib serves one union, and an
+            // FWA one ward within it. Without these the record cannot be routed to, so they are
+            // required for those two roles and rejected as noise for the rest.
+            'union_id' => [
+                Rule::requiredIf(fn () => in_array($request->input('role'), [Role::FWA->value, Role::UP_SOCHIB->value], true)),
+                'nullable', 'integer', Rule::exists('unions', 'id'),
+            ],
+            'ward_no' => [
+                Rule::requiredIf(fn () => $request->input('role') === Role::FWA->value),
+                'nullable', 'integer', 'min:1', 'max:99',
+            ],
         ]);
 
         $role = Role::from($data['role']);
@@ -153,7 +164,7 @@ class OfficerController extends Controller
         }
 
         $data['password'] = Hash::make($data['password']);
-        $data['is_active'] = true;
+        $data['is_active'] = $data['is_active'] ?? true;
 
         $officer = User::create($data);
 
