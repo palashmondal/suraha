@@ -84,6 +84,8 @@ export default function Landing() {
                 <>
                   <Button variant="contained" size="large" onClick={() => navigate('/file-complaint')}>{S.public.ctaComplaint}</Button>
                   <Button variant="outlined" size="large" onClick={() => navigate('/book-appointment')}>{S.public.ctaAppointment}</Button>
+                  <Button variant="outlined" size="large" onClick={() => navigate('/apply-assistance')}>{S.public.ctaAssistance}</Button>
+                  <Button variant="outlined" size="large" onClick={() => navigate('/submit-suggestion')}>{S.public.ctaSuggestion}</Button>
                   <Button size="large" endIcon={<ArrowForwardRoundedIcon />} onClick={() => navigate('/track')}>{S.public.ctaTrack}</Button>
                 </>
               )}
