@@ -23,12 +23,11 @@ use Illuminate\Validation\Rule;
  */
 class UpazilaController extends Controller
 {
-    /** All Suraha instances with district + status + union count, for the admin listing table. */
+    /** All Suraha instances with division, district and status, for the admin listing table. */
     public function index()
     {
         $upazilas = Upazila::query()
             ->with('district.division')
-            ->withCount('unions')
             ->orderBy('name_bn')
             ->get();
 
@@ -102,7 +101,7 @@ class UpazilaController extends Controller
         });
 
         return response()->json([
-            'data' => new UpazilaResource($upazila->load('district.division')->loadCount('unions')),
+            'data' => new UpazilaResource($upazila->load('district.division')),
             'credentials' => $credentials, // shown once — save now
         ], 201);
     }
@@ -143,7 +142,7 @@ class UpazilaController extends Controller
     /** Single instance (used by the edit page). */
     public function show(Upazila $upazila): UpazilaResource
     {
-        return new UpazilaResource($upazila->load('district.division')->loadCount('unions'));
+        return new UpazilaResource($upazila->load('district.division'));
     }
 
     /**
@@ -153,16 +152,16 @@ class UpazilaController extends Controller
      */
     public function update(Request $request, Upazila $upazila): UpazilaResource
     {
+        // Only the active flag is editable. Name and district come from the national catalogue and
+        // define which real upazila this instance IS — editing them would silently repoint a live
+        // subdomain at a different place. To correct a mistake, delete the instance and recreate it.
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'name_bn' => ['required', 'string', 'max:120'],
-            'district_id' => ['required', 'integer', Rule::exists('districts', 'id')],
             'is_active' => ['required', 'boolean'],
         ]);
 
         $upazila->update($data);
 
-        return new UpazilaResource($upazila->load('district.division')->loadCount('unions'));
+        return new UpazilaResource($upazila->load('district.division'));
     }
 
     /**

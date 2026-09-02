@@ -10,7 +10,6 @@ import {
   DialogTitle,
   Divider,
   FormControlLabel,
-  MenuItem,
   Paper,
   Stack,
   Switch,
@@ -28,52 +27,22 @@ interface UpazilaDetail {
   name: string;
   name_bn: string;
   is_active: boolean;
-  district?: { id: number; name_bn: string; division?: DivisionOption | null };
+  district?: { id: number; name_bn: string; division?: { id: number; name_bn: string } | null };
   domain: string;
 }
 
-interface DistrictOption {
-  id: number;
-  name: string;
-  name_bn: string;
-  division_id: number | null;
-}
-
-interface DivisionOption {
-  id: number;
-  name: string;
-  name_bn: string;
-}
-
-interface UpazilaOption {
-  id: number;
-  name: string;
-  name_bn: string;
-  slug: string;
-  taken: boolean;
-}
-
-// Instance edit page: rename the upazila (Bangla/English), move it to another of the 64 districts,
-// toggle active status, or delete the instance (and all its data). The subdomain is derived from
-// the tenant's immutable slug ({slug}.{base domain}) and so is shown read-only — renaming it would
-// change the instance's identity and break every existing link and bookmark.
+// Instance page. Everything that identifies the instance — বিভাগ, জেলা, উপজেলা and the subdomain
+// derived from it — is fixed at creation and shown read-only: it comes from the national
+// catalogue and says which real upazila this instance IS. Editing it would silently repoint a
+// live subdomain at a different place, so correcting a mistake means deleting and recreating.
 //
-// Location follows the বিভাগ → জেলা hierarchy: division filters the district list, and only the
-// district is persisted (the division is implied by it).
+// That leaves two actions: toggle the instance active, or delete it and all its data.
 export default function InstanceDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [nameBn, setNameBn] = useState('');
-  const [nameEn, setNameEn] = useState('');
-  const [districtId, setDistrictId] = useState<number | ''>('');
-  const [divisionId, setDivisionId] = useState<number | ''>('');
+  const [instance, setInstance] = useState<UpazilaDetail | null>(null);
   const [isActive, setIsActive] = useState(true);
-  const [domain, setDomain] = useState('');
-
-  const [districts, setDistricts] = useState<DistrictOption[]>([]);
-  const [divisions, setDivisions] = useState<DivisionOption[]>([]);
-  const [upazilas, setUpazilas] = useState<UpazilaOption[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -86,48 +55,21 @@ export default function InstanceDetail() {
   };
 
   useEffect(() => {
-    api<{ districts: DistrictOption[] }>('/registry/districts')
-      .then((r) => setDistricts(r.districts))
-      .catch(() => setDistricts([]));
-    api<{ divisions: DivisionOption[] }>('/registry/divisions')
-      .then((r) => setDivisions(r.divisions))
-      .catch(() => setDivisions([]));
-  }, []);
-
-  useEffect(() => {
     if (!id) return;
     api<{ data: UpazilaDetail }>(`/upazilas/${id}`)
       .then((r) => {
-        const u = r.data;
-        setNameBn(u.name_bn);
-        setNameEn(u.name);
-        setDistrictId(u.district?.id ?? '');
-        setDivisionId(u.district?.division?.id ?? '');
-        setIsActive(u.is_active);
-        setDomain(u.domain);
+        setInstance(r.data);
+        setIsActive(r.data.is_active);
       })
       .catch(fail);
   }, [id]);
-
-  useEffect(() => {
-    if (districtId === '') {
-      setUpazilas([]);
-      return;
-    }
-    api<{ upazilas: UpazilaOption[] }>(`/registry/upazila-options?district_id=${districtId}`)
-      .then((r) => setUpazilas(r.upazilas))
-      .catch(() => setUpazilas([]));
-  }, [districtId]);
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setErr(null);
     try {
-      await api(`/upazilas/${id}`, {
-        method: 'PUT',
-        body: { name: nameEn, name_bn: nameBn, district_id: districtId, is_active: isActive },
-      });
+      await api(`/upazilas/${id}`, { method: 'PUT', body: { is_active: isActive } });
       setMsg(S.instances.saved);
     } catch (e) {
       fail(e);
@@ -150,6 +92,8 @@ export default function InstanceDetail() {
     }
   };
 
+  const readOnly = { readOnly: true } as const;
+
   return (
     <Box sx={{ maxWidth: 720, mx: 'auto', display: 'grid', gap: 3 }}>
       <Button
@@ -161,7 +105,7 @@ export default function InstanceDetail() {
       </Button>
 
       <Typography sx={{ fontSize: 22, fontWeight: 800 }}>
-        {S.instances.editTitle} — {nameBn || id}
+        {S.instances.editTitle} — {instance?.name_bn || id}
       </Typography>
 
       {msg && <Alert severity="success">{msg}</Alert>}
@@ -169,73 +113,35 @@ export default function InstanceDetail() {
 
       <Paper component="form" onSubmit={save} elevation={0} sx={{ p: 3, borderRadius: '16px', display: 'grid', gap: 2.5 }}>
         <TextField
-          label={S.instances.subdomainReadonly}
-          value={domain}
-          InputProps={{ readOnly: true, sx: { fontFamily: 'monospace', direction: 'ltr' } }}
+          label={S.instances.division}
+          value={instance?.district?.division?.name_bn ?? ''}
+          InputProps={readOnly}
           fullWidth
         />
         <TextField
-          select
-          label={S.instances.division}
-          value={divisionId}
-          onChange={(e) => {
-            setDivisionId(Number(e.target.value));
-            setDistrictId('');
-          }}
-          fullWidth
-        >
-          {divisions.map((v) => (
-            <MenuItem key={v.id} value={v.id}>
-              {v.name_bn}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
           label={S.instances.district}
-          value={districtId}
-          onChange={(e) => setDistrictId(Number(e.target.value))}
+          value={instance?.district?.name_bn ?? ''}
+          InputProps={readOnly}
           fullWidth
-          disabled={divisionId === ''}
-          helperText={divisionId === '' ? S.instances.divisionFirst : undefined}
-        >
-          {districts
-            .filter((d) => d.division_id === divisionId)
-            .map((d) => (
-              <MenuItem key={d.id} value={d.id}>
-                {d.name_bn}
-              </MenuItem>
-            ))}
-        </TextField>
-        {/* Names come from the national catalogue rather than free text. The subdomain above is
-            unaffected: it is the tenant's immutable identity, not a function of the current name. */}
+        />
         <TextField
-          select
           label={S.instances.upazila}
-          value={upazilas.some((u) => u.name === nameEn) ? nameEn : ''}
-          onChange={(e) => {
-            const picked = upazilas.find((u) => u.name === e.target.value);
-            if (picked) {
-              setNameEn(picked.name);
-              setNameBn(picked.name_bn);
-            }
-          }}
+          value={instance?.name_bn ?? ''}
+          InputProps={readOnly}
           fullWidth
-          disabled={districtId === ''}
-          helperText={districtId === '' ? S.instances.divisionFirst : nameBn}
-        >
-          {upazilas.map((u) => (
-            <MenuItem key={u.id} value={u.name}>
-              {u.name_bn}
-            </MenuItem>
-          ))}
-        </TextField>
+        />
+        <TextField
+          label={S.instances.subdomainReadonly}
+          value={instance?.domain ?? ''}
+          InputProps={{ ...readOnly, sx: { fontFamily: 'monospace', direction: 'ltr' } }}
+          fullWidth
+        />
         <FormControlLabel
           control={<Switch checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />}
           label={S.instances.activeLabel}
         />
         <Box>
-          <Button type="submit" variant="contained" disabled={busy}>
+          <Button type="submit" variant="contained" disabled={busy || !instance}>
             {S.instances.save}
           </Button>
         </Box>
@@ -264,6 +170,9 @@ export default function InstanceDetail() {
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
         <DialogTitle>{S.instances.deleteConfirmTitle}</DialogTitle>
         <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {instance?.domain}
+          </Alert>
           <DialogContentText>{S.instances.deleteConfirmBody}</DialogContentText>
         </DialogContent>
         <DialogActions>

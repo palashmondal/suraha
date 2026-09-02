@@ -190,6 +190,37 @@ class AdminUpazilaTest extends TestCase
             ->assertStatus(403);
     }
 
+    /**
+     * An instance's identity — which real upazila it is, and therefore its subdomain — is fixed at
+     * creation. Only the active flag may be edited; a rename or a district move would silently
+     * repoint a live subdomain at somewhere else.
+     */
+    public function test_only_the_active_flag_is_editable(): void
+    {
+        Sanctum::actingAs($this->seal());
+
+        $this->putJson(self::ADMIN.'/api/upazilas/galachipa', ['is_active' => false])
+            ->assertOk()
+            ->assertJsonPath('data.is_active', false)
+            ->assertJsonPath('data.name_bn', 'গলাচিপা');
+
+        // Name and district submitted alongside are ignored, not applied.
+        $patuakhali = \App\Models\District::where('name', 'Patuakhali')->value('id');
+        $dhaka = \App\Models\District::where('name', 'Dhaka')->value('id');
+        $this->putJson(self::ADMIN.'/api/upazilas/galachipa', [
+            'is_active' => true,
+            'name' => 'Hijacked',
+            'name_bn' => 'ছিনতাই',
+            'district_id' => $dhaka,
+        ])->assertOk();
+
+        $this->assertDatabaseHas('tenants', [
+            'id' => 'galachipa',
+            'name_bn' => 'গলাচিপা',
+            'district_id' => $patuakhali,
+        ]);
+    }
+
     // ---- বিভাগ → জেলা → উপজেলা hierarchy ------------------------------
 
     /**
