@@ -14,6 +14,8 @@ import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
+import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
+import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
@@ -36,6 +38,8 @@ type Item = {
 
 const baseItems: Item[] = [
   { key: 'dashboard', label: S.nav.dashboard, icon: <GridViewRoundedIcon />, route: '/' },
+  { key: 'advice', label: S.nav.advice, icon: <ForumOutlinedIcon />, route: '/advice' },
+  { key: 'humanitarian', label: S.nav.humanitarian, icon: <VolunteerActivismOutlinedIcon />, route: '/humanitarian' },
   {
     key: 'pregnancy',
     label: S.nav.pregnancy,
@@ -87,6 +91,7 @@ const reportsItem: Item = {
 
 const officerSection: Child[] = [
   { key: 'officers', label: S.nav.officerList, route: '/officers' },
+  { key: 'users', label: S.nav.users, route: '/users' },
 ];
 const generalSection: Child[] = [
   { key: 'phones', label: S.nav.phones, route: '/general-info' },

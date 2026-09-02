@@ -203,14 +203,15 @@ class AuthTenancyTest extends TestCase
         Sanctum::actingAs(User::where('username', 'fwa_galachipa')->first());
         $this->getJson(self::GALACHIPA.'/api/officers')->assertStatus(403);
 
-        // SEAL can create any role, including a UNO.
+        // SEAL can create any role, including a UNO — for an upazila that has no serving one.
+        // (Galachipa's seat is filled, which OfficerManagementTest covers.)
         Sanctum::actingAs(User::where('username', 'admin')->first());
         $this->postJson(self::GALACHIPA.'/api/officers', [
             'name' => 'নতুন কর্মকর্তা',
             'username' => 'new_uno',
             'password' => 'secret123',
             'role' => Role::UNO->value,
-            'tenant_id' => 'galachipa',
+            'tenant_id' => 'dumuria',
         ])->assertCreated()->assertJsonPath('data.role', 'uno');
     }
 

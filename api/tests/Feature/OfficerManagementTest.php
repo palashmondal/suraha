@@ -95,4 +95,47 @@ class OfficerManagementTest extends TestCase
         $this->patchJson(self::GALACHIPA."/api/officers/{$fwa->id}/status", ['is_active' => false])
             ->assertOk()->assertJsonPath('data.is_active', false);
     }
+
+    /** Every upazila is provisioned with a UNO, so a second serving one must be refused. */
+    public function test_only_one_active_uno_per_upazila(): void
+    {
+        Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
+
+        $this->postJson(self::GALACHIPA.'/api/officers', [
+            'name' => 'দ্বিতীয় ইউএনও', 'username' => 'uno_two', 'password' => 'password123', 'role' => 'uno',
+        ])->assertStatus(422)->assertJsonValidationErrors('role');
+
+        // Deactivate the serving one and the seat frees up — a handover, not a deletion.
+        $serving = User::where('username', 'uno_galachipa')->firstOrFail();
+        $serving->update(['is_active' => false]);
+
+        Sanctum::actingAs(User::where('username', 'admin')->firstOrFail());
+        $this->postJson(self::GALACHIPA.'/api/officers', [
+            'name' => 'দ্বিতীয় ইউএনও', 'username' => 'uno_two', 'password' => 'password123',
+            'role' => 'uno', 'tenant_id' => 'galachipa',
+        ])->assertCreated();
+    }
+
+    /** The directory is the whole upazila: its staff, its citizens, and its district's DC. */
+    public function test_user_directory_covers_the_upazila_and_its_dc(): void
+    {
+        Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
+
+        $roles = collect($this->getJson(self::GALACHIPA.'/api/users')->assertOk()->json('data'))
+            ->pluck('role');
+
+        foreach (['uno', 'up_sochib', 'fwa', 'investigating_officer', 'citizen', 'dc'] as $role) {
+            $this->assertContains($role, $roles, "directory is missing {$role}");
+        }
+
+        // Filters narrow it server-side.
+        $this->getJson(self::GALACHIPA.'/api/users?role=dc')
+            ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.role', 'dc');
+
+        // Another upazila's staff never appear.
+        $this->assertNotContains(
+            'dumuria',
+            collect($this->getJson(self::GALACHIPA.'/api/users')->json('data'))->pluck('tenant_id'),
+        );
+    }
 }

@@ -26,6 +26,8 @@ import FileComplaint from './pages/public/FileComplaint';
 import BookAppointment from './pages/public/BookAppointment';
 import MySubmissions from './pages/public/MySubmissions';
 import OfficerList from './pages/officers/OfficerList';
+import UserList from './pages/users/UserList';
+import ComingSoon from './pages/ComingSoon';
 import SliderManage from './pages/content/SliderManage';
 import GeneralInfoManage from './pages/content/GeneralInfoManage';
 import Reports from './pages/reports/Reports';
@@ -122,6 +124,11 @@ export default function App() {
       <Route path="/reports" element={<RequireAuth><Reports /></RequireAuth>} />
       <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
       <Route path="/officers" element={<RequireAuth roles={['uno', 'seal_admin']}><OfficerList /></RequireAuth>} />
+      <Route path="/users" element={<RequireAuth roles={['uno', 'seal_admin']}><UserList /></RequireAuth>} />
+
+      {/* Planned modules — the nav entries exist so the shape of the app is visible. */}
+      <Route path="/advice" element={<RequireAuth><ComingSoon title={S.nav.advice} /></RequireAuth>} />
+      <Route path="/humanitarian" element={<RequireAuth><ComingSoon title={S.nav.humanitarian} /></RequireAuth>} />
       <Route path="/sliders" element={<RequireAuth roles={['uno', 'seal_admin']}><SliderManage /></RequireAuth>} />
       <Route path="/general-info" element={<RequireAuth roles={['uno', 'seal_admin']}><GeneralInfoManage /></RequireAuth>} />
       <Route path="/instances" element={<RequireAuth roles={['seal_admin']}><Instances /></RequireAuth>} />
