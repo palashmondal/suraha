@@ -109,6 +109,10 @@ export default function TopBar() {
         bgcolor: 'background.default',
       }}
     >
+      {/* Left spacer — with the matching one on the right, this centres the switcher in the bar
+          rather than leaving it hard against the sidebar. */}
+      <Box sx={{ flex: 1, minWidth: 0 }} />
+
       {/* Upazila switcher — cross-tenant roles only (SEAL/DC) */}
       {canSwitch && (
         <>
@@ -120,7 +124,7 @@ export default function TopBar() {
               gap: 1,
               px: 2,
               py: 1.1,
-              minWidth: 300,
+              minWidth: 420,
               borderRadius: 999,
               cursor: 'pointer',
               bgcolor: theme.suraha.switcher,
@@ -130,7 +134,12 @@ export default function TopBar() {
             <Typography sx={{ flex: 1, fontSize: 15, fontWeight: 500 }}>{current}</Typography>
             <KeyboardArrowDownRoundedIcon sx={{ color: 'text.secondary' }} />
           </Box>
-          <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
+          <Menu
+            anchorEl={anchor}
+            open={Boolean(anchor)}
+            onClose={() => setAnchor(null)}
+            slotProps={{ paper: { sx: { minWidth: 420, borderRadius: '12px', mt: 1 } } }}
+          >
             <MenuItem selected={!selectedUpazilaId} onClick={chooseAll}>
               {S.common.allUpazilas}
             </MenuItem>
@@ -147,8 +156,10 @@ export default function TopBar() {
         </>
       )}
 
-      <Box sx={{ flex: 1 }} />
-
+      {/* Right region, flex-matched to the left spacer so the switcher sits at the true centre.
+          The controls justify to its end rather than trailing the spacer as siblings, which would
+          have offset the switcher by half their width. */}
+      <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2 }}>
       {/* Theme toggle */}
       <Tooltip title={mode === 'light' ? 'ডার্ক মোড' : 'লাইট মোড'}>
         <IconButton onClick={toggle}>
@@ -258,6 +269,7 @@ export default function TopBar() {
           {S.profile.logout}
         </MenuItem>
       </Menu>
+      </Box>
     </Box>
   );
 }
