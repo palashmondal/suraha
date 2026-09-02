@@ -48,7 +48,9 @@ export default function TopBar() {
   // The switcher makes sense wherever a cross-tenant user has no fixed tenant: SEAL on the
   // central host, the DC on its district host. Both pick an upazila via the X-Upazila header.
   // On a upazila subdomain the tenant is pinned by the URL, so NO ONE sees the switcher.
-  const isUno = user?.role === 'uno';
+  // The same box for everyone who has a list to search; the API scopes results to what the
+  // role may open, so an FWA never sees a complaint they cannot read.
+  const canSearch = user ? ['uno', 'fwa', 'up_sochib'].includes(user.role) : false;
   const isAggregateHost = host?.kind === 'central' || host?.kind === 'district';
   const canSwitch = user ? user.scope !== 'tenant' && isAggregateHost : false;
 
@@ -133,7 +135,7 @@ export default function TopBar() {
 
       {/* Middle: the UNO's search, or the upazila switcher for the roles that have one. */}
       <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
-      {isUno && <UnifiedSearch />}
+      {canSearch && <UnifiedSearch />}
 
       {canSwitch && (
         <>

@@ -155,6 +155,12 @@ export default function Sidebar() {
   // The DC is read-only (DenyReadOnlyWrites enforces it server-side): dashboard and reports only,
   // so the nav never offers a page whose actions would be refused.
   const isDc = user?.role === 'dc';
+  // An FWA works mothers and nothing else; a UP Sochib works mothers and the birth registrations
+  // that follow a delivery. Both keep only the প্রসূতি কল্যাণ group, with the children they can
+  // actually open — the routes already refuse the rest, so offering it would only 403.
+  const isFwa = user?.role === 'fwa';
+  const isSochib = user?.role === 'up_sochib';
+  const fieldOnly = isFwa || isSochib;
 
   // Folded state outlives navigation and reload; a wrapped read because storage can throw in a
   // private window and a sidebar is not worth a blank screen.
@@ -188,7 +194,14 @@ export default function Sidebar() {
   // A DC only reads figures, and an investigating officer only works their own complaints.
   const services: Item[] = (isDc ? [] : serviceItems)
     .filter((it) => ! it.managerOnly || isManager)
-    .filter((it) => ! isInvestigator || it.key === 'complaint');
+    .filter((it) => ! isInvestigator || it.key === 'complaint')
+    .filter((it) => ! fieldOnly || it.key === 'pregnancy')
+    .map((it) => (fieldOnly && it.children
+      ? {
+          ...it,
+          children: it.children.filter((c) => c.key === 'pregnancy.list' || (isSochib && c.key === 'birth')),
+        }
+      : it));
 
 
   const activePill = theme.suraha.activePillBg;
