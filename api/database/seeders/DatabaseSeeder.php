@@ -66,6 +66,12 @@ class DatabaseSeeder extends Seeder
         $this->call(AppointmentSeeder::class);
         $this->call(PublicContentSeeder::class);
         $this->call(NotificationSeeder::class);
+
+        // Six months of history for the dashboard charts — demo dressing, not a fixture. Kept out
+        // of tests, which assert exact counts against the small deterministic seed above.
+        if (! app()->runningUnitTests()) {
+            $this->call(ActivitySeeder::class);
+        }
     }
 
     private function upazila(string $id, string $name, string $nameBn, int $districtId): Upazila
