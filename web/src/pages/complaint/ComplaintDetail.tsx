@@ -89,13 +89,12 @@ export default function ComplaintDetail() {
           </Box>
         </Paper>
 
-        <Paper elevation={0} sx={{ borderRadius: '16px', p: 2.5 }}>
-          <SectionTitle>{S.complaint.secTimeline}</SectionTitle>
-          <ProcessTimeline entries={timeline} />
-        </Paper>
       </Box>
 
-      <Box sx={{ position: 'sticky', top: 16 }}>
+      {/* Right column: who the case belongs to and what can be done with it, then how it got
+          here. The timeline reads as context for those facts, so it sits under them rather than
+          below the complaint text in the main column. */}
+      <Box sx={{ position: 'sticky', top: 16, display: 'grid', gap: 2 }}>
         <SummaryPanel
           title={c.complainant_name}
           lines={[
@@ -126,6 +125,11 @@ export default function ComplaintDetail() {
             )}
           </Stack>
         </SummaryPanel>
+
+        <Paper elevation={0} sx={{ borderRadius: '16px', p: 2.5 }}>
+          <SectionTitle>{S.complaint.secTimeline}</SectionTitle>
+          <ProcessTimeline entries={timeline} />
+        </Paper>
       </Box>
 
       <ActionDialogs which={dlg} complaint={c} onClose={() => setDlg(null)} onDone={done} />
