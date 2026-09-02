@@ -28,6 +28,8 @@ export const bnStrings = {
     hearingSchedule: 'শুনানি',
     appointmentList: 'আবেদন তালিকা',
     appointmentSchedule: 'সাক্ষাৎকার সূচি',
+    collapse: 'মেনু সংকুচিত করুন',
+    expand: 'মেনু প্রসারিত করুন',
     sectionServices: 'নাগরিক সেবা',
     sectionOfficer: 'ড্যাশবোর্ড পরিচালনা',
     designation: 'পদবী',
