@@ -65,6 +65,13 @@ export const bnStrings = {
     inactive: 'নিষ্ক্রিয়',
   },
 
+  search: {
+    placeholder: 'নাম, মোবাইল, এনআইডি বা বিবরণ দিয়ে খুঁজুন',
+    mobile: 'মোবাইল নম্বর',
+    empty: 'কিছু পাওয়া যায়নি',
+    hint: 'অন্তত দুটি অক্ষর লিখুন',
+  },
+
   assistance: {
     title: 'মানবিক সহায়তা',
     subtitle: 'নাগরিকদের সহায়তার আবেদনসমূহ',

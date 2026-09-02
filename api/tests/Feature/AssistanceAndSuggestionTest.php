@@ -161,4 +161,59 @@ class AssistanceAndSuggestionTest extends TestCase
         $this->getJson(self::GALACHIPA.'/api/assistances')->assertOk();
         $this->postJson(self::GALACHIPA."/api/assistances/{$id}/approve")->assertStatus(403);
     }
+
+    /**
+     * The UNO's search box reaches every module at once and ranks by how many fields matched, so
+     * a record whose name begins with the term beats one that merely mentions it.
+     */
+    public function test_unified_search_spans_modules_and_ranks_by_match(): void
+    {
+        Sanctum::actingAs($this->uno());
+
+        \App\Models\Upazila::find('galachipa')->run(function () {
+            \App\Models\Assistance::factory()->create([
+                'applicant_name' => 'রহিমা বেগম', 'mobile' => '01777000111', 'title' => 'চিকিৎসা সহায়তা',
+            ]);
+            \App\Models\Complaint::factory()->create([
+                'complainant_name' => 'করিম মিয়া', 'title' => 'রহিমা সড়কে পানি জমে থাকে',
+            ]);
+        });
+
+        $results = $this->getJson(self::GALACHIPA.'/api/search?q=রহিমা')->assertOk()->json('results');
+
+        $this->assertNotEmpty($results);
+        // The applicant named রহিমা outranks the complaint that only mentions the word.
+        $this->assertSame('মানবিক সহায়তা', $results[0]['label']);
+        $this->assertGreaterThan($results[1]['score'] ?? 0, $results[0]['score']);
+
+        // A mobile number finds its record too.
+        $byPhone = $this->getJson(self::GALACHIPA.'/api/search?q=01777000111')->assertOk()->json('results');
+        $this->assertSame('রহিমা বেগম', $byPhone[0]['name']);
+
+        // One character is not a search.
+        $this->getJson(self::GALACHIPA.'/api/search?q=র')->assertOk()->assertJsonPath('results', []);
+    }
+
+    /** Search must not become a way to put a name to a confidential suggestion. */
+    public function test_search_never_reveals_a_confidential_author(): void
+    {
+        \App\Models\Upazila::find('galachipa')->run(fn () => \App\Models\Suggestion::factory()->create([
+            'applicant_name' => 'অজ্ঞাতনামা তথ্যদাতা',
+            'mobile' => '01999888777',
+            'title' => 'গোপন প্রস্তাব',
+            'is_confidential' => true,
+        ]));
+
+        Sanctum::actingAs($this->uno());
+
+        // Findable by what it says…
+        $this->assertNotEmpty($this->getJson(self::GALACHIPA.'/api/search?q='.urlencode('গোপন প্রস্তাব').'')->json('results'));
+
+        // …but not by who said it, and the name never appears in a result.
+        $this->assertEmpty($this->getJson(self::GALACHIPA.'/api/search?q=অজ্ঞাতনামা')->json('results'));
+        $this->assertEmpty($this->getJson(self::GALACHIPA.'/api/search?q=01999888777')->json('results'));
+
+        $names = collect($this->getJson(self::GALACHIPA.'/api/search?q='.urlencode('গোপন প্রস্তাব').'')->json('results'))->pluck('name');
+        $this->assertNotContains('অজ্ঞাতনামা তথ্যদাতা', $names);
+    }
 }
