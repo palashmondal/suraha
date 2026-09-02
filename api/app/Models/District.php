@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class District extends Model
 {
-    protected $fillable = ['name', 'name_bn', 'division_id'];
+    protected $fillable = ['name', 'name_bn', 'division_id', 'slug'];
 
     public function division(): BelongsTo
     {

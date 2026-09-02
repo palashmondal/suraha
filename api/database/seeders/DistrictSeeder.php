@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Models\District;
 use App\Models\Division;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 /**
  * All 64 districts of Bangladesh (English + Bangla), used by the instance/subdomain admin's
@@ -92,7 +93,13 @@ class DistrictSeeder extends Seeder
             // districts that already existed before divisions were introduced.
             District::updateOrCreate(
                 ['name' => $name],
-                ['name_bn' => $nameBn, 'division_id' => $divisions[$division] ?? null],
+                [
+                    'name_bn' => $nameBn,
+                    'division_id' => $divisions[$division] ?? null,
+                    // The DC dashboard's subdomain label. Shares a namespace with upazila slugs,
+                    // which the upazila catalogue keeps clear of these.
+                    'slug' => Str::slug($name),
+                ],
             );
         }
     }
