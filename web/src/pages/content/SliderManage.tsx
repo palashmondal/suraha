@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Box, IconButton, Paper, Stack, Switch, Typography } from '@mui/material';
+import { Alert, Box, IconButton, Paper, Stack, Switch, Typography } from '@mui/material';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import { bnStrings as S } from '../../i18n';
 import { bn } from '../../utils/bnNum';
@@ -10,6 +10,7 @@ import LoadingState from '../../components/LoadingState';
 import PaginationBar from '../../components/PaginationBar';
 import { usePagination } from '../../components/usePagination';
 import AppDialog from '../../components/AppDialog';
+import { ApiError } from '../../api/client';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { FormField } from '../../components/form/FormFields';
 import FileDropzone from '../../components/form/FileDropzone';
@@ -81,12 +82,14 @@ function CreateSliderDialog({ open, onClose, onCreated }: { open: boolean; onClo
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');
   const fileRef = useRef<File | null>(null);
+  const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => { if (open) { setTitle(''); setLink(''); fileRef.current = null; } }, [open]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErr(null);
     setBusy(true);
     try {
       const fd = new FormData();
@@ -95,6 +98,10 @@ function CreateSliderDialog({ open, onClose, onCreated }: { open: boolean; onClo
       if (fileRef.current) fd.append('image', fileRef.current);
       await createSlider(fd);
       onCreated();
+    } catch (e) {
+      // A rejected submission used to reject into nothing: the dialog stayed open, unchanged and
+      // unexplained, which reads as a button that does not work.
+      setErr(e instanceof ApiError ? (Object.values(e.errors ?? {})[0]?.[0] ?? e.message) : S.auth.genericError);
     } finally {
       setBusy(false);
     }
@@ -102,6 +109,7 @@ function CreateSliderDialog({ open, onClose, onCreated }: { open: boolean; onClo
 
   return (
     <AppDialog open={open} title={S.sliders.createTitle} onClose={onClose} onSubmit={submit} submitLabel={S.sliders.save} submitting={busy}>
+      {err && <Alert severity="error">{err}</Alert>}
       <FileDropzone onFile={(f) => { fileRef.current = f; }} accept="image/*" />
       <FormField label={S.sliders.fTitle} value={title} onChange={setTitle} />
       <FormField label={S.sliders.fLink} value={link} onChange={setLink} placeholder="https://…" />

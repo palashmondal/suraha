@@ -9,6 +9,7 @@ import DetailRow from '../../components/DetailRow';
 import SummaryPanel from '../../components/SummaryPanel';
 import StatusPill from '../../components/StatusPill';
 import AppDialog from '../../components/AppDialog';
+import { ApiError } from '../../api/client';
 import { DateField, FormField } from '../../components/form/FormFields';
 import { useAuth } from '../../auth/AuthContext';
 import {
@@ -100,6 +101,7 @@ function ActionDialogs({
   const [note, setNote] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
+  const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   // Prefill the accept dialog with the citizen's proposed time so the UNO can confirm or modify it.
@@ -113,6 +115,7 @@ function ActionDialogs({
 
   const run = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErr(null);
     setBusy(true);
     try {
       if (which === 'approve') {
@@ -125,6 +128,10 @@ function ActionDialogs({
         await rejectAppointment(appointment.id, note || undefined);
       }
       onDone();
+    } catch (e) {
+      // A rejected submission used to reject into nothing: the dialog stayed open, unchanged and
+      // unexplained, which reads as a button that does not work.
+      setErr(e instanceof ApiError ? (Object.values(e.errors ?? {})[0]?.[0] ?? e.message) : S.auth.genericError);
     } finally {
       setBusy(false);
     }
@@ -134,6 +141,7 @@ function ActionDialogs({
 
   return (
     <AppDialog open title={titles[which]} onClose={onClose} onSubmit={run} submitting={busy} maxWidth="xs">
+      {err && <Alert severity="error">{err}</Alert>}
       {which === 'approve' && (
         <>
           <DateField label={S.appointment.confirmDate} value={date} onChange={setDate} />

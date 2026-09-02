@@ -5,6 +5,7 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PictureAsPdfRoundedIcon from '@mui/icons-material/PictureAsPdfRounded';
 import { useNavigate, useParams } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
+import { ApiError } from '../../api/client';
 import { bn } from '../../utils/bnNum';
 import SectionTitle from '../../components/SectionTitle';
 import DetailRow from '../../components/DetailRow';
@@ -216,12 +217,13 @@ function ActionDialogs({
   const [pdf, setPdf] = useState<File | null>(null);
   const [images, setImages] = useState<File[]>([]);
   const [investigators, setInvestigators] = useState<Option[]>([]);
+  const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const pdfRef = useRef<HTMLInputElement>(null);
   const imgRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setOfficer(''); setDate(''); setComment(''); setPdf(null); setImages([]);
+    setOfficer(''); setDate(''); setComment(''); setPdf(null); setImages([]); setErr(null);
     if (which === 'accept') {
       listInvestigators()
         .then((r) => setInvestigators(r.investigators.map((i) => ({ value: String(i.id), label: i.name }))))
@@ -233,6 +235,7 @@ function ActionDialogs({
 
   const run = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErr(null);
     setBusy(true);
     try {
       const id = complaint.id;
@@ -254,6 +257,11 @@ function ActionDialogs({
         await reinvestigate(id, { comment, due_date: date || undefined });
       }
       onDone();
+    } catch (e) {
+      // Without this the promise rejected into nothing: the dialog stayed open, unchanged and
+      // unexplained, which reads as a button that does not work. A rejected date or an unchosen
+      // officer both land here.
+      setErr(e instanceof ApiError ? (Object.values(e.errors ?? {})[0]?.[0] ?? e.message) : S.auth.genericError);
     } finally {
       setBusy(false);
     }
@@ -270,6 +278,7 @@ function ActionDialogs({
 
   return (
     <AppDialog open title={titles[which]} onClose={onClose} onSubmit={run} submitting={busy} maxWidth="xs">
+      {err && <Alert severity="error">{err}</Alert>}
       {which === 'accept' && (
         <>
           <SelectField label={S.complaint.chooseOfficer} value={officer} onChange={setOfficer} options={investigators} placeholder="নির্বাচন করুন" />
