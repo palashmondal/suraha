@@ -12,7 +12,6 @@ import {
 } from '@mui/material';
 import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
-import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
 import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded';
@@ -35,10 +34,11 @@ type Item = {
   managerOnly?: boolean; // only UNO / SEAL (officer & content management)
 };
 
-const baseItems: Item[] = [
-  { key: 'dashboard', label: S.nav.dashboard, icon: <GridViewRoundedIcon />, route: '/' },
-  { key: 'advice', label: S.nav.advice, icon: <ForumOutlinedIcon />, route: '/advice' },
-  { key: 'humanitarian', label: S.nav.humanitarian, icon: <VolunteerActivismOutlinedIcon />, route: '/humanitarian' },
+const dashboardItem: Item = { key: 'dashboard', label: S.nav.dashboard, icon: <GridViewRoundedIcon />, route: '/' };
+
+// নাগরিক সেবা — the modules a citizen's case actually moves through, in the order an upazila
+// office works them.
+const serviceItems: Item[] = [
   {
     key: 'pregnancy',
     label: S.nav.pregnancy,
@@ -68,15 +68,9 @@ const baseItems: Item[] = [
       { key: 'complaint.officers', label: S.nav.officerList, route: '/investigators', managerOnly: true },
     ],
   },
+  { key: 'humanitarian', label: S.nav.humanitarian, icon: <VolunteerActivismOutlinedIcon />, route: '/humanitarian' },
+  { key: 'advice', label: S.nav.advice, icon: <ForumOutlinedIcon />, route: '/advice' },
 ];
-
-// SEAL-only: manage Suraha instances (upazilas / subdomains).
-const instancesItem: Item = {
-  key: 'instances',
-  label: S.nav.instances,
-  icon: <ApartmentRoundedIcon />,
-  route: '/instances',
-};
 
 // DC-only: reports live under প্রসূতি for everyone else, but a DC's whole job here is figures,
 // so it gets a direct entry instead of a group it may not otherwise open.
@@ -87,9 +81,12 @@ const reportsItem: Item = {
   route: '/reports',
 };
 
-const officerSection: Child[] = [
+// ড্যাশবোর্ড পরিচালনা — who and what the dashboards are made of. The instance roster is
+// SEAL-only, so it is added per role rather than declared here.
+const managementSection: Child[] = [
   { key: 'users', label: S.nav.users, route: '/users' },
 ];
+const instancesChild: Child = { key: 'instances', label: S.nav.instances, route: '/instances' };
 // সাধারণ তথ্য is the content area: the awareness slider belongs here with the phone list and the
 // about text, not among the case-handling modules above.
 const generalSection: Child[] = [
@@ -136,18 +133,20 @@ export default function Sidebar() {
   // so the nav never offers a page whose actions would be refused.
   const isDc = user?.role === 'dc';
 
-  // Insert the SEAL-only instances item right after the dashboard; drop manager-only items
-  // (e.g. slider management) for roles that can't manage content.
-  const items: Item[] = (
-    isDc
-      ? [baseItems[0], reportsItem]
-      : user?.role === 'seal_admin'
-        ? [baseItems[0], instancesItem, ...baseItems.slice(1)]
-        : baseItems
-  )
-    .filter((it) => ! it.managerOnly || isManager)
-    .filter((it) => ! isInvestigator || it.key === 'dashboard' || it.key === 'complaint')
+  // The dashboard always leads; the DC gets its reports beside it.
+  const topItems: Item[] = isDc ? [dashboardItem, reportsItem] : [dashboardItem];
 
+  // SEAL manages the instances themselves, so that roster sits with the other management pages.
+  const management: Child[] = user?.role === 'seal_admin'
+    ? [instancesChild, ...managementSection]
+    : managementSection;
+
+  // A DC only reads figures, and an investigating officer only works their own complaints.
+  const services: Item[] = (isDc ? [] : serviceItems)
+    .filter((it) => ! it.managerOnly || isManager)
+    .filter((it) => ! isInvestigator || it.key === 'complaint');
+
+  // One row shape for every list, so a section is just a different set of items.
 
   const activePill = theme.suraha.activePillBg;
   const activeText = theme.suraha.activePillText;
@@ -175,6 +174,47 @@ export default function Sidebar() {
     '&:hover': { bgcolor: isActive ? activePill : theme.palette.action.hover },
     '& .MuiListItemIcon-root': { color: isActive ? activeText : 'text.secondary', minWidth: 38 },
   });
+
+  // One row shape for every list, so a section is just a different set of items.
+  const renderItem = (item: Item) => {
+    const isActive = itemActive(item);
+    const isOpen = open[item.key];
+
+    return (
+      <Box key={item.key}>
+        <ListItemButton sx={rowSx(isActive)} onClick={() => handleItemClick(item)}>
+          <ListItemIcon>{item.icon}</ListItemIcon>
+          <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: 15, fontWeight: 500 }} />
+          {item.children ? (
+            isOpen ? (
+              <ExpandMoreRoundedIcon sx={{ color: 'text.secondary' }} />
+            ) : (
+              <ChevronRightRoundedIcon sx={{ color: 'text.secondary' }} />
+            )
+          ) : null}
+        </ListItemButton>
+        {item.children ? (
+          <Collapse in={isOpen} unmountOnExit>
+            <List disablePadding>
+              {item.children.filter((c) => ! c.managerOnly || isManager).map((child) => {
+                const childActive = child.route ? isRouteActive(child.route) : active === child.key;
+
+                return (
+                  <ListItemButton
+                    key={child.key}
+                    sx={{ ...rowSx(childActive), pl: 6.5 }}
+                    onClick={() => (child.route ? navigate(child.route) : setActive(child.key))}
+                  >
+                    <ListItemText primary={child.label} primaryTypographyProps={{ fontSize: 14.5 }} />
+                  </ListItemButton>
+                );
+              })}
+            </List>
+          </Collapse>
+        ) : null}
+      </Box>
+    );
+  };
 
   return (
     <Box
@@ -208,60 +248,22 @@ export default function Sidebar() {
         </Typography>
       </Box>
 
-      <List disablePadding>
-        {items.map((item) => {
-          const isActive = itemActive(item);
-          const isOpen = open[item.key];
-          return (
-            <Box key={item.key}>
-              <ListItemButton sx={rowSx(isActive)} onClick={() => handleItemClick(item)}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText
-                  primary={item.label}
-                  primaryTypographyProps={{ fontSize: 15, fontWeight: 500 }}
-                />
-                {item.children ? (
-                  isOpen ? (
-                    <ExpandMoreRoundedIcon sx={{ color: 'text.secondary' }} />
-                  ) : (
-                    <ChevronRightRoundedIcon sx={{ color: 'text.secondary' }} />
-                  )
-                ) : null}
-              </ListItemButton>
-              {item.children ? (
-                <Collapse in={isOpen} unmountOnExit>
-                  <List disablePadding>
-                    {item.children.filter((c) => ! c.managerOnly || isManager).map((child) => {
-                      const childActive = child.route
-                        ? isRouteActive(child.route)
-                        : active === child.key;
-                      return (
-                        <ListItemButton
-                          key={child.key}
-                          sx={{ ...rowSx(childActive), pl: 6.5 }}
-                          onClick={() => (child.route ? navigate(child.route) : setActive(child.key))}
-                        >
-                          <ListItemText
-                            primary={child.label}
-                            primaryTypographyProps={{ fontSize: 14.5 }}
-                          />
-                        </ListItemButton>
-                      );
-                    })}
-                  </List>
-                </Collapse>
-              ) : null}
-            </Box>
-          );
-        })}
-      </List>
+      <List disablePadding>{topItems.map(renderItem)}</List>
 
-      {/* কর্মকর্তা section — only officer-managers (UNO / SEAL) */}
+      {/* নাগরিক সেবা — the citizen-facing modules */}
+      {services.length > 0 && (
+        <>
+          <SectionHeader label={S.nav.sectionServices} />
+          <List disablePadding>{services.map(renderItem)}</List>
+        </>
+      )}
+
+      {/* ড্যাশবোর্ড পরিচালনা — only officer-managers (UNO / SEAL) */}
       {(user?.role === 'uno' || user?.role === 'seal_admin') && (
         <>
           <SectionHeader label={S.nav.sectionOfficer} />
           <List disablePadding>
-            {officerSection.map((c) => (
+            {management.map((c) => (
               <ListItemButton
                 key={c.key}
                 sx={rowSx(c.route ? isRouteActive(c.route) : active === c.key)}
