@@ -78,6 +78,20 @@ export async function api<T = unknown>(path: string, opts: Options = {}): Promis
     body: isFormData ? (body as FormData) : body !== undefined ? JSON.stringify(body) : undefined,
   });
 
+  // A dead session should end the session. Without this every caller swallows its own 401 into
+  // an empty list, so the app still looks signed in while each page mount sprays failures at the
+  // console — which is what an expired or revoked token (or a rebuilt database) looks like.
+  if (res.status === 401 && auth) {
+    tokenStore.clear();
+    localStorage.removeItem(SELECTED_TENANT_KEY);
+
+    if (! window.location.pathname.startsWith('/login')) {
+      window.location.assign('/login');
+    }
+
+    throw new ApiError(401, 'সেশনের মেয়াদ শেষ হয়েছে। আবার লগইন করুন।');
+  }
+
   if (res.status === 204) return undefined as T;
 
   const data = await res.json().catch(() => ({}));
