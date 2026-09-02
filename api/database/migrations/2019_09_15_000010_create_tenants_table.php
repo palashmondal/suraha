@@ -19,7 +19,7 @@ class CreateTenantsTable extends Migration
             $table->string('id')->primary();
 
             // Suraha: a tenant IS an upazila (sub-district). Custom registry columns:
-            $table->string('name');                 // English name, e.g. "Golachipa"
+            $table->string('name');                 // English name, e.g. "Galachipa"
             $table->string('name_bn');               // Bangla name, e.g. "গলাচিপা"
             $table->foreignId('district_id')->constrained('districts');
             $table->boolean('is_active')->default(true);

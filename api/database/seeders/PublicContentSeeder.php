@@ -8,18 +8,18 @@ use App\Models\Upazila;
 use Illuminate\Database\Seeder;
 
 /**
- * Sample sliders + general info for Golachipa so the landing page + dashboard have real content.
+ * Sample sliders + general info for Galachipa so the landing page + dashboard have real content.
  */
 class PublicContentSeeder extends Seeder
 {
     public function run(): void
     {
-        $golachipa = Upazila::find('golachipa');
-        if (! $golachipa) {
+        $galachipa = Upazila::find('galachipa');
+        if (! $galachipa) {
             return;
         }
 
-        tenancy()->initialize($golachipa);
+        tenancy()->initialize($galachipa);
 
         // Public-awareness posters from the upazila administration (§8.5). Images live in
         // storage/app/public/sliders and are served via the storage symlink.

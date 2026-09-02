@@ -18,7 +18,7 @@ class AuthTenancyTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://golachipa.lvh.me';
+    private const GOLACHIPA = 'http://galachipa.lvh.me';
     private const DUMURIA = 'http://dumuria.lvh.me';
     private const CENTRAL = 'http://localhost';
 
@@ -38,13 +38,13 @@ class AuthTenancyTest extends TestCase
     {
         $this->getJson(self::GOLACHIPA.'/api/registry/current-upazila')
             ->assertOk()
-            ->assertJsonPath('upazila.id', 'golachipa')
+            ->assertJsonPath('upazila.id', 'galachipa')
             ->assertJsonPath('upazila.name_bn', 'গলাচিপা');
     }
 
     public function test_unions_are_tenant_scoped(): void
     {
-        // Golachipa has 3 unions, Dumuria 2 — each subdomain sees only its own.
+        // Galachipa has 3 unions, Dumuria 2 — each subdomain sees only its own.
         $this->getJson(self::GOLACHIPA.'/api/registry/unions')
             ->assertOk()->assertJsonCount(3, 'unions');
 
@@ -55,7 +55,7 @@ class AuthTenancyTest extends TestCase
     public function test_officer_can_log_in_on_their_upazila(): void
     {
         $this->postJson(self::GOLACHIPA.'/api/auth/officer/login', [
-            'username' => 'uno_golachipa',
+            'username' => 'uno_galachipa',
             'password' => 'password',
         ])->assertOk()
             ->assertJsonPath('user.role', 'uno')
@@ -65,7 +65,7 @@ class AuthTenancyTest extends TestCase
     public function test_officer_cannot_log_in_on_a_different_upazila(): void
     {
         $this->postJson(self::DUMURIA.'/api/auth/officer/login', [
-            'username' => 'uno_golachipa',
+            'username' => 'uno_galachipa',
             'password' => 'password',
         ])->assertStatus(422);
     }
@@ -91,7 +91,7 @@ class AuthTenancyTest extends TestCase
     {
         // A upazila-level officer belongs to their subdomain, not the central admin site.
         $this->postJson(self::CENTRAL.'/api/auth/officer/login', [
-            'username' => 'uno_golachipa',
+            'username' => 'uno_galachipa',
             'password' => 'password',
         ])->assertStatus(422);
     }
@@ -100,7 +100,7 @@ class AuthTenancyTest extends TestCase
     {
         // DC/district hosts are a deferred TODO; today only SEAL may log in centrally.
         $this->postJson(self::CENTRAL.'/api/auth/officer/login', [
-            'username' => 'dc_barishal',
+            'username' => 'dc_patuakhali',
             'password' => 'password',
         ])->assertStatus(422);
     }
@@ -116,7 +116,7 @@ class AuthTenancyTest extends TestCase
         $this->getJson(self::GOLACHIPA.'/api/registry/host-context')
             ->assertOk()
             ->assertJsonPath('kind', 'upazila')
-            ->assertJsonPath('slug', 'golachipa')
+            ->assertJsonPath('slug', 'galachipa')
             ->assertJsonPath('name_bn', 'গলাচিপা');
     }
 
@@ -129,7 +129,7 @@ class AuthTenancyTest extends TestCase
     public function test_wrong_password_is_rejected(): void
     {
         $this->postJson(self::GOLACHIPA.'/api/auth/officer/login', [
-            'username' => 'uno_golachipa',
+            'username' => 'uno_galachipa',
             'password' => 'wrong',
         ])->assertStatus(422);
     }
@@ -152,7 +152,7 @@ class AuthTenancyTest extends TestCase
         $this->assertDatabaseHas('users', [
             'phone' => '01811111111',
             'role' => 'citizen',
-            'tenant_id' => 'golachipa',
+            'tenant_id' => 'galachipa',
         ]);
     }
 
@@ -165,7 +165,7 @@ class AuthTenancyTest extends TestCase
 
     public function test_dc_is_read_only_server_side(): void
     {
-        $dc = User::where('username', 'dc_barishal')->first();
+        $dc = User::where('username', 'dc_patuakhali')->first();
         Sanctum::actingAs($dc);
 
         // A write route must be blocked for the read-only DC regardless of the UI.
@@ -176,7 +176,7 @@ class AuthTenancyTest extends TestCase
     public function test_officer_management_is_limited_to_seal_and_uno(): void
     {
         // A field officer (FWA) cannot manage accounts.
-        Sanctum::actingAs(User::where('username', 'fwa_golachipa')->first());
+        Sanctum::actingAs(User::where('username', 'fwa_galachipa')->first());
         $this->getJson(self::GOLACHIPA.'/api/officers')->assertStatus(403);
 
         // SEAL can create any role, including a UNO.
@@ -186,7 +186,7 @@ class AuthTenancyTest extends TestCase
             'username' => 'new_uno',
             'password' => 'secret123',
             'role' => Role::UNO->value,
-            'tenant_id' => 'golachipa',
+            'tenant_id' => 'galachipa',
         ])->assertCreated()->assertJsonPath('data.role', 'uno');
     }
 
@@ -199,10 +199,13 @@ class AuthTenancyTest extends TestCase
 
     public function test_dc_switches_only_within_district(): void
     {
-        Sanctum::actingAs(User::where('username', 'dc_barishal')->first());
-        // Both seeded upazilas are in Barishal → DC sees both; scope still enforced by district.
+        // Galachipa is in Patuakhali and Dumuria in Khulna, so a DC sees only its own district's
+        // upazila — never the whole platform the way SEAL does.
+        Sanctum::actingAs(User::where('username', 'dc_patuakhali')->first());
         $this->getJson(self::CENTRAL.'/api/registry/switchable-upazilas')
-            ->assertOk()->assertJsonCount(2, 'upazilas');
+            ->assertOk()
+            ->assertJsonCount(1, 'upazilas')
+            ->assertJsonPath('upazilas.0.id', 'galachipa');
     }
 
     /**
@@ -215,7 +218,7 @@ class AuthTenancyTest extends TestCase
     {
         $base = config('tenancy.base_domain');
 
-        foreach ([$base, 'www.'.$base, 'golachipa.'.$base, 'dumuria.'.$base] as $allowed) {
+        foreach ([$base, 'www.'.$base, 'galachipa.'.$base, 'dumuria.'.$base] as $allowed) {
             $this->getJson(self::CENTRAL.'/api/tls/allowed?domain='.$allowed)
                 ->assertNoContent();
         }
@@ -224,7 +227,7 @@ class AuthTenancyTest extends TestCase
             'nowhere.'.$base,          // not a provisioned upazila
             'evil.example.com',        // someone else's domain
             'a.b.'.$base,              // more than one label deep
-            'golachipa.'.$base.'.evil.com', // suffix-confusion attempt
+            'galachipa.'.$base.'.evil.com', // suffix-confusion attempt
             '',                        // missing param
         ] as $denied) {
             $this->getJson(self::CENTRAL.'/api/tls/allowed?domain='.$denied)

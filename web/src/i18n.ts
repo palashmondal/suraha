@@ -48,7 +48,6 @@ export const bnStrings = {
     inactive: 'নিষ্ক্রিয়',
     details: 'বিস্তারিত',
     createTitle: 'নতুন উপজেলা ইনস্ট্যান্স',
-    slug: 'সাবডোমেইন (ইংরেজিতে, যেমন golachipa)',
     nameBn: 'উপজেলার নাম (বাংলা)',
     nameEn: 'উপজেলার নাম (ইংরেজি)',
     district: 'জেলা',

@@ -7,18 +7,18 @@ use App\Models\Upazila;
 use Illuminate\Database\Seeder;
 
 /**
- * Sample সাক্ষাৎকার data across statuses in Golachipa.
+ * Sample সাক্ষাৎকার data across statuses in Galachipa.
  */
 class AppointmentSeeder extends Seeder
 {
     public function run(): void
     {
-        $golachipa = Upazila::find('golachipa');
-        if (! $golachipa) {
+        $galachipa = Upazila::find('galachipa');
+        if (! $galachipa) {
             return;
         }
 
-        tenancy()->initialize($golachipa);
+        tenancy()->initialize($galachipa);
 
         Appointment::factory()->count(5)->create();              // অপেক্ষমান
         Appointment::factory()->count(4)->approved()->create();  // অনুমোদিত

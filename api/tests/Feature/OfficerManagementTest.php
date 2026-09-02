@@ -18,7 +18,7 @@ class OfficerManagementTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://golachipa.lvh.me';
+    private const GOLACHIPA = 'http://galachipa.lvh.me';
 
     protected function setUp(): void
     {
@@ -28,7 +28,7 @@ class OfficerManagementTest extends TestCase
 
     private function uno(): User
     {
-        return User::where('username', 'uno_golachipa')->firstOrFail();
+        return User::where('username', 'uno_galachipa')->firstOrFail();
     }
 
     public function test_uno_only_sees_own_upazila_officers(): void
@@ -37,7 +37,7 @@ class OfficerManagementTest extends TestCase
         $res = $this->getJson(self::GOLACHIPA.'/api/officers')->assertOk();
 
         foreach ($res->json('data') as $officer) {
-            $this->assertSame('golachipa', $officer['tenant_id']);
+            $this->assertSame('galachipa', $officer['tenant_id']);
         }
     }
 
@@ -55,14 +55,14 @@ class OfficerManagementTest extends TestCase
         $this->postJson(self::GOLACHIPA.'/api/officers', [
             'name' => 'নতুন এফডব্লিউএ', 'username' => 'fwa_new', 'password' => 'secret123',
             'role' => 'fwa', 'ward_no' => 4,
-        ])->assertCreated()->assertJsonPath('data.role', 'fwa')->assertJsonPath('data.tenant_id', 'golachipa');
+        ])->assertCreated()->assertJsonPath('data.role', 'fwa')->assertJsonPath('data.tenant_id', 'galachipa');
     }
 
     public function test_uno_cannot_create_a_uno_or_dc(): void
     {
         Sanctum::actingAs($this->uno());
         $this->postJson(self::GOLACHIPA.'/api/officers', [
-            'name' => 'x', 'username' => 'uno_x', 'password' => 'secret123', 'role' => 'uno', 'tenant_id' => 'golachipa',
+            'name' => 'x', 'username' => 'uno_x', 'password' => 'secret123', 'role' => 'uno', 'tenant_id' => 'galachipa',
         ])->assertStatus(422); // role not in the UNO-assignable set
     }
 
@@ -72,7 +72,7 @@ class OfficerManagementTest extends TestCase
         // Even if a different tenant_id is passed, it is forced to the UNO's own upazila.
         $this->postJson(self::GOLACHIPA.'/api/officers', [
             'name' => 'y', 'username' => 'fwa_y', 'password' => 'secret123', 'role' => 'fwa', 'tenant_id' => 'dumuria',
-        ])->assertCreated()->assertJsonPath('data.tenant_id', 'golachipa');
+        ])->assertCreated()->assertJsonPath('data.tenant_id', 'galachipa');
     }
 
     public function test_uno_cannot_toggle_an_officer_from_another_upazila(): void
@@ -90,7 +90,7 @@ class OfficerManagementTest extends TestCase
 
     public function test_uno_can_deactivate_own_officer(): void
     {
-        $fwa = User::where('username', 'fwa_golachipa')->firstOrFail();
+        $fwa = User::where('username', 'fwa_galachipa')->firstOrFail();
         Sanctum::actingAs($this->uno());
         $this->patchJson(self::GOLACHIPA."/api/officers/{$fwa->id}/status", ['is_active' => false])
             ->assertOk()->assertJsonPath('data.is_active', false);

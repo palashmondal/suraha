@@ -18,7 +18,7 @@ return new class extends Migration
         Schema::create('unions', function (Blueprint $table) {
             $table->id();
             $table->string('tenant_id');
-            $table->string('name');       // e.g. "Golachipa Sadar"
+            $table->string('name');       // e.g. "Galachipa Sadar"
             $table->string('name_bn');    // e.g. "গলাচিপা সদর"
             $table->string('type')->default('union'); // union | pourashava
             $table->unsignedTinyInteger('ward_count')->default(9);

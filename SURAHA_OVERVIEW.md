@@ -4,7 +4,7 @@
 Bangladesh.
 
 **Prepared for:** SEAL Foundation
-**Domain:** `suraha.net` (per-upazila subdomains, e.g. `golachipa.suraha.net`,
+**Domain:** `suraha.net` (per-upazila subdomains, e.g. `galachipa.suraha.net`,
 `dumuria.suraha.gov.bd`)
 **Design source of truth:** [`concept_ui/`](concept_ui/) screenshots +
 Figma → https://www.figma.com/design/eywg5k7XOILjdYc7Gzarqm/Suraha-app

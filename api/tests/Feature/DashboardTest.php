@@ -24,12 +24,12 @@ class DashboardTest extends TestCase
 
     public function test_officer_gets_own_upazila_stats(): void
     {
-        Sanctum::actingAs(User::where('username', 'uno_golachipa')->firstOrFail());
-        $res = $this->getJson('http://golachipa.lvh.me/api/dashboard/stats')->assertOk();
+        Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
+        $res = $this->getJson('http://galachipa.lvh.me/api/dashboard/stats')->assertOk();
 
         $res->assertJsonPath('scope.level', 'tenant')
             ->assertJsonPath('scope.label', 'গলাচিপা');
-        // 18 pregnancies seeded in Golachipa.
+        // 18 pregnancies seeded in Galachipa.
         $this->assertSame(18, $res->json('pregnancy.total'));
         $this->assertSame(6, $res->json('pregnancy.delivered'));
         $this->assertSame(10, $res->json('complaints.total'));
@@ -42,8 +42,8 @@ class DashboardTest extends TestCase
         $res = $this->getJson('http://lvh.me/api/dashboard/stats')->assertOk();
 
         $res->assertJsonPath('scope.level', 'global')
-            ->assertJsonPath('scope.upazila_count', 2); // golachipa + dumuria
-        // Dumuria has no module data, so totals equal Golachipa's.
+            ->assertJsonPath('scope.upazila_count', 2); // galachipa + dumuria
+        // Dumuria has no module data, so totals equal Galachipa's.
         $this->assertSame(18, $res->json('pregnancy.total'));
     }
 
@@ -59,11 +59,12 @@ class DashboardTest extends TestCase
 
     public function test_dc_aggregate_is_district_scoped(): void
     {
-        Sanctum::actingAs(User::where('username', 'dc_barishal')->firstOrFail());
+        Sanctum::actingAs(User::where('username', 'dc_patuakhali')->firstOrFail());
         $res = $this->getJson('http://lvh.me/api/dashboard/stats')->assertOk();
 
-        // Both seeded upazilas are in Barishal.
-        $res->assertJsonPath('scope.level', 'district')->assertJsonPath('scope.upazila_count', 2);
+        // Patuakhali holds only Galachipa, so the DC aggregate covers that one upazila's data —
+        // Dumuria (Khulna) must not leak in.
+        $res->assertJsonPath('scope.level', 'district')->assertJsonPath('scope.upazila_count', 1);
         $this->assertSame(18, $res->json('pregnancy.total'));
     }
 }

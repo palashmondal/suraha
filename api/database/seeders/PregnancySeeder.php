@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 
 /**
- * Sample প্রসূতি data for development so the module has real rows to render. Seeds Golachipa with
+ * Sample প্রসূতি data for development so the module has real rows to render. Seeds Galachipa with
  * a mix of not-delivered and delivered mothers, spread across the upazila's unions/wards and
  * attributed to the seeded FWA. Runs within the tenant context so tenant_id auto-fills.
  */
@@ -17,14 +17,14 @@ class PregnancySeeder extends Seeder
 {
     public function run(): void
     {
-        $golachipa = Upazila::find('golachipa');
-        if (! $golachipa) {
+        $galachipa = Upazila::find('galachipa');
+        if (! $galachipa) {
             return;
         }
 
-        $fwa = User::where('username', 'fwa_golachipa')->first();
+        $fwa = User::where('username', 'fwa_galachipa')->first();
 
-        tenancy()->initialize($golachipa);
+        tenancy()->initialize($galachipa);
 
         $unionIds = Union::pluck('id')->all();
         // state() closure runs per-record, so each mother lands in a random union.

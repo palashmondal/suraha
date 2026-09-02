@@ -17,7 +17,7 @@ class TrackingTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://golachipa.lvh.me';
+    private const GOLACHIPA = 'http://galachipa.lvh.me';
     private const DUMURIA = 'http://dumuria.lvh.me';
 
     protected function setUp(): void
