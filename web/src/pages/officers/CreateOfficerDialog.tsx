@@ -4,6 +4,7 @@ import { bnStrings as S } from '../../i18n';
 import AppDialog from '../../components/AppDialog';
 import { FormField, SelectField, type Option } from '../../components/form/FormFields';
 import { api, ApiError } from '../../api/client';
+import { useHostContext } from '../../tenant/host';
 import { createOfficer, type AssignableRole } from '../../api/officers';
 
 // Shared account-creation form. Used by both the officer roster and the full user directory, so
@@ -18,6 +19,10 @@ export default function CreateOfficerDialog({
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const host = useHostContext();
+  // Unions belong to one upazila; on the central host with none picked this can only 400.
+  const hasUpazila = host ? host.kind !== 'central' || Boolean(selectedUpazilaId) : false;
+
   const [f, setF] = useState<Record<string, string>>({});
   const [unions, setUnions] = useState<Option[]>([]);
   const [err, setErr] = useState<string | null>(null);
@@ -35,10 +40,15 @@ export default function CreateOfficerDialog({
     setF({});
     setErr(null);
     setActive(true);
+
+    if (! hasUpazila) {
+      setUnions([]);
+      return;
+    }
     api<{ unions: { id: number; name_bn: string }[] }>('/registry/unions')
       .then((r) => setUnions(r.unions.map((u) => ({ value: String(u.id), label: u.name_bn }))))
       .catch(() => setUnions([]));
-  }, [open]);
+  }, [open, hasUpazila]);
 
   const missingTenant = needsTenant && !selectedUpazilaId;
 
