@@ -47,12 +47,25 @@ class NotificationSeeder extends Seeder
             ['appointment', 'সাক্ষাৎকারের সময় পরিবর্তন', 'বিকাল ৩টা থেকে বিকাল ৪টা'],
         ];
 
+        // Point each demo notification at a real record of its own module, so opening one lands
+        // on a detail page instead of doing nothing. Falls back to null when the module has no
+        // seeded record — birth notifications, for instance, have no detail page of their own.
+        $pick = [
+            'complaint' => \App\Models\Complaint::pluck('id')->all(),
+            'appointment' => \App\Models\Appointment::pluck('id')->all(),
+            'pregnancy' => \App\Models\Pregnancy::pluck('id')->all(),
+        ];
+
         foreach ($demo as $i => [$type, $title, $detail]) {
+            $ids = $pick[$type] ?? [];
+            $link = $ids ? '/'.$type.'/'.$ids[array_rand($ids)] : null;
+
             Notification::create([
                 'type' => $type,
                 'target_role' => Role::UNO->value,
                 'title' => $title,
                 'detail' => $detail,
+                'link' => $link,
                 'created_at' => now()->subHours($i * 12 + random_int(0, 6)),
                 'updated_at' => now()->subHours($i * 12),
                 // The older half (added earlier) is already read.
@@ -61,7 +74,8 @@ class NotificationSeeder extends Seeder
         }
 
         // A couple targeted at the ইউপি সচিব for their own bell.
-        Notification::create(['type' => 'pregnancy', 'target_role' => Role::UP_SOCHIB->value, 'title' => 'নতুন প্রসূতি তথ্য যুক্ত হয়েছে', 'detail' => 'রিশা আক্তার', 'created_at' => now()->subHours(2), 'updated_at' => now()]);
+        $aPregnancy = \App\Models\Pregnancy::value('id');
+        Notification::create(['type' => 'pregnancy', 'target_role' => Role::UP_SOCHIB->value, 'title' => 'নতুন প্রসূতি তথ্য যুক্ত হয়েছে', 'detail' => 'রিশা আক্তার', 'link' => $aPregnancy ? '/pregnancy/'.$aPregnancy : null, 'created_at' => now()->subHours(2), 'updated_at' => now()]);
         Notification::create(['type' => 'birth', 'target_role' => Role::UP_SOCHIB->value, 'title' => 'নতুন জন্ম নিবন্ধন আবেদন', 'detail' => 'সন্তানের নাম: আরিয়ান হাসান', 'created_at' => now()->subHours(30), 'updated_at' => now()]);
 
         tenancy()->end();

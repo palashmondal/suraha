@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Avatar, Box, Button, Chip, Paper, Typography, useTheme } from '@mui/material';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import { bnStrings as S } from '../i18n';
@@ -18,6 +19,7 @@ import {
 } from '../api/notifications';
 
 export default function NotificationsPage() {
+  const navigate = useNavigate();
   const theme = useTheme();
   const { version } = useSelectedTenant();
   const [items, setItems] = useState<AppNotification[] | null>(null);
@@ -29,6 +31,12 @@ export default function NotificationsPage() {
       .catch(() => { setItems([]); setUnread(0); });
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [version]);
+
+  // A notification is about a record; opening it goes there and marks it read on the way.
+  const open = (n: AppNotification) => {
+    if (n.unread) markNotificationRead(n.id).then(load).catch(() => {});
+    if (n.link) navigate(n.link);
+  };
 
   const markOne = async (id: number) => {
     await markNotificationRead(id);
@@ -69,12 +77,15 @@ export default function NotificationsPage() {
             return (
               <Box
                 key={n.id}
+                onClick={() => open(n)}
                 sx={{
                   px: { xs: 2, md: 2.5 },
                   py: 2,
                   display: 'flex',
                   gap: 1.75,
                   alignItems: 'flex-start',
+                  cursor: n.link ? 'pointer' : 'default',
+                  '&:hover': n.link ? { bgcolor: 'action.hover' } : undefined,
                   borderBottom: i < pageRows.length - 1 ? '1px solid' : 'none',
                   borderColor: 'divider',
                   bgcolor: n.unread
@@ -101,7 +112,7 @@ export default function NotificationsPage() {
                       size="small"
                       variant="outlined"
                       startIcon={<CheckRoundedIcon />}
-                      onClick={() => markOne(n.id)}
+                      onClick={(e) => { e.stopPropagation(); markOne(n.id); }}
                       sx={{ borderRadius: '8px', whiteSpace: 'nowrap' }}
                     >
                       {S.notifications.markRead}
