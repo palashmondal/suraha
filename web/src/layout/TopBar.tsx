@@ -117,20 +117,24 @@ export default function TopBar() {
       sx={{
         height: 72,
         px: 3,
-        display: 'flex',
+        // Three columns, not a flex row: flex-grow shares out the FREE space, so a heavy right
+        // side (the profile block) still drags the middle left of centre. Two minmax(0,1fr)
+        // columns are equal by construction, which puts the middle column on the true centre
+        // whatever sits beside it.
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 560px) minmax(0, 1fr)',
         alignItems: 'center',
         gap: 2,
         bgcolor: 'background.default',
       }}
     >
-      {/* Left spacer — with the matching one on the right, this centres the switcher in the bar
-          rather than leaving it hard against the sidebar. */}
-      <Box sx={{ flex: 1, minWidth: 0 }} />
+      {/* Left column, deliberately empty — it is the counterweight that centres the middle. */}
+      <Box />
 
-      {/* A UNO has no upazila to switch, so the centre slot carries their search instead. */}
+      {/* Middle: the UNO's search, or the upazila switcher for the roles that have one. */}
+      <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
       {isUno && <UnifiedSearch />}
 
-      {/* Upazila switcher — cross-tenant roles only (SEAL/DC) */}
       {canSwitch && (
         <>
           <Box
@@ -173,10 +177,10 @@ export default function TopBar() {
         </>
       )}
 
-      {/* Right region, flex-matched to the left spacer so the switcher sits at the true centre.
-          The controls justify to its end rather than trailing the spacer as siblings, which would
-          have offset the switcher by half their width. */}
-      <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2 }}>
+      </Box>
+
+      {/* Right column: the controls, pushed to the far edge. */}
+      <Box sx={{ minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2 }}>
       {/* Theme toggle */}
       <Tooltip title={mode === 'light' ? 'ডার্ক মোড' : 'লাইট মোড'}>
         <IconButton onClick={toggle}>
