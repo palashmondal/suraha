@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Route;
 // network, so the request Host is the app container rather than the subdomain in ?domain=.
 Route::get('tls/allowed', [RegistryController::class, 'tlsAllowed']);
 
-Route::middleware('tenant')->group(function () {
+Route::middleware(['tenant', 'tenant.active'])->group(function () {
 
     // ---- Public (unauthenticated) -------------------------------------
     Route::get('registry/host-context', [RegistryController::class, 'hostContext']);

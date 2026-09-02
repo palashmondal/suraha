@@ -27,7 +27,7 @@ function load(): Promise<HostContext> {
       })
       .catch(() => {
         // Fall back to central so the UI stays usable if the lookup fails.
-        cached = { kind: 'central', slug: null, name_bn: null };
+        cached = { kind: 'central', slug: null, name_bn: null, is_active: true };
         applyDocumentTitle(cached);
         return cached;
       })

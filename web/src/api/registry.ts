@@ -10,6 +10,8 @@ export interface HostContext {
   slug: string | null;
   name_bn: string | null;
   district_bn?: string | null;
+  /** False when SEAL has deactivated the instance — the subdomain then serves only a notice. */
+  is_active?: boolean;
 }
 
 export function getHostContext(): Promise<HostContext> {
