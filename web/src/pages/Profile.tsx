@@ -4,7 +4,6 @@ import {
   Avatar,
   Box,
   Button,
-  Divider,
   Paper,
   Stack,
   TextField,
@@ -24,10 +23,6 @@ export default function Profile() {
   const [nameEn, setNameEn] = useState(user?.name_en ?? '');
   const [designation, setDesignation] = useState(user?.designation ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
-
-  const [current, setCurrent] = useState('');
-  const [pw, setPw] = useState('');
-  const [pwConfirm, setPwConfirm] = useState('');
 
   if (!user) return null;
 
@@ -50,22 +45,6 @@ export default function Profile() {
         body: { name, name_en: nameEn, designation, email: email || null },
       });
       setUser(res.data);
-      flash(S.profile.saved);
-    } catch (e) {
-      fail(e);
-    }
-  };
-
-  const savePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await api('/profile/password', {
-        method: 'PUT',
-        body: { current_password: current, password: pw, password_confirmation: pwConfirm },
-      });
-      setCurrent('');
-      setPw('');
-      setPwConfirm('');
       flash(S.profile.saved);
     } catch (e) {
       fail(e);
@@ -126,15 +105,6 @@ export default function Profile() {
         <TextField label={S.profile.nameEn} value={nameEn} onChange={(e) => setNameEn(e.target.value)} fullWidth />
         <TextField label={S.profile.designationField} value={designation} onChange={(e) => setDesignation(e.target.value)} fullWidth />
         <TextField label={S.profile.email} type="email" value={email} onChange={(e) => setEmail(e.target.value)} fullWidth />
-        <Box><Button type="submit" variant="contained">{S.profile.save}</Button></Box>
-      </Paper>
-
-      <Paper component="form" onSubmit={savePassword} elevation={0} sx={{ p: 3, borderRadius: '16px', display: 'grid', gap: 2 }}>
-        <Typography sx={{ fontWeight: 700 }}>{S.profile.changePassword}</Typography>
-        <Divider />
-        <TextField label={S.profile.currentPassword} type="password" value={current} onChange={(e) => setCurrent(e.target.value)} fullWidth />
-        <TextField label={S.profile.newPassword} type="password" value={pw} onChange={(e) => setPw(e.target.value)} fullWidth />
-        <TextField label={S.profile.confirmPassword} type="password" value={pwConfirm} onChange={(e) => setPwConfirm(e.target.value)} fullWidth />
         <Box><Button type="submit" variant="contained">{S.profile.save}</Button></Box>
       </Paper>
     </Box>

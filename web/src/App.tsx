@@ -5,6 +5,7 @@ import AppShell from './layout/AppShell';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
+import ChangePassword from './pages/ChangePassword';
 import Instances from './pages/admin/Instances';
 import InstanceDetail from './pages/admin/InstanceDetail';
 import Showcase from './pages/ui/Showcase';
@@ -105,6 +106,7 @@ export default function App() {
 
       {/* Internal app (officers) */}
       <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+      <Route path="/change-password" element={<RequireAuth><ChangePassword /></RequireAuth>} />
       <Route path="/ui" element={<RequireAuth><Showcase /></RequireAuth>} />
       <Route path="/pregnancy" element={<RequireAuth><PregnancyList /></RequireAuth>} />
       <Route path="/pregnancy/new" element={<RequireAuth><PregnancyAdd /></RequireAuth>} />
