@@ -48,7 +48,7 @@ class AppointmentTest extends TestCase
         $this->postJson(self::GOLACHIPA.'/api/appointments', [
             'applicant_name' => 'নাগরিক',
             'purpose' => 'ভূমি সংক্রান্ত',
-            'appointment_date' => '2026-08-20',
+            'appointment_date' => now()->addWeek()->toDateString(),
         ])->assertCreated()->assertJsonPath('data.status', 'pending');
     }
 
@@ -58,21 +58,23 @@ class AppointmentTest extends TestCase
         Sanctum::actingAs($this->uno());
 
         // UNO accepts but modifies the proposed time to fit the schedule.
+        $slot = now()->addWeek()->toDateString();
         $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/approve", [
-            'appointment_date' => '2026-09-01',
+            'appointment_date' => $slot,
             'appointment_time' => '11:30',
             'decision_note' => 'সকাল ১১:৩০ এ আসুন',
         ])->assertOk()
             ->assertJsonPath('data.status', 'approved')
-            ->assertJsonPath('data.appointment_date', '2026-09-01')
+            ->assertJsonPath('data.appointment_date', $slot)
             ->assertJsonPath('data.appointment_time', '11:30');
     }
 
     public function test_accepted_appointment_appears_on_the_uno_schedule(): void
     {
-        $id = Upazila::find('golachipa')->run(fn () => Appointment::factory()->create(['appointment_date' => '2026-09-05'])->id);
+        $slot = now()->addWeek()->toDateString();
+        $id = Upazila::find('golachipa')->run(fn () => Appointment::factory()->create(['appointment_date' => $slot])->id);
         Sanctum::actingAs($this->uno());
-        $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/approve", ['appointment_date' => '2026-09-05'])->assertOk();
+        $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/approve", ['appointment_date' => $slot])->assertOk();
 
         $this->getJson(self::GOLACHIPA.'/api/appointment-schedule')
             ->assertOk()

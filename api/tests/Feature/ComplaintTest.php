@@ -81,7 +81,7 @@ class ComplaintTest extends TestCase
         Sanctum::actingAs($this->uno());
         $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/accept", [
             'investigating_officer_id' => $officer->id,
-            'due_date' => '2026-08-20',
+            'due_date' => now()->addWeek()->toDateString(),
             'comment' => 'দ্রুত তদন্ত করুন',
         ])->assertOk()
             ->assertJsonPath('data.status', 'assigned')
@@ -99,8 +99,9 @@ class ComplaintTest extends TestCase
 
         // UNO schedules a hearing, then completes with an order.
         Sanctum::actingAs($this->uno());
-        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/schedule-hearing", ['hearing_date' => '2026-08-25'])
-            ->assertOk()->assertJsonPath('data.hearing_date', '2026-08-25');
+        $hearing = now()->addWeek()->toDateString();
+        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/schedule-hearing", ['hearing_date' => $hearing])
+            ->assertOk()->assertJsonPath('data.hearing_date', $hearing);
 
         $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/complete", ['comment' => 'নিষ্পত্তি করা হলো'])
             ->assertOk()->assertJsonPath('data.status', 'completed');
@@ -117,14 +118,14 @@ class ComplaintTest extends TestCase
 
         Sanctum::actingAs($this->uno());
         $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/accept", [
-            'investigating_officer_id' => $officer->id, 'due_date' => '2026-08-20',
+            'investigating_officer_id' => $officer->id, 'due_date' => now()->addWeek()->toDateString(),
         ])->assertOk();
 
         Sanctum::actingAs($officer);
         $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/report", ['comment' => 'প্রথম প্রতিবেদন'])->assertOk();
 
         Sanctum::actingAs($this->uno());
-        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/schedule-hearing", ['hearing_date' => '2026-08-25'])->assertOk();
+        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/schedule-hearing", ['hearing_date' => now()->addWeek()->toDateString()])->assertOk();
         // Re-investigation keeps it assigned and clears the hearing date.
         $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/reinvestigate", ['comment' => 'আরও তথ্য প্রয়োজন'])
             ->assertOk()
@@ -138,7 +139,7 @@ class ComplaintTest extends TestCase
         Sanctum::actingAs($this->uno());
         // The UNO's own id is not an investigating officer → rejected.
         $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/accept", [
-            'investigating_officer_id' => $this->uno()->id, 'due_date' => '2026-08-20',
+            'investigating_officer_id' => $this->uno()->id, 'due_date' => now()->addWeek()->toDateString(),
         ])->assertStatus(422);
     }
 
@@ -169,7 +170,7 @@ class ComplaintTest extends TestCase
         Sanctum::actingAs(User::where('username', 'dc_barishal')->firstOrFail());
         // View allowed via header switch, but accepting/appointing is blocked.
         $this->postJson('http://lvh.me/api/complaints/'.$id.'/accept', [
-            'investigating_officer_id' => $this->investigator()->id, 'due_date' => '2026-08-20',
+            'investigating_officer_id' => $this->investigator()->id, 'due_date' => now()->addWeek()->toDateString(),
         ], ['X-Upazila' => 'golachipa'])->assertStatus(403);
     }
 }
