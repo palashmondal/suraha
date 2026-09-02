@@ -24,8 +24,6 @@ import { bnStrings as S } from '../../i18n';
 import { api, ApiError } from '../../api/client';
 import StatusPill from '../../components/StatusPill';
 import PaginationBar from '../../components/PaginationBar';
-import SectionTitle from '../../components/SectionTitle';
-import { bn } from '../../utils/bnNum';
 import { usePagination } from '../../components/usePagination';
 
 interface UpazilaRow {
@@ -43,14 +41,6 @@ interface District {
   name: string;
   name_bn: string;
   division_id: number | null;
-}
-
-interface DistrictRow {
-  id: number;
-  name_bn: string;
-  division_bn: string;
-  domain: string;
-  upazila_count: number;
 }
 
 interface Division {
@@ -94,35 +84,7 @@ export default function Instances() {
     load();
   };
 
-  // Two rosters, one page. Upazilas are the instances SEAL provisions; districts are derived —
-  // a DC dashboard exists as soon as its district has an upazila, and later upazilas only add to
-  // it, so there is nothing to create or edit here, just a host to see.
-  const districtRows: DistrictRow[] = (() => {
-    const base = rows[0]?.domain.split('.').slice(1).join('.') ?? '';
-    const byId = new Map<number, DistrictRow>();
-
-    for (const u of rows) {
-      const d = u.district;
-      if (!d?.slug) continue;
-      const seen = byId.get(d.id);
-      if (seen) {
-        seen.upazila_count += 1;
-        continue;
-      }
-      byId.set(d.id, {
-        id: d.id,
-        name_bn: d.name_bn,
-        division_bn: d.division?.name_bn ?? '—',
-        domain: `${d.slug}.${base}`,
-        upazila_count: 1,
-      });
-    }
-
-    return [...byId.values()].sort((a, b) => a.name_bn.localeCompare(b.name_bn, 'bn'));
-  })();
-
   const upazila = usePagination(rows);
-  const district = usePagination(districtRows);
 
   return (
     <Box sx={{ display: 'grid', gap: 3 }}>
@@ -183,46 +145,6 @@ export default function Instances() {
         <PaginationBar page={upazila.page} pageCount={upazila.pageCount} onPage={upazila.setPage} />
       </TableContainer>
 
-      {/* District (DC) dashboards — derived from the upazilas above, so read-only. */}
-      <Box sx={{ display: 'grid', gap: 1.5 }}>
-        <SectionTitle>{S.instances.districtSectionTitle}</SectionTitle>
-        <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>
-          {S.instances.districtSectionHelp}
-        </Typography>
-      </Box>
-
-      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '16px' }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>{S.instances.colDistrict}</TableCell>
-              <TableCell>{S.instances.colDivision}</TableCell>
-              <TableCell>{S.instances.colSubdomain}</TableCell>
-              <TableCell align="center">{S.instances.colUpazilaCount}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {district.pageRows.map((d) => (
-              <TableRow key={d.id} hover>
-                <TableCell sx={{ fontWeight: 600 }}>{d.name_bn}</TableCell>
-                <TableCell>{d.division_bn}</TableCell>
-                <TableCell sx={{ direction: 'ltr', fontFamily: 'monospace', fontSize: 13 }}>
-                  {d.domain}
-                </TableCell>
-                <TableCell align="center">{bn(d.upazila_count)}</TableCell>
-              </TableRow>
-            ))}
-            {districtRows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ color: 'text.secondary', py: 4 }}>
-                  {loading ? S.common.loading : S.common.noData}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        <PaginationBar page={district.page} pageCount={district.pageCount} onPage={district.setPage} />
-      </TableContainer>
 
       <CreateInstanceDialog
         open={open}
