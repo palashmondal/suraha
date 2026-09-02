@@ -82,10 +82,16 @@ function SectionHeader({ label, action }: { label: string; action?: React.ReactN
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate }: { onNavigate?: () => void } = {}) {
   const theme = useTheme();
   const [active, setActive] = useState('dashboard');
   const [open, setOpen] = useState<Record<string, boolean>>({});
+
+  // Select a leaf item, then let the shell close the mobile drawer.
+  const select = (key: string) => {
+    setActive(key);
+    onNavigate?.();
+  };
 
   const activePill = theme.suraha.activePillBg;
   const activeText = theme.suraha.activePillText;
@@ -128,7 +134,7 @@ export default function Sidebar() {
                 sx={rowSx(isActive)}
                 onClick={() => {
                   if (item.children) setOpen((o) => ({ ...o, [item.key]: !o[item.key] }));
-                  else setActive(item.key);
+                  else select(item.key);
                 }}
               >
                 <ListItemIcon>{item.icon}</ListItemIcon>
@@ -153,7 +159,7 @@ export default function Sidebar() {
                         <ListItemButton
                           key={child.key}
                           sx={{ ...rowSx(childActive), pl: 6.5 }}
-                          onClick={() => setActive(child.key)}
+                          onClick={() => select(child.key)}
                         >
                           <ListItemText
                             primary={child.label}
@@ -174,7 +180,7 @@ export default function Sidebar() {
       <SectionHeader label={S.nav.sectionOfficer} />
       <List disablePadding>
         {officerSection.map((c) => (
-          <ListItemButton key={c.key} sx={rowSx(active === c.key)} onClick={() => setActive(c.key)}>
+          <ListItemButton key={c.key} sx={rowSx(active === c.key)} onClick={() => select(c.key)}>
             <ListItemIcon>
               <CheckRoundedIcon fontSize="small" />
             </ListItemIcon>
@@ -190,7 +196,7 @@ export default function Sidebar() {
       />
       <List disablePadding sx={{ pb: 3 }}>
         {generalSection.map((c) => (
-          <ListItemButton key={c.key} sx={rowSx(active === c.key)} onClick={() => setActive(c.key)}>
+          <ListItemButton key={c.key} sx={rowSx(active === c.key)} onClick={() => select(c.key)}>
             <ListItemIcon>
               <CheckRoundedIcon fontSize="small" />
             </ListItemIcon>

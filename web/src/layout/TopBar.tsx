@@ -12,6 +12,8 @@ import {
   useTheme,
 } from '@mui/material';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
@@ -22,31 +24,46 @@ import LockResetRoundedIcon from '@mui/icons-material/LockResetRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import { bnStrings as S } from '../i18n';
 import { useColorMode } from '../theme/ColorModeContext';
+import { useAuth } from '../auth/AuthContext';
 import NotificationMenu from '../components/NotificationMenu';
 import { unreadCount } from '../data/notifications';
 
 // Sample upazilas for the switcher (real list comes from the shared registry, §4).
 const upazilas = ['গলাচিপা উপজেলা, বরিশাল', 'দুমুরিয়া উপজেলা, খুলনা', 'মিরপুর উপজেলা, কুষ্টিয়া'];
 
-export default function TopBar() {
+export default function TopBar({ onMenuClick }: { onMenuClick?: () => void } = {}) {
   const theme = useTheme();
+  const nav = useNavigate();
   const { mode, toggle } = useColorMode();
-  const [current, setCurrent] = useState(upazilas[0]);
+  const { user, logout } = useAuth();
+  const [current, setCurrent] = useState(user?.upazila ?? upazilas[0]);
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
   const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
   const [notifAnchor, setNotifAnchor] = useState<null | HTMLElement>(null);
+
+  const onLogout = () => {
+    setProfileAnchor(null);
+    logout();
+    nav('/login', { replace: true });
+  };
 
   return (
     <Box
       sx={{
         height: 72,
-        px: 3,
+        px: { xs: 1.5, md: 3 },
         display: 'flex',
         alignItems: 'center',
-        gap: 2,
+        gap: { xs: 1, md: 2 },
         bgcolor: 'background.default',
       }}
     >
+      {onMenuClick ? (
+        <IconButton onClick={onMenuClick} edge="start" aria-label="menu">
+          <MenuRoundedIcon />
+        </IconButton>
+      ) : null}
+
       {/* Upazila switcher */}
       <Box
         onClick={(e) => setAnchor(e.currentTarget)}
@@ -56,15 +73,16 @@ export default function TopBar() {
           gap: 1,
           px: 2,
           py: 1.1,
-          minWidth: 300,
+          minWidth: { xs: 0, sm: 300 },
+          maxWidth: { xs: 220, sm: 'none' },
           borderRadius: 999,
           cursor: 'pointer',
           bgcolor: theme.suraha.switcher,
         }}
       >
-        <LocationOnOutlinedIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-        <Typography sx={{ flex: 1, fontSize: 15, fontWeight: 500 }}>{current}</Typography>
-        <KeyboardArrowDownRoundedIcon sx={{ color: 'text.secondary' }} />
+        <LocationOnOutlinedIcon sx={{ fontSize: 20, color: 'text.secondary', flexShrink: 0 }} />
+        <Typography noWrap sx={{ flex: 1, fontSize: 15, fontWeight: 500 }}>{current}</Typography>
+        <KeyboardArrowDownRoundedIcon sx={{ color: 'text.secondary', flexShrink: 0 }} />
       </Box>
       <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
         {upazilas.map((u) => (
@@ -125,10 +143,10 @@ export default function TopBar() {
             className="profile-name"
             sx={{ fontSize: 16.5, fontWeight: 700, transition: 'color 120ms ease' }}
           >
-            {S.profile.name}
+            {user?.name ?? S.profile.name}
           </Typography>
           <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>
-            {S.profile.designation}
+            {user?.designation ?? S.profile.designation}
           </Typography>
         </Box>
         <Avatar
@@ -168,7 +186,7 @@ export default function TopBar() {
           {S.profile.changePassword}
         </MenuItem>
         <Divider />
-        <MenuItem onClick={() => setProfileAnchor(null)} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={onLogout} sx={{ color: 'error.main' }}>
           <ListItemIcon>
             <LogoutRoundedIcon fontSize="small" sx={{ color: 'error.main' }} />
           </ListItemIcon>
