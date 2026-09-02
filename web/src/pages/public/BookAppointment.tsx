@@ -1,27 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Alert, Box, Button, Container, Paper, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
 import PublicLayout from './PublicLayout';
-import { FormField, SelectField, DateField, TimeField, type Option } from '../../components/form/FormFields';
-import { api, ApiError } from '../../api/client';
+import { FormField, SelectField, DateField, TimeField } from '../../components/form/FormFields';
+import { useUnionOptions } from '../../tenant/useUnionOptions';
+import { ApiError } from '../../api/client';
 import { createAppointment } from '../../api/appointment';
 import SubmittedCard from './SubmittedCard';
 
 export default function BookAppointment() {
   const navigate = useNavigate();
   const [f, setF] = useState<Record<string, string>>({});
-  const [unions, setUnions] = useState<Option[]>([]);
+  const unions = useUnionOptions();
   const [token, setToken] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }));
-
-  useEffect(() => {
-    api<{ unions: { id: number; name_bn: string }[] }>('/registry/unions')
-      .then((r) => setUnions(r.unions.map((u) => ({ value: String(u.id), label: u.name_bn }))))
-      .catch(() => setUnions([]));
-  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

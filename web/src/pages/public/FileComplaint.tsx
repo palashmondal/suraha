@@ -1,29 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Alert, Box, Button, Container, Paper, Typography } from '@mui/material';
 import MyLocationRoundedIcon from '@mui/icons-material/MyLocationRounded';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
 import PublicLayout from './PublicLayout';
 import FieldCard from '../../components/form/FieldCard';
-import { FormField, SelectField, type Option } from '../../components/form/FormFields';
-import { api, ApiError } from '../../api/client';
+import { FormField, SelectField } from '../../components/form/FormFields';
+import { useUnionOptions } from '../../tenant/useUnionOptions';
+import { ApiError } from '../../api/client';
 import { createComplaint } from '../../api/complaint';
 import SubmittedCard from './SubmittedCard';
 
 export default function FileComplaint() {
   const navigate = useNavigate();
   const [f, setF] = useState<Record<string, string>>({});
-  const [unions, setUnions] = useState<Option[]>([]);
+  const unions = useUnionOptions();
   const [token, setToken] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }));
-
-  useEffect(() => {
-    api<{ unions: { id: number; name_bn: string }[] }>('/registry/unions')
-      .then((r) => setUnions(r.unions.map((u) => ({ value: String(u.id), label: u.name_bn }))))
-      .catch(() => setUnions([]));
-  }, []);
 
   const track = () => navigator.geolocation?.getCurrentPosition((p) =>
     setF((s) => ({ ...s, latitude: String(p.coords.latitude), longitude: String(p.coords.longitude) })));

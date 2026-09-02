@@ -14,34 +14,19 @@ import ComparisonBars from '../../components/charts/ComparisonBars';
 import UpazilaRadar from '../../components/charts/UpazilaRadar';
 import { chartColors } from '../../components/charts/palette';
 import { getReport, type ReportBundle } from '../../api/reports';
-import { api } from '../../api/client';
 import { useSelectedTenant } from '../../tenant/SelectedTenantContext';
-import { useHostContext } from '../../tenant/host';
+import { useUnionOptions } from '../../tenant/useUnionOptions';
 
 export default function Reports() {
   const theme = useTheme();
   const c = chartColors(theme);
-  const { version, selectedUpazilaId } = useSelectedTenant();
-  const host = useHostContext();
-  // Unions belong to one upazila. On the central host with none picked there are none to list,
-  // and asking anyway is a guaranteed 400 in the console.
-  const hasUpazila = host ? host.kind !== 'central' || Boolean(selectedUpazilaId) : false;
+  const { version } = useSelectedTenant();
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [unionId, setUnionId] = useState('');
-  const [unions, setUnions] = useState<{ id: number; name_bn: string }[]>([]);
+  const unions = useUnionOptions();
   const [r, setR] = useState<ReportBundle | null>(null);
   const [toast, setToast] = useState(false);
-
-  useEffect(() => {
-    if (! hasUpazila) {
-      setUnions([]);
-      return;
-    }
-    api<{ unions: { id: number; name_bn: string }[] }>('/registry/unions')
-      .then((x) => setUnions(x.unions))
-      .catch(() => setUnions([]));
-  }, [version, hasUpazila]);
 
   useEffect(() => {
     getReport({ from: from || undefined, to: to || undefined, union_id: unionId || undefined })
@@ -107,7 +92,7 @@ export default function Reports() {
             onChange={(e) => setUnionId(e.target.value)}
           >
             <MenuItem value="">{S.reports.allUnions}</MenuItem>
-            {unions.map((u) => <MenuItem key={u.id} value={String(u.id)}>{u.name_bn}</MenuItem>)}
+            {unions.map((u) => <MenuItem key={u.value} value={u.value}>{u.label}</MenuItem>)}
           </TextField>
         )}
 
