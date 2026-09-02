@@ -58,7 +58,7 @@ export default function UserList() {
   const { pageRows, page, setPage, pageCount } = usePagination(rows);
 
   return (
-    <Box sx={{ display: 'grid', gap: 3 }}>
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Box>
         <PageHeader title={S.users.title} primaryLabel={S.users.addNew} onPrimary={() => setOpen(true)} />
         <Typography sx={{ color: 'text.secondary' }}>{S.users.subtitle}</Typography>
@@ -94,11 +94,12 @@ export default function UserList() {
         </Typography>
       </Paper>
 
-      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '16px' }}>
+      <TableContainer component={Paper} elevation={0} sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', borderRadius: '16px' }}>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell>{S.users.colName}</TableCell>
+              {isSeal && <TableCell>{S.users.colUpazila}</TableCell>}
               <TableCell>{S.users.colRole}</TableCell>
               <TableCell>{S.users.colLogin}</TableCell>
               <TableCell>{S.users.colStatus}</TableCell>
@@ -114,6 +115,7 @@ export default function UserList() {
                 onClick={() => u.role !== 'citizen' && setEditing(u)}
               >
                 <TableCell sx={{ fontWeight: 600 }}>{u.name}</TableCell>
+                {isSeal && <TableCell>{u.upazila?.name_bn ?? '—'}</TableCell>}
                 <TableCell>{u.role_label_bn}</TableCell>
                 <TableCell sx={{ direction: 'ltr', fontFamily: 'monospace', fontSize: 13 }}>
                   {u.username ?? u.phone ?? '—'}
@@ -128,7 +130,7 @@ export default function UserList() {
             ))}
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ color: 'text.secondary', py: 4 }}>
+                <TableCell colSpan={isSeal ? 5 : 4} align="center" sx={{ color: 'text.secondary', py: 4 }}>
                   {loading ? S.common.loading : S.common.noData}
                 </TableCell>
               </TableRow>

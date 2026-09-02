@@ -258,4 +258,34 @@ class OfficerManagementTest extends TestCase
             'name' => 'x', 'designation' => 'y', 'phone' => '01799990003', 'email' => 'out@example.com',
         ])->assertStatus(403);
     }
+
+    /**
+     * SEAL with no upazila selected is the "সকল উপজেলা" view: every upazila at once, not an
+     * error. It returned 422 before, which the console rendered as an empty table.
+     */
+    public function test_seal_directory_spans_every_upazila_when_none_is_selected(): void
+    {
+        Sanctum::actingAs(User::where('username', 'admin')->firstOrFail());
+
+        // Only Galachipa is seeded with staff, so give Dumuria one to prove the roll-up spans
+        // upazilas rather than happening to show a single tenant's rows.
+        User::create([
+            'name' => 'ডুমুরিয়া কর্মকর্তা', 'username' => 'fwa_dum', 'password' => bcrypt('secret123'),
+            'role' => 'fwa', 'tenant_id' => 'dumuria', 'is_active' => true,
+        ]);
+
+        $rows = collect($this->getJson('http://lvh.me/api/users')->assertOk()->json('data'));
+
+        $this->assertContains('galachipa', $rows->pluck('tenant_id'));
+        $this->assertContains('dumuria', $rows->pluck('tenant_id'));
+        // Cross-tenant accounts have no tenant of their own but still belong in the roll-up.
+        $this->assertContains('dc', $rows->pluck('role'));
+
+        // Picking one upazila narrows it back down.
+        $narrowed = collect(
+            $this->getJson('http://lvh.me/api/users', ['X-Upazila' => 'galachipa'])->assertOk()->json('data')
+        );
+        $this->assertNotContains('dumuria', $narrowed->pluck('tenant_id'));
+        $this->assertLessThan($rows->count(), $narrowed->count());
+    }
 }

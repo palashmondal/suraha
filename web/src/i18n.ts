@@ -58,6 +58,7 @@ export const bnStrings = {
     count: (n: string) => `${n} জন`,
     colName: 'নাম',
     colRole: 'পদবি',
+    colUpazila: 'উপজেলা',
     colLogin: 'ইউজারনেম / মোবাইল',
     colStatus: 'অবস্থা',
     active: 'সক্রিয়',

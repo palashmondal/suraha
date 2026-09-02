@@ -64,7 +64,7 @@ export default function DataTable<T extends { id: string | number }>({
     <TableContainer
       component={Paper}
       elevation={0}
-      sx={{ borderRadius: '16px', overflowX: 'auto' }}
+      sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', borderRadius: '16px', overflowX: 'auto' }}
     >
       <Table sx={{ minWidth: 720 }}>
         <TableHead>

@@ -31,27 +31,33 @@ class OfficerController extends Controller
     /**
      * Everyone attached to one upazila: its officers, its citizens, and the DC of its district —
      * who carries no tenant_id but oversees the upazila, so a tenant_id filter alone would hide
-     * them. SEAL sees all of that; a UNO sees only the staff they may actually manage.
+     * them. SEAL sees all of that; a UNO sees only the staff they may actually manage. With no
+     * upazila selected, SEAL gets every upazila at once.
      *
      * Filtering is done in SQL rather than in the browser because the citizen rows grow without
      * bound as the public files complaints and books appointments.
      */
     public function directory(Request $request)
     {
-        $tenantId = tenancy()->initialized
-            ? tenant()->getTenantKey()
-            : $request->user()->tenant_id;
-
-        abort_unless($tenantId, 422, 'কোন উপজেলার তালিকা দেখতে চান তা নির্বাচন করুন।');
-
-        $districtId = Upazila::find($tenantId)?->district_id;
-
         $actor = $request->user();
+        $tenantId = tenancy()->initialized ? tenant()->getTenantKey() : null;
+
+        abort_if(
+            $tenantId === null && $actor->role->scope() === 'tenant',
+            422,
+            'কোন উপজেলার তালিকা দেখতে চান তা নির্বাচন করুন।',
+        );
 
         $users = User::query()
-            ->where(function ($w) use ($tenantId, $districtId) {
-                $w->where('tenant_id', $tenantId)
-                    ->orWhere(fn ($d) => $d->where('role', Role::DC->value)->where('district_id', $districtId));
+            // Scope follows what the viewer can reach. With an upazila resolved — a subdomain, or
+            // one picked from the switcher — it is that upazila plus the DC who oversees it.
+            // Without one, only SEAL gets here (the route is SEAL + UNO, and a UNO always has a
+            // subdomain), and SEAL is meant to see every upazila at once.
+            ->when($tenantId !== null, function ($q) use ($tenantId) {
+                $districtId = Upazila::find($tenantId)?->district_id;
+
+                $q->where(fn ($w) => $w->where('tenant_id', $tenantId)
+                    ->orWhere(fn ($d) => $d->where('role', Role::DC->value)->where('district_id', $districtId)));
             })
             // A UNO manages the staff below them, not their own account or the DC's — those are
             // edited from the UNO's profile and the SEAL console respectively. Listing rows a UNO

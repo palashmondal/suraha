@@ -32,7 +32,7 @@ export default function SliderManage() {
   const { pageRows, page, setPage, pageCount } = usePagination(rows);
 
   return (
-    <Box>
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <PageHeader title={S.sliders.title} primaryLabel={S.sliders.addNew} onPrimary={() => setOpen(true)} />
 
       {loading && rows.length === 0 ? (
@@ -40,7 +40,7 @@ export default function SliderManage() {
       ) : rows.length === 0 ? (
         <Paper elevation={0} sx={{ borderRadius: '16px' }}><EmptyState /></Paper>
       ) : (
-        <>
+        <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3,1fr)' }, gap: 2.5 }}>
           {pageRows.map((s) => (
             <Paper key={s.id} elevation={0} sx={{ borderRadius: '16px', overflow: 'hidden', border: (t) => `1px solid ${t.palette.divider}` }}>
@@ -60,7 +60,7 @@ export default function SliderManage() {
           ))}
         </Box>
         <PaginationBar page={page} pageCount={pageCount} onPage={setPage} />
-        </>
+        </Box>
       )}
 
       <CreateSliderDialog open={open} onClose={() => setOpen(false)} onCreated={() => { setOpen(false); load(); }} />

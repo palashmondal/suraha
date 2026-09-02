@@ -22,7 +22,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
             flexDirection: 'column',
           }}
         >
-          <Box sx={{ flex: 1, p: { xs: 2, md: 3.5 } }}>{children}</Box>
+          <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', p: { xs: 2, md: 3.5 } }}>
+            {children}
+          </Box>
         </Box>
       </Box>
     </Box>
