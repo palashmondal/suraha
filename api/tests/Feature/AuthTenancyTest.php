@@ -204,4 +204,31 @@ class AuthTenancyTest extends TestCase
         $this->getJson(self::CENTRAL.'/api/registry/switchable-upazilas')
             ->assertOk()->assertJsonCount(2, 'upazilas');
     }
+
+    /**
+     * Caddy's on-demand TLS gate (infra/Caddyfile). Caddy issues a certificate only when this
+     * answers 2xx, so a leak here means any hostname pointed at the server can burn the ACME
+     * rate limits. Called over the internal network with the hostname in ?domain=, hence the
+     * odd-looking central-host request URL.
+     */
+    public function test_tls_gate_allows_only_the_central_host_and_real_upazilas(): void
+    {
+        $base = config('tenancy.base_domain');
+
+        foreach ([$base, 'www.'.$base, 'golachipa.'.$base, 'dumuria.'.$base] as $allowed) {
+            $this->getJson(self::CENTRAL.'/api/tls/allowed?domain='.$allowed)
+                ->assertNoContent();
+        }
+
+        foreach ([
+            'nowhere.'.$base,          // not a provisioned upazila
+            'evil.example.com',        // someone else's domain
+            'a.b.'.$base,              // more than one label deep
+            'golachipa.'.$base.'.evil.com', // suffix-confusion attempt
+            '',                        // missing param
+        ] as $denied) {
+            $this->getJson(self::CENTRAL.'/api/tls/allowed?domain='.$denied)
+                ->assertNotFound();
+        }
+    }
 }

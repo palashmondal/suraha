@@ -14,7 +14,7 @@ return [
     /**
      * Base domain used to render a upazila's full URL for display (subdomain = upazila id).
      */
-    'base_domain' => env('TENANCY_BASE_DOMAIN', 'suraha.com.bd'),
+    'base_domain' => env('TENANCY_BASE_DOMAIN', 'suraha.net'),
 
     /**
      * The list of domains hosting your central app.
@@ -24,12 +24,11 @@ return [
     'central_domains' => [
         '127.0.0.1',
         'localhost',
-        // The national public site AND the SEAL admin host: suraha.com.bd. SEAL logs in here
-        // (suraha.com.bd/login) and switches upazila in-app via the X-Upazila header — the base
+        // The national public site AND the SEAL admin host: suraha.net. SEAL logs in here
+        // (suraha.net/login) and switches upazila in-app via the X-Upazila header — the base
         // domain is central, so it is NOT read as a tenant subdomain. Upazila subdomains
-        // ({upazila}.suraha.com.bd) resolve as tenants. (The old admin.* host is retired.)
-        'suraha.com.bd',
-        'suraha.gov.bd',
+        // ({upazila}.suraha.net) resolve as tenants. (The old admin.* host is retired.)
+        'suraha.net',
         // Local dev: {upazila}.lvh.me resolves to 127.0.0.1 with no /etc/hosts edits; bare lvh.me
         // is the central (SEAL) host.
         'lvh.me',

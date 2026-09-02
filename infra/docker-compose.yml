@@ -50,15 +50,15 @@ services:
     volumes: [miniodata:/data]
     restart: unless-stopped
 
-  # Reverse proxy terminating wildcard TLS for *.suraha.com.bd (Let's Encrypt DNS-01).
-  # Caddy shown for brevity; Nginx/Traefik are equally fine.
+  # Reverse proxy. TLS is issued per-hostname on demand (HTTP-01), gated by the API — see
+  # Caddyfile — so the stock image is enough: no DNS provider module, no wildcard cert.
   proxy:
     image: caddy:2-alpine
     ports: ['80:80', '443:443']
+    depends_on: [app, web]
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddydata:/data
-    depends_on: [app, web]
     restart: unless-stopped
 
 volumes:

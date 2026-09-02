@@ -27,7 +27,7 @@
 └────────────────────────────────────────────┼────────────────────────────────────┘
                                               │ HTTPS (Bearer) to the FWA's upazila
                                               ▼
-              https://{upazila}.suraha.com.bd/api   (existing Laravel API, unchanged)
+              https://{upazila}.suraha.net/api   (existing Laravel API, unchanged)
 ```
 
 **Principle:** the UI **only ever reads/writes local SQLite**. The sync engine is the *only* thing that talks to the network. This is what makes dead-zone entry reliable — the form never awaits the server.
@@ -38,7 +38,7 @@
 
 The web resolves the upazila from the **subdomain**; a mobile app has no subdomain. Approach:
 
-- **First launch → "Select your upazila."** The app fetches the public upazila directory and the FWA picks theirs (once). We store the resulting **API base URL** = `https://{slug}.suraha.com.bd/api`. Every request then hits that subdomain, so **tenancy resolves exactly as it does on web — zero tenancy changes**.
+- **First launch → "Select your upazila."** The app fetches the public upazila directory and the FWA picks theirs (once). We store the resulting **API base URL** = `https://{slug}.suraha.net/api`. Every request then hits that subdomain, so **tenancy resolves exactly as it does on web — zero tenancy changes**.
 - **Small backend addition needed:** a **public** `GET /api/upazilas/directory` returning `[{slug, name_bn, district_bn}]` for the picker (the existing `/upazilas` list is SEAL-gated). ~15 lines.
 - Auth stays the existing **officer username/password → Bearer token** (`POST /auth/officer/login` on that subdomain). FWA already logs in this way; the app just stores the token in **Capacitor Secure Storage**.
 - *Alternative considered:* a central login + `X-Upazila` header (like SEAL). Rejected — the subdomain-base approach reuses the current model with no server changes beyond the directory endpoint.

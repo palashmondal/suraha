@@ -18,7 +18,7 @@ pipeline at its core.
 suraha/
 ├── web/          React + Vite + MUI (Material 3) PWA — the frontend (Bangla-only, light + dark)
 ├── api/          Laravel REST API — Sanctum (Bearer), stancl/tenancy, role-based access
-├── infra/        Docker Compose + Caddy reverse proxy (wildcard TLS *.suraha.com.bd)
+├── infra/        Docker Compose + Caddy reverse proxy (wildcard TLS *.suraha.net)
 ├── concept_ui/   Design reference screenshots
 └── SURAHA_*.md   Overview + build prompt
 ```
@@ -26,10 +26,11 @@ suraha/
 ## Architecture
 
 - **Multi-tenancy** — a single central database; each **upazila is a tenant** resolved from the
-  request subdomain (`golachipa.suraha.com.bd` → tenant `golachipa`) via `stancl/tenancy`. Tenant rows
+  request subdomain (`golachipa.suraha.net` → tenant `golachipa`) via `stancl/tenancy`. Tenant rows
   are scoped by a `tenant_id` global scope (no per-tenant databases). Cross-tenant roles (SEAL/DC)
-  work on the **admin host** (`admin.suraha.com.bd`) and switch upazila in-app via an `X-Upazila`
-  header — without changing the URL.
+  work on the **central host** (`suraha.net`, which is also the national public site) and switch
+  upazila in-app via an `X-Upazila` header — without changing the URL. (The old `admin.*` host is
+  retired.)
 - **Auth** — Bearer-token Sanctum. Officers sign in with username/password; citizens with mobile +
   OTP (behind a mockable SMS gateway).
 - **RBAC** — 7 roles enforced server-side: FWA, UP Sochib, UNO, Investigating Officer, DC
@@ -88,25 +89,45 @@ Officer logins (all password `password`): `admin`, `uno_golachipa`, `fwa_golachi
 ### 3. Tenant subdomains
 
 The SPA calls the API on the **same host, port 8000**, so the upazila subdomain flows through
-automatically. Two ways to resolve subdomains locally:
+automatically. Three ways to resolve subdomains locally:
 
-- **Zero-setup:** use `*.lvh.me` → `golachipa.lvh.me:5173` / `admin.lvh.me:5173` (resolves to
+- **Zero-setup:** use `*.lvh.me` → `golachipa.lvh.me:5173` / `lvh.me:5173` (resolves to
   127.0.0.1 with no config).
-- **Real domain (`*.suraha.com.bd`)** via a dnsmasq wildcard:
+- **`/etc/hosts` (simplest for the real domain).** No wildcards in hosts files, so add the central
+  host plus one line per provisioned upazila:
+  ```bash
+  sudo tee -a /etc/hosts <<'EOF'
+  127.0.0.1	suraha.net
+  127.0.0.1	golachipa.suraha.net
+  127.0.0.1	dumuria.suraha.net
+  EOF
+  ```
+  `scripts/dev.sh` does this automatically, reading the `domains` table — rerun it after
+  provisioning a new upazila. Then open `http://golachipa.suraha.net:5173`.
+- **Real domain, wildcard (`*.suraha.net`)** via dnsmasq — no per-upazila hosts edits:
   ```bash
   brew install dnsmasq
-  echo 'address=/suraha.com.bd/127.0.0.1' | sudo tee -a "$(brew --prefix)/etc/dnsmasq.conf"
+  echo 'address=/suraha.net/127.0.0.1' | sudo tee -a "$(brew --prefix)/etc/dnsmasq.conf"
   sudo brew services start dnsmasq
-  sudo mkdir -p /etc/resolver && echo 'nameserver 127.0.0.1' | sudo tee /etc/resolver/suraha.com.bd
+  sudo mkdir -p /etc/resolver && echo 'nameserver 127.0.0.1' | sudo tee /etc/resolver/suraha.net
   ```
-  Then open `http://golachipa.suraha.com.bd:5173`. To drop the `:5173`, serve the frontend on port
-  80 (e.g. a ServBay/Caddy reverse proxy `*.suraha.com.bd:80 → 127.0.0.1:5173`, or `sudo npx vite
-  --host --port 80`). `api/.env` sets `APP_URL`/`ASSET_URL` to `suraha.com.bd` so uploaded assets
+  Then open `http://golachipa.suraha.net:5173`. To drop the `:5173`, serve the frontend on port
+  80 (e.g. a ServBay/Caddy reverse proxy `*.suraha.net:80 → 127.0.0.1:5173`, or `sudo npx vite
+  --host --port 80`). `api/.env` sets `APP_URL`/`ASSET_URL` to `suraha.net` so uploaded assets
   (slider images, avatars) resolve.
 
 ---
 
 ## Deploy (Docker)
+
+**DNS (once).** At the registrar, point both records at the VPS:
+
+```
+A    suraha.net      <server-ip>
+A    *.suraha.net    <server-ip>
+```
+
+**Deploy.**
 
 ```bash
 cd infra
@@ -114,9 +135,19 @@ cp .env.example .env      # set DB/S3/BDRIS/SMS secrets
 docker compose up -d      # app, web, postgres, redis, worker, scheduler, minio, Caddy proxy
 ```
 
-The Caddy proxy terminates **wildcard TLS for `*.suraha.com.bd`**; the app resolves the upazila
-(tenant) from the request host. Adding a new upazila in the admin console needs **no server change** —
-wildcard DNS + vhost + cert cover every new subdomain automatically.
+The app resolves the upazila (tenant) from the request host, so one Caddy site block serves the
+central host and every upazila. Adding a new upazila in the admin console needs **no server
+change** — wildcard DNS plus on-demand TLS cover every new subdomain automatically.
+
+**TLS is issued per hostname, on demand.** The first request to `kalapara.suraha.net` makes Caddy
+fetch a certificate for it over HTTP-01 and cache it — no wildcard cert, so no DNS-01 challenge,
+no DNS provider API token, and no custom Caddy build. It works regardless of who hosts DNS.
+
+Before issuing, Caddy asks the API whether the hostname is real
+([`GET /api/tls/allowed`](api/app/Http/Controllers/RegistryController.php) → `RegistryController@tlsAllowed`),
+which answers 2xx only for the central host and provisioned, active upazilas. **That gate is not
+optional:** without it, anyone pointing a hostname at the server could exhaust the Let's Encrypt
+rate limits.
 
 ## License
 

@@ -11,7 +11,7 @@ use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
 
 /**
  * Upazila (উপজেলা) — the Suraha tenant. Resolved from the request subdomain via the
- * `domains` map (e.g. golachipa.suraha.com.bd). Lives in the central database; tenant-owned
+ * `domains` map (e.g. golachipa.suraha.net). Lives in the central database; tenant-owned
  * rows reference it by `tenant_id`. See SURAHA_BUILD_PROMPT §4.
  *
  * @property string $id

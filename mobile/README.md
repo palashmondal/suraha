@@ -6,7 +6,7 @@ design in [`../FWA_MOBILE_APP_PLAN.md`](../FWA_MOBILE_APP_PLAN.md).
 
 ## What's built (Phases 0–3 + delivery)
 - First-run **upazila picker** (`GET /api/upazilas/directory` on the central host) → pins the API
-  base to `https://{slug}.suraha.com.bd/api`, so backend tenancy resolves as on web.
+  base to `https://{slug}.suraha.net/api`, so backend tenancy resolves as on web.
 - FWA **login** (username/password → Bearer token in Capacitor Preferences).
 - **Offline-first data layer**: IndexedDB (Dexie) `mothers` + `outbox`, a network-isolated **sync
   engine** (drains the outbox on app-open / reconnect / manual "Sync now"), and a **`client_uuid`**

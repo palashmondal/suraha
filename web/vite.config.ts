@@ -35,8 +35,8 @@ export default defineConfig({
     port: 5173,
     host: true,
     // Allow the per-upazila subdomains used for tenancy (dev: {upazila}.lvh.me,
-    // prod: {upazila}.suraha.com.bd). A leading dot whitelists all subdomains.
-    allowedHosts: ['.lvh.me', '.suraha.com.bd', '.suraha.gov.bd'],
+    // prod: {upazila}.suraha.net). A leading dot whitelists all subdomains.
+    allowedHosts: ['.lvh.me', '.suraha.net'],
     // Same-origin API: with VITE_API_BASE=/api the SPA calls /api/* on its own host. When you
     // hit Vite directly (:5173) this proxy forwards to Laravel; behind the port-80 Caddy proxy
     // (infra/Caddyfile.dev) Caddy routes /api itself. changeOrigin:false keeps the Host header
@@ -46,9 +46,10 @@ export default defineConfig({
       // Uploaded files (report attachments, avatars) live on Laravel's public disk.
       '/storage': { target: 'http://127.0.0.1:8000', changeOrigin: false },
     },
-    // HMR through the Caddy proxy: the browser is on https://…:443, so the HMR websocket must
-    // dial 443 (wss) and let Caddy upgrade it to Vite. Use https://suraha.com.bd as the canonical
-    // dev URL. (Hitting Vite directly on :5173 still serves the app; only live-reload needs 443.)
-    hmr: { clientPort: 443 },
+    // HMR websocket port. Behind the Caddy dev proxy the browser is on :443, so the socket must
+    // dial 443 (wss) and let Caddy upgrade it to Vite — scripts/dev.sh sets CADDY=1 for that.
+    // Hitting Vite directly (http://{upazila}.suraha.net:5173) uses Vite's default, the page's
+    // own port, so live-reload works there too.
+    hmr: process.env.CADDY ? { clientPort: 443 } : undefined,
   },
 });

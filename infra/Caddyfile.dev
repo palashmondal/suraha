@@ -1,10 +1,10 @@
-# Local dev reverse proxy — serves the whole app on a portless suraha.com.bd (and any upazila
+# Local dev reverse proxy — serves the whole app on a portless suraha.net (and any upazila
 # subdomain), over both HTTP and trusted HTTPS, by fronting the two dev servers:
 #   /api/*  → Laravel  (php artisan serve, :8000)
 #   *       → Vite dev (npm run dev, :5173, incl. HMR websocket upgrade)
 #
 # HTTPS: `tls internal` makes Caddy's own CA issue certs for these hosts. Run with sudo and
-# Caddy installs its root into the system trust store, so browsers trust https://suraha.com.bd
+# Caddy installs its root into the system trust store, so browsers trust https://suraha.net
 # with no warning. (Firefox uses its own store — enable "security.enterprise_roots.enabled"
 # or import the root once, if you use Firefox.)
 #
@@ -12,12 +12,12 @@
 #   sudo caddy run --config infra/Caddyfile.dev --adapter caddyfile
 # Or just use scripts/dev.sh, which starts every service including this proxy.
 #
-# DNS: the browser still needs each host to resolve to 127.0.0.1. suraha.com.bd is already in
+# DNS: the browser still needs each host to resolve to 127.0.0.1. suraha.net is already in
 # /etc/hosts; scripts/dev.sh adds each upazila subdomain automatically (or use dnsmasq for a
-# wildcard *.suraha.com.bd).
+# wildcard *.suraha.net).
 {
 	# Serve https (Caddy internal CA) and keep plain http working too — no forced redirect, so
-	# both http://suraha.com.bd and https://suraha.com.bd resolve.
+	# both http://suraha.net and https://suraha.net resolve.
 	auto_https disable_redirects
 	# Errors only — hides benign WARNs (e.g. "no OCSP stapling" for the internal-CA certs).
 	log {
@@ -25,7 +25,7 @@
 	}
 }
 
-suraha.com.bd, *.suraha.com.bd {
+suraha.net, *.suraha.net {
 	tls internal
 
 	# API + uploaded files (public disk) → Laravel; everything else → the Vite dev app.
