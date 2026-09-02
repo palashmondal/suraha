@@ -177,14 +177,32 @@ class AssistanceAndSuggestionTest extends TestCase
             \App\Models\Complaint::factory()->create([
                 'complainant_name' => 'করিম মিয়া', 'title' => 'রহিমা সড়কে পানি জমে থাকে',
             ]);
+            \App\Models\Appointment::factory()->create([
+                'applicant_name' => 'রহিমা খাতুন', 'mobile' => '01777000222', 'purpose' => 'ভূমি সংক্রান্ত',
+            ]);
         });
 
         $results = $this->getJson(self::GALACHIPA.'/api/search?q=রহিমা')->assertOk()->json('results');
 
         $this->assertNotEmpty($results);
-        // The applicant named রহিমা outranks the complaint that only mentions the word.
-        $this->assertSame('মানবিক সহায়তা', $results[0]['label']);
-        $this->assertGreaterThan($results[1]['score'] ?? 0, $results[0]['score']);
+
+        // Records of someone actually named রহিমা outrank the complaint that merely mentions the
+        // word in its title. Which of those name matches leads is not meaningful — they score the
+        // same — so this asserts the boundary between them and the incidental mention.
+        $named = collect($results)->firstWhere('label', 'মানবিক সহায়তা');
+        $mentioned = collect($results)->firstWhere('label', 'অভিযোগ');
+
+        $this->assertNotNull($named);
+        $this->assertNotNull($mentioned);
+        $this->assertGreaterThan($mentioned['score'], $named['score']);
+        $this->assertNotSame('অভিযোগ', $results[0]['label'], 'a passing mention should never lead');
+
+        // Appointment requests are in the same box.
+        $labels = collect($results)->pluck('label');
+        $this->assertContains('সাক্ষাৎকার', $labels, 'appointments should be searchable');
+
+        $byPurpose = $this->getJson(self::GALACHIPA.'/api/search?q='.urlencode('ভূমি সংক্রান্ত'))->assertOk()->json('results');
+        $this->assertSame('সাক্ষাৎকার', $byPurpose[0]['label']);
 
         // A mobile number finds its record too.
         $byPhone = $this->getJson(self::GALACHIPA.'/api/search?q=01777000111')->assertOk()->json('results');
