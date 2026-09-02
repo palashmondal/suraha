@@ -242,7 +242,7 @@ export default function TopBar() {
         <MenuItem
           onClick={() => {
             setProfileAnchor(null);
-            navigate('/profile');
+            navigate('/change-password');
           }}
         >
           <ListItemIcon>

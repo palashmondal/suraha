@@ -114,6 +114,7 @@ export const bnStrings = {
     name: 'মহিউদ্দিন আল হেলাল',
     designation: 'উপজেলা নির্বাহী অফিসার, গলাচিপা',
     view: 'প্রোফাইল',
+    passwordChanged: 'পাসওয়ার্ড পরিবর্তন করা হয়েছে।',
     changePassword: 'পাসওয়ার্ড পরিবর্তন',
     logout: 'লগ আউট',
     title: 'প্রোফাইল',
