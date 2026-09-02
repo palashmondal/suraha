@@ -5,13 +5,13 @@
 #   ./scripts/dev.sh
 #
 # It:
-#   1. ensures suraha.com.bd + every provisioned upazila subdomain resolve to 127.0.0.1
+#   1. ensures suraha.net + every provisioned upazila subdomain resolve to 127.0.0.1
 #      (adds any missing /etc/hosts entries — needs sudo),
 #   2. applies pending DB migrations (safe/idempotent),
 #   3. starts the Laravel API (:8000) and the Vite web app (:5173) in the background,
 #   4. starts the Caddy reverse proxy on :80/:443 (trusted HTTPS via Caddy's internal CA).
 #
-# Then open  https://suraha.com.bd  (Ctrl+C stops everything).
+# Then open  https://suraha.net  (Ctrl+C stops everything).
 #
 set -euo pipefail
 
@@ -19,7 +19,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 API="$ROOT/api"
 WEB="$ROOT/web"
 LOGDIR="$ROOT/.dev-logs"
-BASE_DOMAIN="suraha.com.bd"
+BASE_DOMAIN="suraha.net"
 DB="$API/database/database.sqlite"
 mkdir -p "$LOGDIR"
 
@@ -82,7 +82,7 @@ if port_busy 5173; then
   ok "Web already running on :5173"
 else
   say "Starting web on :5173  (→ $LOGDIR/web.log)"
-  ( cd "$WEB" && exec npm run dev ) >"$LOGDIR/web.log" 2>&1 &
+  ( cd "$WEB" && CADDY=1 exec npm run dev ) >"$LOGDIR/web.log" 2>&1 &
   pids+=($!)
 fi
 

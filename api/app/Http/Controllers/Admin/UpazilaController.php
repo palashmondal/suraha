@@ -43,7 +43,7 @@ class UpazilaController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            // slug == tenant id == subdomain label (e.g. "kalapara" -> kalapara.suraha.com.bd)
+            // slug == tenant id == subdomain label (e.g. "kalapara" -> kalapara.suraha.net)
             'slug' => [
                 'required', 'string', 'max:63', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
                 Rule::unique('tenants', 'id'),

@@ -20,7 +20,7 @@ export default function Login() {
   const [tab, setTab] = useState(0);
 
   // Login is gated by host type (mirrors the API):
-  //  - central host (suraha.com.bd) → SEAL admin only: no citizen tab, single admin form.
+  //  - central host (suraha.net) → SEAL admin only: no citizen tab, single admin form.
   //  - upazila host → officer + citizen tabs (upazila officers / citizen OTP).
   const isCentral = host?.kind === 'central';
   const subtitle = isCentral

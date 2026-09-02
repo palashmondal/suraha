@@ -8,14 +8,14 @@ const SLUG_KEY = 'suraha_upazila_slug';
 const NAME_KEY = 'suraha_upazila_name';
 
 // Central host used only for the first-run upazila directory (before a upazila is chosen).
-// Override with VITE_CENTRAL_BASE for local dev (e.g. https://suraha.com.bd or http://lvh.me:8000).
+// Override with VITE_CENTRAL_BASE for local dev (e.g. https://suraha.net or http://lvh.me:8000).
 export const CENTRAL_BASE: string =
-  (import.meta.env.VITE_CENTRAL_BASE as string | undefined) ?? 'https://suraha.com.bd';
+  (import.meta.env.VITE_CENTRAL_BASE as string | undefined) ?? 'https://suraha.net';
 
 // Template for a upazila's API host. {slug} → the chosen upazila. Override for local dev, e.g.
 // VITE_UPAZILA_BASE_TEMPLATE=http://{slug}.lvh.me:8000
 const BASE_TEMPLATE: string =
-  (import.meta.env.VITE_UPAZILA_BASE_TEMPLATE as string | undefined) ?? 'https://{slug}.suraha.com.bd';
+  (import.meta.env.VITE_UPAZILA_BASE_TEMPLATE as string | undefined) ?? 'https://{slug}.suraha.net';
 
 export interface SelectedUpazila {
   slug: string;

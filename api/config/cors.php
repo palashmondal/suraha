@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * CORS for the React SPA. Because auth is Bearer-token (not cookies), we don't need
  * supports_credentials; we just have to allow every per-upazila origin. Origins are matched
- * by pattern so any `{upazila}.suraha.com.bd` / dev `{upazila}.lvh.me` host is accepted.
+ * by pattern so any `{upazila}.suraha.net` / dev `{upazila}.lvh.me` host is accepted.
  */
 return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
@@ -18,8 +18,7 @@ return [
     ],
 
     'allowed_origins_patterns' => [
-        '#^https?://([a-z0-9-]+\.)?suraha\.com\.bd(:\d+)?$#',
-        '#^https?://([a-z0-9-]+\.)?suraha\.gov\.bd(:\d+)?$#',
+        '#^https?://([a-z0-9-]+\.)?suraha\.net(:\d+)?$#',
         '#^https?://([a-z0-9-]+\.)?lvh\.me(:\d+)?$#',
     ],
 

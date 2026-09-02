@@ -25,7 +25,7 @@ class UpazilaResource extends JsonResource
                 'name_bn' => $this->district->name_bn,
             ]),
             'unions_count' => $this->whenCounted('unions'),
-            'domain' => $this->id.'.'.config('tenancy.base_domain', 'suraha.com.bd'),
+            'domain' => $this->id.'.'.config('tenancy.base_domain', 'suraha.net'),
             'created_at' => $this->created_at?->toDateString(),
         ];
     }

@@ -31,8 +31,8 @@ class AuthController extends Controller
      * Officer login — admin-created username + password (§1.1(3)). Returns a Bearer token.
      *
      * Login is gated by host type (subdomain topology):
-     *  - central host (suraha.com.bd, no tenant)      → SEAL admin only.
-     *  - upazila host ({upazila}.suraha.com.bd, tenant) → that upazila's officers only.
+     *  - central host (suraha.net, no tenant)      → SEAL admin only.
+     *  - upazila host ({upazila}.suraha.net, tenant) → that upazila's officers only.
      * (DC / district hosts are a deferred TODO — see the platform plan.)
      */
     public function officerLogin(Request $request): JsonResponse
@@ -70,7 +70,7 @@ class AuthController extends Controller
                 ]);
             }
         } else {
-            // Central host (suraha.com.bd): SEAL admin only.
+            // Central host (suraha.net): SEAL admin only.
             if ($user->role !== Role::SEAL_ADMIN) {
                 throw ValidationException::withMessages([
                     'username' => ['অ্যাডমিন লগইন শুধুমাত্র প্রধান সাইট থেকে সম্ভব। আপনার উপজেলার সাবডোমেইন ব্যবহার করুন।'],

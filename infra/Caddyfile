@@ -1,12 +1,34 @@
-# Wildcard TLS for every upazila subdomain (SURAHA_BUILD_PROMPT §12.2).
-# Requires a DNS-01 challenge — configure your DNS provider's Caddy module and an API token.
-# The tenant (upazila) is resolved by the Laravel app from the Host header (stancl/tenancy).
+# Wildcard-free TLS for every upazila subdomain (SURAHA_BUILD_PROMPT §12.2).
+#
+# The tenant (upazila) is resolved by the Laravel app from the Host header (stancl/tenancy), so
+# one site block serves the central host and every upazila, present and future.
+#
+# Certs are issued ON DEMAND, per hostname, over HTTP-01 — no wildcard cert and therefore no
+# DNS-01 challenge, no DNS provider API token, and no custom Caddy build. That keeps the proxy on
+# the stock image and works no matter who hosts DNS for suraha.net.
+{
+	# Before issuing a cert for a hostname, Caddy asks the API whether it is a real upazila.
+	# Without this gate, anyone pointing a hostname at this server could burn the Let's Encrypt
+	# rate limits. See RegistryController@tlsAllowed.
+	on_demand_tls {
+		ask http://app:8080/api/tls/allowed
+	}
+}
 
-*.suraha.com.bd, suraha.com.bd {
-	# tls { dns <provider> {env.DNS_API_TOKEN} }   # enable for wildcard issuance
+# Catch-all: matches any hostname, and the ask endpoint above decides which ones get a cert.
+# A new upazila therefore needs no change here — its cert is issued on the first request.
+https:// {
+	tls {
+		on_demand
+	}
 
 	# API + uploaded files (public disk) → Laravel; everything else → React web app.
 	@laravel path /api/* /storage/*
 	reverse_proxy @laravel app:8080
 	reverse_proxy web:80
+}
+
+# Plain HTTP → HTTPS. (Caddy still answers ACME HTTP-01 challenges on :80 itself.)
+http:// {
+	redir https://{host}{uri} permanent
 }

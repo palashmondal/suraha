@@ -17,10 +17,15 @@ use Illuminate\Support\Facades\Route;
 | API routes (Milestone 2 — Auth & Multi-tenancy)
 |--------------------------------------------------------------------------
 | Every route runs through the `tenant` middleware, which resolves the upazila from the
-| request subdomain (golachipa.suraha.com.bd). On a central domain (SEAL/DC admin, or
+| request subdomain (golachipa.suraha.net). On a central domain (SEAL/DC admin, or
 | localhost during dev) it proceeds without a tenant; an unknown subdomain 404s.
 | Auth is Bearer-token (Sanctum); no cookies/CSRF.
 */
+
+// Certificate gate for Caddy's on-demand TLS (infra/Caddyfile). Called by the proxy, never by a
+// browser. Deliberately OUTSIDE the `tenant` group: the proxy reaches it over the internal
+// network, so the request Host is the app container rather than the subdomain in ?domain=.
+Route::get('tls/allowed', [RegistryController::class, 'tlsAllowed']);
 
 Route::middleware('tenant')->group(function () {
 

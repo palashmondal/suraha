@@ -18,7 +18,7 @@ class RegistryController extends Controller
     /**
      * Host context for the requesting subdomain — lets the SPA render the right shell without
      * guessing district-vs-upazila from the hostname string:
-     *  - central host (suraha.com.bd)        → { kind: 'central' }
+     *  - central host (suraha.net)        → { kind: 'central' }
      *  - upazila host ({upazila}.suraha…)     → { kind: 'upazila', slug, name_bn }
      * (A 'district' kind is a deferred TODO — see the platform plan.)
      */
@@ -120,5 +120,43 @@ class RegistryController extends Controller
                 'district_bn' => $u->district?->name_bn,
             ]),
         ]);
+    }
+
+    /**
+     * Certificate gate for Caddy's on-demand TLS (infra/Caddyfile).
+     *
+     * The proxy calls this with ?domain=<hostname> BEFORE asking Let's Encrypt for a cert, and
+     * issues only on a 2xx. Without this gate anyone could point a hostname at the server and
+     * burn through the ACME rate limits. Answering here is what makes provisioning a new upazila
+     * need zero server changes: the cert appears on that subdomain's first request.
+     *
+     * Not tenant-scoped on purpose — the proxy reaches this over the internal Docker network, so
+     * the request Host is the app container, not the subdomain being asked about.
+     */
+    public function tlsAllowed(Request $request)
+    {
+        $domain = strtolower(trim((string) $request->query('domain')));
+        $base = strtolower((string) config('tenancy.base_domain'));
+
+        // Central host: the national public site + the SEAL console.
+        if ($domain === $base || $domain === 'www.'.$base) {
+            return response()->noContent();
+        }
+
+        // {upazila}.{base} — one label deep, and only for a provisioned, active upazila.
+        $label = str_ends_with($domain, '.'.$base)
+            ? substr($domain, 0, -strlen('.'.$base))
+            : null;
+
+        abort_unless(
+            $label !== null && $label !== '' && ! str_contains($label, '.')
+                && Upazila::query()
+                    ->where('is_active', true)
+                    ->whereHas('domains', fn ($q) => $q->where('domain', $label))
+                    ->exists(),
+            404,
+        );
+
+        return response()->noContent();
     }
 }
