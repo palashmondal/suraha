@@ -32,6 +32,23 @@ class CertificateAssets
         return 'data:image/svg+xml;base64,'.base64_encode($svg);
     }
 
+    /**
+     * A seal from resources/certificate, inlined as a data URI. Returns null when the file is
+     * absent so the certificate can fall back rather than render a broken image.
+     */
+    public static function seal(string $file): ?string
+    {
+        $path = resource_path('certificate/'.$file);
+
+        if (! is_file($path)) {
+            return null;
+        }
+
+        $mime = str_ends_with($file, '.svg') ? 'image/svg+xml' : 'image/png';
+
+        return 'data:'.$mime.';base64,'.base64_encode((string) file_get_contents($path));
+    }
+
     public static function barcode(string $content): string
     {
         $barcode = (new TypeCode128())->getBarcode($content);

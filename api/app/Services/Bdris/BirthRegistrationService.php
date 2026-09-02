@@ -77,16 +77,6 @@ class BirthRegistrationService
         return $path;
     }
 
-    /** The national emblem, inline so the certificate needs no external file. */
-    private function crestSvg(): string
-    {
-        return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">'
-            .'<circle cx="50" cy="50" r="46" fill="#006a4e"/>'
-            .'<circle cx="50" cy="44" r="17" fill="#f42a41"/>'
-            .'<path d="M50 62c-11 6-18 14-18 22h36c0-8-7-16-18-22z" fill="#f5d020"/>'
-            .'</svg>';
-    }
-
     /**
      * The certificate, laid out as the official BDRIS জন্ম নিবন্ধন সনদ: government header with a
      * scannable QR and barcode, registration/issuance dates either side of the number, and the
@@ -131,6 +121,11 @@ class BirthRegistrationService
                 .'<td class="v">: '.e((string) $value).'</td></tr>';
         }
 
+        $crest = CertificateAssets::seal('bd-govt-seal.png');
+        // The Registrar General's seal is the watermark. Until that file is dropped in, the
+        // national seal stands in rather than leaving a blank page behind the text.
+        $watermark = CertificateAssets::seal('registrar-seal.png') ?? $crest;
+
         $qr = CertificateAssets::qr($this->verifyUrl($reg));
         $barcode = $reg->registration_no ? CertificateAssets::barcode($reg->registration_no) : '';
         $sex = $reg->sex === 'female' ? 'Female' : ($reg->sex === 'male' ? 'Male' : '—');
@@ -154,13 +149,13 @@ class BirthRegistrationService
           body{font-family:'Noto Sans Bengali','Nirmala UI',system-ui,sans-serif;color:#111;margin:0;background:#f4f4f4}
           .sheet{position:relative;width:190mm;min-height:267mm;margin:8mm auto;padding:12mm 14mm;background:#fff;
                  box-shadow:0 2px 12px rgba(0,0,0,.18);overflow:hidden}
-          .wm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.10;pointer-events:none}
-          .wm div{width:78mm;height:78mm;border:3px solid #1b7a3d;border-radius:50%;display:flex;align-items:center;
-                  justify-content:center;text-align:center;font-size:11pt;color:#1b7a3d;padding:8mm;line-height:1.5}
+          .wm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+              opacity:.12;pointer-events:none}
+          .wm img{width:95mm;height:auto}
           .top{display:flex;align-items:flex-start;justify-content:space-between;gap:8mm}
           .top img{display:block}
           .qr{width:26mm}.bar{width:52mm}
-          .crest{width:16mm;margin:0 auto 2mm}
+          .crest{width:17mm;height:17mm;display:block;margin:0 auto 2mm}
           .head{flex:1;text-align:center}
           .head h1{font-size:13.5pt;margin:0 0 1.5mm;font-weight:600}
           .head p{margin:0 0 1mm;font-size:10.5pt}
@@ -180,12 +175,12 @@ class BirthRegistrationService
           .foot{margin-top:12mm;text-align:center;font-size:8.5pt;color:#444}
         </style></head><body>
         <div class="sheet">
-          <div class="wm"><div>গণপ্রজাতন্ত্রী বাংলাদেশ সরকার · জন্ম ও মৃত্যু নিবন্ধন</div></div>
+          <div class="wm"><img src="{$watermark}" alt=""></div>
 
           <div class="top">
             <img class="qr" src="{$qr}" alt="QR">
             <div class="head">
-              <div class="crest">{$this->crestSvg()}</div>
+              <img class="crest" src="{$crest}" alt="">
               <h1>Government of the People's Republic of Bangladesh</h1>
               <p>Office of the Registrar, Birth and Death Registration</p>
               <p>{$union} Union Parishad</p>
