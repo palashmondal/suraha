@@ -87,6 +87,7 @@ const managementSection: Child[] = [
   { key: 'users', label: S.nav.users, route: '/users' },
 ];
 const instancesChild: Child = { key: 'instances', label: S.nav.instances, route: '/instances' };
+const districtsChild: Child = { key: 'districts', label: S.nav.districts, route: '/districts' };
 // সাধারণ তথ্য is the content area: the awareness slider belongs here with the phone list and the
 // about text, not among the case-handling modules above.
 const generalSection: Child[] = [
@@ -138,7 +139,7 @@ export default function Sidebar() {
 
   // SEAL manages the instances themselves, so that roster sits with the other management pages.
   const management: Child[] = user?.role === 'seal_admin'
-    ? [instancesChild, ...managementSection]
+    ? [instancesChild, districtsChild, ...managementSection]
     : managementSection;
 
   // A DC only reads figures, and an investigating officer only works their own complaints.

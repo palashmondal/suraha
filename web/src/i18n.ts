@@ -35,6 +35,7 @@ export const bnStrings = {
     phones: 'প্রয়োজনীয় ফোন নাম্বার',
     aboutUpazila: 'উপজেলা সম্পর্কিত',
     instances: 'উপজেলা তালিকা',
+    districts: 'জেলা তালিকা',
   },
 
   inactiveSite: {
@@ -63,7 +64,7 @@ export const bnStrings = {
 
   instances: {
     title: 'সুরাহা উপজেলা ড্যাশবোর্ড',
-    subtitle: 'উপজেলা ও জেলা ড্যাশবোর্ডের সাবডোমেইন তালিকা',
+    subtitle: 'সকল উপজেলা ড্যাশবোর্ড ও সাবডোমেইন তালিকা',
     addNew: 'নতুন উপজেলা যুক্ত করুন',
     colUpazila: 'উপজেলা',
     colUpazilaCount: 'উপজেলা সংখ্যা',

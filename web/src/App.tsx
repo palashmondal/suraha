@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Profile from './pages/Profile';
 import ChangePassword from './pages/ChangePassword';
 import Instances from './pages/admin/Instances';
+import Districts from './pages/admin/Districts';
 import InstanceDetail from './pages/admin/InstanceDetail';
 import Showcase from './pages/ui/Showcase';
 import PregnancyList from './pages/pregnancy/PregnancyList';
@@ -130,6 +131,7 @@ export default function App() {
       <Route path="/sliders" element={<RequireAuth roles={['uno', 'seal_admin']}><SliderManage /></RequireAuth>} />
       <Route path="/general-info" element={<RequireAuth roles={['uno', 'seal_admin']}><GeneralInfoManage /></RequireAuth>} />
       <Route path="/instances" element={<RequireAuth roles={['seal_admin']}><Instances /></RequireAuth>} />
+      <Route path="/districts" element={<RequireAuth roles={['seal_admin']}><Districts /></RequireAuth>} />
       <Route path="/instances/:id" element={<RequireAuth roles={['seal_admin']}><InstanceDetail /></RequireAuth>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
