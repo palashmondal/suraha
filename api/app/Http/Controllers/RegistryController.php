@@ -27,7 +27,7 @@ class RegistryController extends Controller
     public function hostContext()
     {
         if (! tenancy()->initialized) {
-            return response()->json(['kind' => 'central', 'slug' => null, 'name_bn' => null]);
+            return response()->json(['kind' => 'central', 'slug' => null, 'name_bn' => null, 'is_active' => true]);
         }
 
         $upazila = tenant()->load('district');
@@ -37,6 +37,9 @@ class RegistryController extends Controller
             'slug' => $upazila->getTenantKey(),
             'name_bn' => $upazila->name_bn,
             'district_bn' => $upazila->district?->name_bn,
+            // The one endpoint EnsureTenantActive lets through, so the SPA can render a notice
+            // rather than a broken shell.
+            'is_active' => (bool) $upazila->is_active,
         ]);
     }
 

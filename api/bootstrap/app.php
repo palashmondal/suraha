@@ -17,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // Resolve the upazila (tenant) from the request subdomain, e.g. galachipa.suraha.net
             'tenant' => \Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain::class,
             'tenant.prevent-central' => \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
+            // A deactivated upazila's subdomain serves nothing but the "disabled" notice.
+            'tenant.active' => \App\Http\Middleware\EnsureTenantActive::class,
             // For cross-tenant roles (SEAL/DC) on the admin host: resolve the upazila from
             // the X-Upazila header so they can switch context without changing the URL.
             'tenant.selected' => \App\Http\Middleware\ApplySelectedTenant::class,

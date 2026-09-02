@@ -1,4 +1,4 @@
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import AppShell from './layout/AppShell';
@@ -30,6 +30,7 @@ import GeneralInfoManage from './pages/content/GeneralInfoManage';
 import Reports from './pages/reports/Reports';
 import NotificationsPage from './pages/NotificationsPage';
 import { useAuth } from './auth/AuthContext';
+import { bnStrings as S } from './i18n';
 import { useHostContext } from './tenant/host';
 
 function Spinner() {
@@ -67,10 +68,28 @@ function Home() {
   return <Landing />;
 }
 
+// A deactivated upazila serves this and nothing else. The API refuses every other endpoint on
+// that host (EnsureTenantActive), so there is no usable app behind this screen — showing it is
+// what keeps a disabled subdomain from rendering as a half-broken site.
+function InactiveSite() {
+  return (
+    <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', p: 3 }}>
+      <Box sx={{ maxWidth: 520, textAlign: 'center', display: 'grid', gap: 1.5 }}>
+        <Typography sx={{ fontSize: 22, fontWeight: 800 }}>{S.inactiveSite.title}</Typography>
+        <Typography sx={{ color: 'text.secondary' }}>{S.inactiveSite.body}</Typography>
+        <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>{S.inactiveSite.contact}</Typography>
+      </Box>
+    </Box>
+  );
+}
+
 export default function App() {
   // Resolves the host once for the whole app, which is also what sets the tab title
   // (see tenant/host.ts). Routes that never render TopBar still get the right title.
-  useHostContext();
+  const host = useHostContext();
+
+  if (!host) return <Spinner />;
+  if (host.kind === 'upazila' && host.is_active === false) return <InactiveSite />;
 
   return (
     <Routes>

@@ -221,6 +221,51 @@ class AdminUpazilaTest extends TestCase
         ]);
     }
 
+    /**
+     * Deactivating an instance has to take its subdomain offline, or "disabled" means nothing more
+     * than a grey pill in the roster while the public site keeps serving.
+     */
+    public function test_deactivating_an_instance_takes_its_subdomain_offline(): void
+    {
+        $live = 'http://galachipa.lvh.me';
+
+        $this->getJson($live.'/api/sliders')->assertOk();
+
+        Sanctum::actingAs($this->seal());
+        $this->putJson(self::ADMIN.'/api/upazilas/galachipa', ['is_active' => false])->assertOk();
+
+        // Public pages, citizen tracking and officer login all stop on that host.
+        $this->getJson($live.'/api/sliders')->assertStatus(503);
+        $this->getJson($live.'/api/general-info')->assertStatus(503);
+        $this->postJson($live.'/api/auth/officer/login', [
+            'username' => 'uno_galachipa', 'password' => 'password',
+        ])->assertStatus(503);
+
+        // …but the host still identifies itself, so the SPA can show a notice rather than a
+        // half-broken site, and it reports the instance as inactive.
+        $this->getJson($live.'/api/registry/host-context')
+            ->assertOk()
+            ->assertJsonPath('kind', 'upazila')
+            ->assertJsonPath('is_active', false);
+
+        // A sibling upazila is untouched, and SEAL keeps central access to switch it back on.
+        $this->getJson('http://dumuria.lvh.me/api/sliders')->assertOk();
+        $this->putJson(self::ADMIN.'/api/upazilas/galachipa', ['is_active' => true])->assertOk();
+        $this->getJson($live.'/api/sliders')->assertOk();
+    }
+
+    /** An inactive upazila must not get a certificate issued for it either. */
+    public function test_tls_gate_refuses_a_deactivated_upazila(): void
+    {
+        $base = config('tenancy.base_domain');
+        $this->getJson(self::ADMIN.'/api/tls/allowed?domain=galachipa.'.$base)->assertNoContent();
+
+        Sanctum::actingAs($this->seal());
+        $this->putJson(self::ADMIN.'/api/upazilas/galachipa', ['is_active' => false])->assertOk();
+
+        $this->getJson(self::ADMIN.'/api/tls/allowed?domain=galachipa.'.$base)->assertNotFound();
+    }
+
     // ---- বিভাগ → জেলা → উপজেলা hierarchy ------------------------------
 
     /**
