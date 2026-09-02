@@ -289,15 +289,18 @@ export default function Sidebar() {
       }}
     >
       <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-      {/* Brand header — the logo links back to the dashboard, the chevron folds the sidebar */}
+      {/* Brand — logo and wordmark both stay when folded, stacked so they fit the rail. */}
       <Box
+        onClick={() => navigate('/')}
         sx={{
           display: 'flex',
+          flexDirection: collapsed ? 'column' : 'row',
           alignItems: 'center',
-          gap: 1.25,
-          px: collapsed ? 1 : 2.5,
-          py: 2,
           justifyContent: collapsed ? 'center' : 'flex-start',
+          gap: collapsed ? 0.25 : 1.25,
+          px: collapsed ? 0.5 : 2.5,
+          py: 2,
+          cursor: 'pointer',
           '&:hover .brand-word': { color: 'primary.main' },
         }}
       >
@@ -305,24 +308,38 @@ export default function Sidebar() {
           component="img"
           src="/logo.png"
           alt={S.appName}
-          onClick={() => navigate('/')}
-          sx={{ width: collapsed ? 40 : 52, height: collapsed ? 40 : 52, cursor: 'pointer', transition: 'all 180ms ease' }}
+          sx={{
+            width: collapsed ? 38 : 52,
+            height: collapsed ? 38 : 52,
+            transition: 'width 180ms ease, height 180ms ease',
+          }}
         />
+        <Typography
+          className="brand-word"
+          noWrap
+          sx={{
+            flex: collapsed ? 'none' : 1,
+            fontSize: collapsed ? 14 : 27,
+            fontWeight: 700,
+            lineHeight: 1.2,
+            transition: 'color 120ms ease',
+          }}
+        >
+          {S.appName}
+        </Typography>
         {! collapsed && (
-          <>
-            <Typography
-              className="brand-word"
-              onClick={() => navigate('/')}
-              sx={{ flex: 1, fontSize: 27, fontWeight: 700, cursor: 'pointer', transition: 'color 120ms ease' }}
+          <Tooltip title={S.nav.collapse} placement="right">
+            <IconButton
+              size="small"
+              aria-label={S.nav.collapse}
+              onClick={(e) => {
+                e.stopPropagation();   // the brand row navigates; the chevron must not
+                toggleCollapsed();
+              }}
             >
-              {S.appName}
-            </Typography>
-            <Tooltip title={S.nav.collapse} placement="right">
-              <IconButton size="small" onClick={toggleCollapsed} aria-label={S.nav.collapse}>
-                <ChevronLeftRoundedIcon />
-              </IconButton>
-            </Tooltip>
-          </>
+              <ChevronLeftRoundedIcon />
+            </IconButton>
+          </Tooltip>
         )}
       </Box>
 
