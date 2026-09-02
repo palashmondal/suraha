@@ -395,7 +395,7 @@
 "district": "Bogura",
 "name": "Sherpur",
 "name_bn": "শেরপুর বগুড়া",
-"slug": "sherpur",
+"slug": "sherpur-bogra",
 "division_bn": "রাজশাহী",
 "gov_url": "https://sherpur.bogra.gov.bd"
 },
@@ -2971,7 +2971,7 @@
 "district": "Pabna",
 "name": "Faridpur",
 "name_bn": "ফরিদপুর",
-"slug": "faridpur",
+"slug": "faridpur-pabna",
 "division_bn": "রাজশাহী",
 "gov_url": "https://faridpur.pabna.gov.bd"
 },
