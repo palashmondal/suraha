@@ -14,15 +14,27 @@ import {
   useTheme,
 } from '@mui/material';
 import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
-import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded';
-import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import PregnantWomanRoundedIcon from '@mui/icons-material/PregnantWomanRounded';
+import ChildFriendlyOutlinedIcon from '@mui/icons-material/ChildFriendlyOutlined';
+import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import GavelRoundedIcon from '@mui/icons-material/GavelRounded';
+import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
+import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
+import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
+import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
+import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded';
+import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
+import LocalPhoneOutlinedIcon from '@mui/icons-material/LocalPhoneOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
 import { bnStrings as S } from '../i18n';
 import { useAuth } from '../auth/AuthContext';
 
@@ -31,7 +43,7 @@ export const SIDEBAR_WIDTH = 264;
 export const SIDEBAR_RAIL = 76;
 const COLLAPSE_KEY = 'suraha.sidebar.collapsed';
 
-type Child = { key: string; label: string; route?: string; managerOnly?: boolean };
+type Child = { key: string; label: string; icon: React.ReactNode; route?: string; managerOnly?: boolean };
 type Item = {
   key: string;
   label: string;
@@ -49,30 +61,30 @@ const serviceItems: Item[] = [
   {
     key: 'pregnancy',
     label: S.nav.pregnancy,
-    icon: <FolderOutlinedIcon />,
+    icon: <PregnantWomanRoundedIcon />,
     children: [
-      { key: 'pregnancy.list', label: S.nav.list, route: '/pregnancy' },
-      { key: 'birth', label: S.nav.birth, route: '/birth' },
-      { key: 'pregnancy.report', label: S.nav.report, route: '/reports' },
+      { key: 'pregnancy.list', icon: <FormatListBulletedRoundedIcon fontSize="small" />, label: S.nav.list, route: '/pregnancy' },
+      { key: 'birth', icon: <ChildFriendlyOutlinedIcon fontSize="small" />, label: S.nav.birth, route: '/birth' },
+      { key: 'pregnancy.report', icon: <InsertChartOutlinedRoundedIcon fontSize="small" />, label: S.nav.report, route: '/reports' },
     ],
   },
   {
     key: 'appointment',
     label: S.nav.appointment,
-    icon: <FolderOutlinedIcon />,
+    icon: <EventNoteOutlinedIcon />,
     children: [
-      { key: 'appointment.all', label: S.nav.appointmentList, route: '/appointment' },
-      { key: 'appointment.schedule', label: S.nav.appointmentSchedule, route: '/appointment-schedule', managerOnly: true },
+      { key: 'appointment.all', icon: <FormatListBulletedRoundedIcon fontSize="small" />, label: S.nav.appointmentList, route: '/appointment' },
+      { key: 'appointment.schedule', icon: <CalendarMonthOutlinedIcon fontSize="small" />, label: S.nav.appointmentSchedule, route: '/appointment-schedule', managerOnly: true },
     ],
   },
   {
     key: 'complaint',
     label: S.nav.complaint,
-    icon: <FolderOutlinedIcon />,
+    icon: <ReportProblemOutlinedIcon />,
     children: [
-      { key: 'complaint.all', label: S.nav.allList, route: '/complaint' },
-      { key: 'complaint.hearings', label: S.nav.hearingSchedule, route: '/hearings', managerOnly: true },
-      { key: 'complaint.officers', label: S.nav.officerList, route: '/investigators', managerOnly: true },
+      { key: 'complaint.all', icon: <FormatListBulletedRoundedIcon fontSize="small" />, label: S.nav.allList, route: '/complaint' },
+      { key: 'complaint.hearings', icon: <GavelRoundedIcon fontSize="small" />, label: S.nav.hearingSchedule, route: '/hearings', managerOnly: true },
+      { key: 'complaint.officers', icon: <BadgeOutlinedIcon fontSize="small" />, label: S.nav.officerList, route: '/investigators', managerOnly: true },
     ],
   },
   { key: 'humanitarian', label: S.nav.humanitarian, icon: <VolunteerActivismOutlinedIcon />, route: '/humanitarian' },
@@ -91,16 +103,16 @@ const reportsItem: Item = {
 // ড্যাশবোর্ড পরিচালনা — who and what the dashboards are made of. The instance roster is
 // SEAL-only, so it is added per role rather than declared here.
 const managementSection: Child[] = [
-  { key: 'users', label: S.nav.users, route: '/users' },
+  { key: 'users', icon: <GroupOutlinedIcon fontSize="small" />, label: S.nav.users, route: '/users' },
 ];
-const instancesChild: Child = { key: 'instances', label: S.nav.instances, route: '/instances' };
-const districtsChild: Child = { key: 'districts', label: S.nav.districts, route: '/districts' };
+const instancesChild: Child = { key: 'instances', icon: <ApartmentRoundedIcon fontSize="small" />, label: S.nav.instances, route: '/instances' };
+const districtsChild: Child = { key: 'districts', icon: <MapOutlinedIcon fontSize="small" />, label: S.nav.districts, route: '/districts' };
 // সাধারণ তথ্য is the content area: the awareness slider belongs here with the phone list and the
 // about text, not among the case-handling modules above.
 const generalSection: Child[] = [
-  { key: 'phones', label: S.nav.phones, route: '/general-info' },
-  { key: 'about', label: S.nav.aboutUpazila, route: '/general-info' },
-  { key: 'slider', label: S.nav.slider, route: '/sliders' },
+  { key: 'phones', icon: <LocalPhoneOutlinedIcon fontSize="small" />, label: S.nav.phones, route: '/general-info' },
+  { key: 'about', icon: <InfoOutlinedIcon fontSize="small" />, label: S.nav.aboutUpazila, route: '/general-info' },
+  { key: 'slider', icon: <CampaignOutlinedIcon fontSize="small" />, label: S.nav.slider, route: '/sliders' },
 ];
 
 function SectionHeader({ label, action, collapsed }: { label: string; action?: React.ReactNode; collapsed?: boolean }) {
@@ -215,9 +227,7 @@ export default function Sidebar() {
         }}
         onClick={() => (c.route ? navigate(c.route) : setActive(c.key))}
       >
-        <ListItemIcon sx={collapsed ? { minWidth: 0 } : undefined}>
-          <CheckRoundedIcon fontSize="small" />
-        </ListItemIcon>
+        <ListItemIcon sx={collapsed ? { minWidth: 0 } : { minWidth: 34 }}>{c.icon}</ListItemIcon>
         {! collapsed && <ListItemText primary={c.label} primaryTypographyProps={{ fontSize: 14.5 }} />}
       </ListItemButton>
     </Tooltip>
