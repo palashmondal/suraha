@@ -3,6 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Box,
   Collapse,
+  Divider,
+  IconButton,
+  Tooltip,
   List,
   ListItemButton,
   ListItemIcon,
@@ -17,12 +20,16 @@ import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivism
 import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
+import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { bnStrings as S } from '../i18n';
 import { useAuth } from '../auth/AuthContext';
 
 export const SIDEBAR_WIDTH = 264;
+/** Collapsed rail: wide enough for the pill around a 24px icon, nothing more. */
+export const SIDEBAR_RAIL = 76;
+const COLLAPSE_KEY = 'suraha.sidebar.collapsed';
 
 type Child = { key: string; label: string; route?: string; managerOnly?: boolean };
 type Item = {
@@ -96,7 +103,10 @@ const generalSection: Child[] = [
   { key: 'slider', label: S.nav.slider, route: '/sliders' },
 ];
 
-function SectionHeader({ label, action }: { label: string; action?: React.ReactNode }) {
+function SectionHeader({ label, action, collapsed }: { label: string; action?: React.ReactNode; collapsed?: boolean }) {
+  // On the rail there is no room for a caption, so the grouping is carried by a rule instead.
+  if (collapsed) return <Divider sx={{ mx: 2, my: 1.5 }} />;
+
   return (
     <Box
       sx={{
@@ -134,6 +144,27 @@ export default function Sidebar() {
   // so the nav never offers a page whose actions would be refused.
   const isDc = user?.role === 'dc';
 
+  // Folded state outlives navigation and reload; a wrapped read because storage can throw in a
+  // private window and a sidebar is not worth a blank screen.
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(COLLAPSE_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleCollapsed = () => {
+    setCollapsed((c) => {
+      try {
+        localStorage.setItem(COLLAPSE_KEY, c ? '0' : '1');
+      } catch {
+        /* not worth failing over */
+      }
+      return ! c;
+    });
+  };
+
   // The dashboard always leads; the DC gets its reports beside it.
   const topItems: Item[] = isDc ? [dashboardItem, reportsItem] : [dashboardItem];
 
@@ -147,7 +178,6 @@ export default function Sidebar() {
     .filter((it) => ! it.managerOnly || isManager)
     .filter((it) => ! isInvestigator || it.key === 'complaint');
 
-  // One row shape for every list, so a section is just a different set of items.
 
   const activePill = theme.suraha.activePillBg;
   const activeText = theme.suraha.activePillText;
@@ -176,6 +206,23 @@ export default function Sidebar() {
     '& .MuiListItemIcon-root': { color: isActive ? activeText : 'text.secondary', minWidth: 38 },
   });
 
+  const renderChild = (c: Child) => (
+    <Tooltip key={c.key} title={collapsed ? c.label : ''} placement="right">
+      <ListItemButton
+        sx={{
+          ...rowSx(c.route ? isRouteActive(c.route) : active === c.key),
+          ...(collapsed && { justifyContent: 'center', mx: 1, px: 0 }),
+        }}
+        onClick={() => (c.route ? navigate(c.route) : setActive(c.key))}
+      >
+        <ListItemIcon sx={collapsed ? { minWidth: 0 } : undefined}>
+          <CheckRoundedIcon fontSize="small" />
+        </ListItemIcon>
+        {! collapsed && <ListItemText primary={c.label} primaryTypographyProps={{ fontSize: 14.5 }} />}
+      </ListItemButton>
+    </Tooltip>
+  );
+
   // One row shape for every list, so a section is just a different set of items.
   const renderItem = (item: Item) => {
     const isActive = itemActive(item);
@@ -183,18 +230,29 @@ export default function Sidebar() {
 
     return (
       <Box key={item.key}>
-        <ListItemButton sx={rowSx(isActive)} onClick={() => handleItemClick(item)}>
-          <ListItemIcon>{item.icon}</ListItemIcon>
-          <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: 15, fontWeight: 500 }} />
-          {item.children ? (
-            isOpen ? (
-              <ExpandMoreRoundedIcon sx={{ color: 'text.secondary' }} />
-            ) : (
-              <ChevronRightRoundedIcon sx={{ color: 'text.secondary' }} />
-            )
-          ) : null}
-        </ListItemButton>
-        {item.children ? (
+        <Tooltip title={collapsed ? item.label : ''} placement="right">
+          <ListItemButton
+            sx={{ ...rowSx(isActive), ...(collapsed && { justifyContent: 'center', mx: 1, px: 0 }) }}
+            onClick={() => {
+              // A group cannot show its children on the rail, so opening one unfolds the sidebar.
+              if (collapsed && item.children) setCollapsed(false);
+              handleItemClick(item);
+            }}
+          >
+            <ListItemIcon sx={collapsed ? { minWidth: 0 } : undefined}>{item.icon}</ListItemIcon>
+            {! collapsed && (
+              <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: 15, fontWeight: 500 }} />
+            )}
+            {! collapsed && item.children ? (
+              isOpen ? (
+                <ExpandMoreRoundedIcon sx={{ color: 'text.secondary' }} />
+              ) : (
+                <ChevronRightRoundedIcon sx={{ color: 'text.secondary' }} />
+              )
+            ) : null}
+          </ListItemButton>
+        </Tooltip>
+        {item.children && ! collapsed ? (
           <Collapse in={isOpen} unmountOnExit>
             <List disablePadding>
               {item.children.filter((c) => ! c.managerOnly || isManager).map((child) => {
@@ -220,7 +278,8 @@ export default function Sidebar() {
   return (
     <Box
       sx={{
-        width: SIDEBAR_WIDTH,
+        width: collapsed ? SIDEBAR_RAIL : SIDEBAR_WIDTH,
+        transition: 'width 180ms ease',
         flexShrink: 0,
         height: '100%',
         display: 'flex',
@@ -230,31 +289,61 @@ export default function Sidebar() {
       }}
     >
       <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
-      {/* Brand header — links back to the dashboard */}
+      {/* Brand header — the logo links back to the dashboard, the chevron folds the sidebar */}
       <Box
-        onClick={() => navigate('/')}
         sx={{
           display: 'flex',
           alignItems: 'center',
           gap: 1.25,
-          px: 2.5,
+          px: collapsed ? 1 : 2.5,
           py: 2,
-          cursor: 'pointer',
+          justifyContent: collapsed ? 'center' : 'flex-start',
           '&:hover .brand-word': { color: 'primary.main' },
         }}
       >
-        <Box component="img" src="/logo.png" alt={S.appName} sx={{ width: 52, height: 52 }} />
-        <Typography className="brand-word" sx={{ fontSize: 27, fontWeight: 700, transition: 'color 120ms ease' }}>
-          {S.appName}
-        </Typography>
+        <Box
+          component="img"
+          src="/logo.png"
+          alt={S.appName}
+          onClick={() => navigate('/')}
+          sx={{ width: collapsed ? 40 : 52, height: collapsed ? 40 : 52, cursor: 'pointer', transition: 'all 180ms ease' }}
+        />
+        {! collapsed && (
+          <>
+            <Typography
+              className="brand-word"
+              onClick={() => navigate('/')}
+              sx={{ flex: 1, fontSize: 27, fontWeight: 700, cursor: 'pointer', transition: 'color 120ms ease' }}
+            >
+              {S.appName}
+            </Typography>
+            <Tooltip title={S.nav.collapse} placement="right">
+              <IconButton size="small" onClick={toggleCollapsed} aria-label={S.nav.collapse}>
+                <ChevronLeftRoundedIcon />
+              </IconButton>
+            </Tooltip>
+          </>
+        )}
       </Box>
+
+      {/* Folded: the only way back out, so it gets its own row. The wrapper does the centring —
+          the scroll container is not a flex box, so alignSelf on the button would do nothing. */}
+      {collapsed && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+          <Tooltip title={S.nav.expand} placement="right">
+            <IconButton onClick={toggleCollapsed} aria-label={S.nav.expand}>
+              <ChevronRightRoundedIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )}
 
       <List disablePadding>{topItems.map(renderItem)}</List>
 
       {/* নাগরিক সেবা — the citizen-facing modules */}
       {services.length > 0 && (
         <>
-          <SectionHeader label={S.nav.sectionServices} />
+          <SectionHeader label={S.nav.sectionServices} collapsed={collapsed} />
           <List disablePadding>{services.map(renderItem)}</List>
         </>
       )}
@@ -262,20 +351,9 @@ export default function Sidebar() {
       {/* ড্যাশবোর্ড পরিচালনা — only officer-managers (UNO / SEAL) */}
       {(user?.role === 'uno' || user?.role === 'seal_admin') && (
         <>
-          <SectionHeader label={S.nav.sectionOfficer} />
+          <SectionHeader label={S.nav.sectionOfficer} collapsed={collapsed} />
           <List disablePadding>
-            {management.map((c) => (
-              <ListItemButton
-                key={c.key}
-                sx={rowSx(c.route ? isRouteActive(c.route) : active === c.key)}
-                onClick={() => (c.route ? navigate(c.route) : setActive(c.key))}
-              >
-                <ListItemIcon>
-                  <CheckRoundedIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary={c.label} primaryTypographyProps={{ fontSize: 14.5 }} />
-              </ListItemButton>
-            ))}
+{management.map(renderChild)}
           </List>
         </>
       )}
@@ -285,21 +363,11 @@ export default function Sidebar() {
         <>
           <SectionHeader
             label={S.nav.sectionGeneral}
+            collapsed={collapsed}
             action={<AddRoundedIcon sx={{ fontSize: 20, color: 'text.secondary' }} />}
           />
           <List disablePadding sx={{ pb: 3 }}>
-            {generalSection.map((c) => (
-              <ListItemButton
-                key={c.key}
-                sx={rowSx(c.route ? isRouteActive(c.route) : active === c.key)}
-                onClick={() => (c.route ? navigate(c.route) : setActive(c.key))}
-              >
-                <ListItemIcon>
-                  <CheckRoundedIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText primary={c.label} primaryTypographyProps={{ fontSize: 14.5 }} />
-              </ListItemButton>
-            ))}
+{generalSection.map(renderChild)}
           </List>
         </>
       )}
