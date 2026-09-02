@@ -63,13 +63,13 @@ export default function Districts() {
   const { pageRows, page, setPage, pageCount } = usePagination(rows);
 
   return (
-    <Box sx={{ display: 'grid', gap: 3 }}>
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Box>
         <Typography sx={{ fontSize: 22, fontWeight: 800 }}>{S.instances.districtSectionTitle}</Typography>
         <Typography sx={{ color: 'text.secondary' }}>{S.instances.districtSectionHelp}</Typography>
       </Box>
 
-      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '16px' }}>
+      <TableContainer component={Paper} elevation={0} sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', borderRadius: '16px' }}>
         <Table>
           <TableHead>
             <TableRow>

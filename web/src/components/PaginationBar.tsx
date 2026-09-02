@@ -20,6 +20,9 @@ export default function PaginationBar({
   return (
     <Box
       sx={{
+        // Sinks to the bottom of its container, so a short last page does not pull the pager up
+        // to meet the final row.
+        mt: 'auto',
         display: 'flex',
         justifyContent: 'center',
         px: 2,

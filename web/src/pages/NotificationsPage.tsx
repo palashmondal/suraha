@@ -45,7 +45,7 @@ export default function NotificationsPage() {
   const { pageRows, page, setPage, pageCount } = usePagination(items ?? []);
 
   return (
-    <Box>
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
         <Typography variant="h5">{S.notifications.pageTitle}</Typography>
         {unread > 0 && (
@@ -62,7 +62,7 @@ export default function NotificationsPage() {
       ) : items.length === 0 ? (
         <Paper elevation={0} sx={{ borderRadius: '16px' }}><EmptyState title={S.notifications.empty} /></Paper>
       ) : (
-        <Paper elevation={0} sx={{ borderRadius: '16px', overflow: 'hidden', border: (t) => `1px solid ${t.palette.divider}` }}>
+        <Paper elevation={0} sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', borderRadius: '16px', overflow: 'hidden', border: (t) => `1px solid ${t.palette.divider}` }}>
           {pageRows.map((n, i) => {
             const { color, icon } = moduleStyle(theme, n.module);
             const dt = formatDateTime(n.created_at);

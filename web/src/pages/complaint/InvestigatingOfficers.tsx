@@ -44,13 +44,13 @@ export default function InvestigatingOfficers() {
   };
 
   return (
-    <Box>
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       {/* No add action: an investigating officer is just a user of this upazila, created on the
           সকল ব্যবহারকারী page like every other account. This page assigns and lists them. */}
       <PageHeader title={S.investigators.title} />
       {flash && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setFlash(null)}>{flash}</Alert>}
 
-      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '16px' }}>
+      <TableContainer component={Paper} elevation={0} sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', borderRadius: '16px' }}>
         <Table>
           <TableHead>
             <TableRow>

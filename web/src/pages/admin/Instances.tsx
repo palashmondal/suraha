@@ -87,7 +87,7 @@ export default function Instances() {
   const upazila = usePagination(rows);
 
   return (
-    <Box sx={{ display: 'grid', gap: 3 }}>
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Box sx={{ flex: 1 }}>
           <Typography sx={{ fontSize: 22, fontWeight: 800 }}>{S.instances.title}</Typography>
@@ -100,7 +100,7 @@ export default function Instances() {
 
       {flash && <Alert severity="success" onClose={() => setFlash(null)}>{flash}</Alert>}
 
-      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '16px' }}>
+      <TableContainer component={Paper} elevation={0} sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', borderRadius: '16px' }}>
         <Table>
           <TableHead>
             <TableRow>
