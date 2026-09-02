@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Division;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -97,6 +98,7 @@ class AdminUpazilaTest extends TestCase
         $res = $this->postJson(self::ADMIN.'/api/upazilas', [
             'slug' => 'sadar', 'name' => 'Sadar', 'name_bn' => 'সদর',
             'district_name' => 'Patuakhali', 'district_name_bn' => 'পটুয়াখালী',
+            'division_id' => Division::where('name', 'Barishal')->value('id'),
         ])->assertCreated();
 
         $roles = collect($res->json('credentials'))->pluck('role')->all();
@@ -114,6 +116,7 @@ class AdminUpazilaTest extends TestCase
             'name_bn' => 'মিরপুর',
             'district_name' => 'Kushtia',
             'district_name_bn' => 'কুষ্টিয়া',
+            'division_id' => Division::where('name', 'Khulna')->value('id'),
         ])->assertCreated();
 
         $this->assertDatabaseHas('districts', ['name' => 'Kushtia']);
@@ -184,10 +187,49 @@ class AdminUpazilaTest extends TestCase
         $this->postJson(self::ADMIN.'/api/upazilas', [
             'slug' => 'mirpur', 'name' => 'Mirpur', 'name_bn' => 'মিরপুর',
             'district_name' => 'Kushtia', 'district_name_bn' => 'কুষ্টিয়া',
+            'division_id' => Division::where('name', 'Khulna')->value('id'),
         ])->assertCreated();
 
         Sanctum::actingAs(User::where('username', 'dc_barishal')->firstOrFail());
         $this->getJson(self::ADMIN.'/api/registry/active-upazila', ['X-Upazila' => 'mirpur'])
             ->assertStatus(403);
+    }
+
+    // ---- বিভাগ → জেলা → উপজেলা hierarchy ------------------------------
+
+    /**
+     * The instance admin's division dropdown filters districts client-side on division_id, so a
+     * district with no division would silently vanish from every dropdown and render blank in the
+     * roster. Pin the seeded hierarchy: eight divisions, all 64 districts mapped.
+     */
+    public function test_every_district_belongs_to_one_of_the_eight_divisions(): void
+    {
+        Sanctum::actingAs($this->seal());
+
+        $this->getJson(self::ADMIN.'/api/registry/divisions')
+            ->assertOk()
+            ->assertJsonCount(8, 'divisions');
+
+        $districts = $this->getJson(self::ADMIN.'/api/registry/districts')
+            ->assertOk()
+            ->json('districts');
+
+        $this->assertCount(64, $districts);
+        $this->assertEmpty(
+            array_filter($districts, fn (array $d) => $d['division_id'] === null),
+            'every district must be linked to a division',
+        );
+    }
+
+    /** The roster's বিভাগ column reads this nested payload. */
+    public function test_upazila_payload_carries_its_division(): void
+    {
+        Sanctum::actingAs($this->seal());
+
+        $this->getJson(self::ADMIN.'/api/upazilas/golachipa')
+            ->assertOk()
+            ->assertJsonPath('data.district.name_bn', 'বরিশাল')
+            ->assertJsonPath('data.district.division.name_bn', 'বরিশাল')
+            ->assertJsonPath('data.domain', 'golachipa.suraha.net');
     }
 }

@@ -27,7 +27,7 @@ class UpazilaController extends Controller
     public function index()
     {
         $upazilas = Upazila::query()
-            ->with('district')
+            ->with('district.division')
             ->withCount('unions')
             ->orderBy('name_bn')
             ->get();
@@ -55,6 +55,8 @@ class UpazilaController extends Controller
             'district_id' => ['nullable', 'integer', Rule::exists('districts', 'id'), 'required_without:district_name'],
             'district_name' => ['nullable', 'string', 'max:120', 'required_without:district_id'],
             'district_name_bn' => ['nullable', 'string', 'max:120', 'required_with:district_name'],
+            // A hand-added district still needs its division, or it renders blank in the roster.
+            'division_id' => ['nullable', 'integer', Rule::exists('divisions', 'id'), 'required_with:district_name'],
         ]);
 
         [$upazila, $credentials] = DB::transaction(function () use ($data) {
@@ -62,7 +64,7 @@ class UpazilaController extends Controller
                 ? District::findOrFail($data['district_id'])
                 : District::firstOrCreate(
                     ['name' => $data['district_name']],
-                    ['name_bn' => $data['district_name_bn']],
+                    ['name_bn' => $data['district_name_bn'], 'division_id' => $data['division_id'] ?? null],
                 );
 
             $upazila = Upazila::create([
@@ -100,7 +102,7 @@ class UpazilaController extends Controller
         });
 
         return response()->json([
-            'data' => new UpazilaResource($upazila->load('district')->loadCount('unions')),
+            'data' => new UpazilaResource($upazila->load('district.division')->loadCount('unions')),
             'credentials' => $credentials, // shown once — save now
         ], 201);
     }
@@ -141,7 +143,7 @@ class UpazilaController extends Controller
     /** Single instance (used by the edit page). */
     public function show(Upazila $upazila): UpazilaResource
     {
-        return new UpazilaResource($upazila->load('district')->loadCount('unions'));
+        return new UpazilaResource($upazila->load('district.division')->loadCount('unions'));
     }
 
     /**
@@ -160,7 +162,7 @@ class UpazilaController extends Controller
 
         $upazila->update($data);
 
-        return new UpazilaResource($upazila->load('district')->loadCount('unions'));
+        return new UpazilaResource($upazila->load('district.division')->loadCount('unions'));
     }
 
     /**

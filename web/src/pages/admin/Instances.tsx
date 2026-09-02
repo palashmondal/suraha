@@ -34,7 +34,7 @@ interface UpazilaRow {
   name: string;
   name_bn: string;
   is_active: boolean;
-  district?: { id: number; name: string; name_bn: string };
+  district?: { id: number; name: string; name_bn: string; division?: Division | null };
   unions_count?: number;
   domain: string;
   created_at: string | null;
@@ -44,12 +44,20 @@ interface District {
   id: number;
   name: string;
   name_bn: string;
+  division_id: number | null;
+}
+
+interface Division {
+  id: number;
+  name: string;
+  name_bn: string;
 }
 
 export default function Instances() {
   const navigate = useNavigate();
   const [rows, setRows] = useState<UpazilaRow[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
+  const [divisions, setDivisions] = useState<Division[]>([]);
   const [open, setOpen] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<Credential[] | null>(null);
@@ -68,6 +76,9 @@ export default function Instances() {
     api<{ districts: District[] }>('/registry/districts')
       .then((r) => setDistricts(r.districts))
       .catch(() => setDistricts([]));
+    api<{ divisions: Division[] }>('/registry/divisions')
+      .then((r) => setDivisions(r.divisions))
+      .catch(() => setDivisions([]));
   }, []);
 
   const onCreated = (creds: Credential[]) => {
@@ -99,6 +110,7 @@ export default function Instances() {
             <TableRow>
               <TableCell>{S.instances.colUpazila}</TableCell>
               <TableCell>{S.instances.colDistrict}</TableCell>
+              <TableCell>{S.instances.colDivision}</TableCell>
               <TableCell>{S.instances.colSubdomain}</TableCell>
               <TableCell align="center">{S.instances.colUnions}</TableCell>
               <TableCell>{S.instances.colStatus}</TableCell>
@@ -114,6 +126,7 @@ export default function Instances() {
               >
                 <TableCell sx={{ fontWeight: 600 }}>{u.name_bn}</TableCell>
                 <TableCell>{u.district?.name_bn ?? '—'}</TableCell>
+                <TableCell>{u.district?.division?.name_bn ?? '—'}</TableCell>
                 <TableCell sx={{ direction: 'ltr', fontFamily: 'monospace', fontSize: 13 }}>
                   {u.domain}
                 </TableCell>
@@ -128,7 +141,7 @@ export default function Instances() {
             ))}
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ color: 'text.secondary', py: 4 }}>
+                <TableCell colSpan={6} align="center" sx={{ color: 'text.secondary', py: 4 }}>
                   {loading ? S.common.loading : S.common.noData}
                 </TableCell>
               </TableRow>
@@ -143,6 +156,7 @@ export default function Instances() {
       <CreateInstanceDialog
         open={open}
         districts={districts}
+        divisions={divisions}
         onClose={() => setOpen(false)}
         onCreated={onCreated}
       />
@@ -181,11 +195,13 @@ interface Credential {
 function CreateInstanceDialog({
   open,
   districts,
+  divisions,
   onClose,
   onCreated,
 }: {
   open: boolean;
   districts: District[];
+  divisions: Division[];
   onClose: () => void;
   onCreated: (creds: Credential[]) => void;
 }) {
@@ -193,6 +209,7 @@ function CreateInstanceDialog({
   const [nameBn, setNameBn] = useState('');
   const [name, setName] = useState('');
   const [districtId, setDistrictId] = useState<string>('');
+  const [divisionId, setDivisionId] = useState<string>('');
   const [newDistrict, setNewDistrict] = useState(false);
   const [districtBn, setDistrictBn] = useState('');
   const [districtEn, setDistrictEn] = useState('');
@@ -211,7 +228,7 @@ function CreateInstanceDialog({
           name,
           name_bn: nameBn,
           ...(newDistrict
-            ? { district_name: districtEn, district_name_bn: districtBn }
+            ? { district_name: districtEn, district_name_bn: districtBn, division_id: Number(divisionId) }
             : { district_id: Number(districtId) }),
         },
       });
@@ -246,6 +263,24 @@ function CreateInstanceDialog({
             label={S.instances.newDistrict}
           />
 
+          <TextField
+            select
+            label={S.instances.division}
+            value={divisionId}
+            onChange={(e) => {
+              setDivisionId(e.target.value);
+              setDistrictId('');
+            }}
+            required
+            fullWidth
+          >
+            {divisions.map((v) => (
+              <MenuItem key={v.id} value={String(v.id)}>
+                {v.name_bn}
+              </MenuItem>
+            ))}
+          </TextField>
+
           {newDistrict ? (
             <>
               <TextField label={S.instances.districtBn} value={districtBn} onChange={(e) => setDistrictBn(e.target.value)} required fullWidth />
@@ -259,12 +294,16 @@ function CreateInstanceDialog({
               onChange={(e) => setDistrictId(e.target.value)}
               required
               fullWidth
+              disabled={!divisionId}
+              helperText={divisionId ? undefined : S.instances.divisionFirst}
             >
-              {districts.map((d) => (
-                <MenuItem key={d.id} value={String(d.id)}>
-                  {d.name_bn}
-                </MenuItem>
-              ))}
+              {districts
+                .filter((d) => String(d.division_id) === divisionId)
+                .map((d) => (
+                  <MenuItem key={d.id} value={String(d.id)}>
+                    {d.name_bn}
+                  </MenuItem>
+                ))}
             </TextField>
           )}
         </DialogContent>
