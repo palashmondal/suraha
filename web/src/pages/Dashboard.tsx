@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, Chip, CircularProgress, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
@@ -86,19 +86,21 @@ export default function Dashboard() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
+      {/* Cross-tenant roles get the scope on its own line under the heading, rather than as a
+          chip beside it: it names which upazilas the figures below cover, so it reads as a
+          subtitle, not a badge. */}
+      <Box sx={{ mb: 3 }}>
         <Typography variant="h5">
-          {stats.scope.level === 'tenant' && stats.scope.label
-            ? S.dashboard.titleUpazila(stats.scope.label)
-            : S.dashboard.title}
+          {isAggregate
+            ? S.dashboard.titleAggregate
+            : stats.scope.label
+              ? S.dashboard.titleUpazila(stats.scope.label)
+              : S.dashboard.title}
         </Typography>
         {isAggregate && (
-          <Chip
-            label={`${S.dashboard.aggregateOf} · ${stats.scope.label} (${bn(stats.scope.upazila_count)}${S.dashboard.upazilaCount})`}
-            color="primary"
-            variant="outlined"
-            size="small"
-          />
+          <Typography sx={{ mt: 0.5, fontSize: 14, color: 'text.secondary' }}>
+            {`${stats.scope.label} (${bn(stats.scope.upazila_count)}${S.dashboard.upazilaCount})`}
+          </Typography>
         )}
       </Box>
 
