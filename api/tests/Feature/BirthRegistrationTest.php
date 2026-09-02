@@ -21,7 +21,7 @@ class BirthRegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://galachipa.lvh.me';
+    private const GALACHIPA = 'http://galachipa.lvh.me';
 
     protected function setUp(): void
     {
@@ -45,7 +45,7 @@ class BirthRegistrationTest extends TestCase
     public function test_list_has_entered_and_pending_tabs(): void
     {
         Sanctum::actingAs($this->sochib());
-        $res = $this->getJson(self::GOLACHIPA.'/api/birth-registrations')->assertOk();
+        $res = $this->getJson(self::GALACHIPA.'/api/birth-registrations')->assertOk();
 
         $tabs = collect($res->json('tabs'))->keyBy('key');
         // Seeder: 3 entered (from approvals) + 2 pending manual entries.
@@ -62,7 +62,7 @@ class BirthRegistrationTest extends TestCase
         });
 
         Sanctum::actingAs($this->sochib());
-        $res = $this->postJson(self::GOLACHIPA."/api/pregnancies/{$id}/approve", ['child_name' => 'শিশু'])
+        $res = $this->postJson(self::GALACHIPA."/api/pregnancies/{$id}/approve", ['child_name' => 'শিশু'])
             ->assertCreated()
             ->assertJsonPath('data.status', 'entered')
             ->assertJsonPath('data.has_certificate', true);
@@ -77,8 +77,8 @@ class BirthRegistrationTest extends TestCase
             Pregnancy::factory()->delivered()->create()->id);
 
         Sanctum::actingAs($this->sochib());
-        $first = $this->postJson(self::GOLACHIPA."/api/pregnancies/{$id}/approve")->json('data.registration_no');
-        $second = $this->postJson(self::GOLACHIPA."/api/pregnancies/{$id}/approve")->json('data.registration_no');
+        $first = $this->postJson(self::GALACHIPA."/api/pregnancies/{$id}/approve")->json('data.registration_no');
+        $second = $this->postJson(self::GALACHIPA."/api/pregnancies/{$id}/approve")->json('data.registration_no');
 
         $this->assertSame($first, $second);
         $this->assertSame(1, BirthRegistration::withoutTenancy()->where('pregnancy_id', $id)->count());
@@ -90,7 +90,7 @@ class BirthRegistrationTest extends TestCase
             Pregnancy::factory()->create()->id); // not delivered
 
         Sanctum::actingAs($this->sochib());
-        $this->postJson(self::GOLACHIPA."/api/pregnancies/{$id}/approve")->assertStatus(422);
+        $this->postJson(self::GALACHIPA."/api/pregnancies/{$id}/approve")->assertStatus(422);
     }
 
     public function test_certificate_is_downloadable(): void
@@ -99,9 +99,9 @@ class BirthRegistrationTest extends TestCase
             Pregnancy::factory()->delivered()->create()->id);
 
         Sanctum::actingAs($this->sochib());
-        $regId = $this->postJson(self::GOLACHIPA."/api/pregnancies/{$id}/approve")->json('data.id');
+        $regId = $this->postJson(self::GALACHIPA."/api/pregnancies/{$id}/approve")->json('data.id');
 
-        $this->get(self::GOLACHIPA."/api/birth-registrations/{$regId}/certificate")
+        $this->get(self::GALACHIPA."/api/birth-registrations/{$regId}/certificate")
             ->assertOk()
             ->assertHeader('content-disposition');
     }
@@ -109,6 +109,6 @@ class BirthRegistrationTest extends TestCase
     public function test_fwa_cannot_manage_birth_registrations(): void
     {
         Sanctum::actingAs(User::where('username', 'fwa_galachipa')->firstOrFail());
-        $this->getJson(self::GOLACHIPA.'/api/birth-registrations')->assertStatus(403);
+        $this->getJson(self::GALACHIPA.'/api/birth-registrations')->assertStatus(403);
     }
 }

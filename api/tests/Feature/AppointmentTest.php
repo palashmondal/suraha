@@ -18,7 +18,7 @@ class AppointmentTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://galachipa.lvh.me';
+    private const GALACHIPA = 'http://galachipa.lvh.me';
 
     protected function setUp(): void
     {
@@ -34,7 +34,7 @@ class AppointmentTest extends TestCase
     public function test_tabs_reflect_seeded_data(): void
     {
         Sanctum::actingAs($this->uno());
-        $tabs = collect($this->getJson(self::GOLACHIPA.'/api/appointments')->json('tabs'))->keyBy('key');
+        $tabs = collect($this->getJson(self::GALACHIPA.'/api/appointments')->json('tabs'))->keyBy('key');
 
         $this->assertSame(11, $tabs['all']['total']); // 5+4+2
         $this->assertSame(5, $tabs['pending']['total']);
@@ -45,7 +45,7 @@ class AppointmentTest extends TestCase
     public function test_citizen_can_request_an_appointment(): void
     {
         Sanctum::actingAs(User::where('role', 'citizen')->firstOrFail());
-        $this->postJson(self::GOLACHIPA.'/api/appointments', [
+        $this->postJson(self::GALACHIPA.'/api/appointments', [
             'applicant_name' => 'নাগরিক',
             'purpose' => 'ভূমি সংক্রান্ত',
             'appointment_date' => now()->addWeek()->toDateString(),
@@ -59,7 +59,7 @@ class AppointmentTest extends TestCase
 
         // UNO accepts but modifies the proposed time to fit the schedule.
         $slot = now()->addWeek()->toDateString();
-        $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/approve", [
+        $this->postJson(self::GALACHIPA."/api/appointments/{$id}/approve", [
             'appointment_date' => $slot,
             'appointment_time' => '11:30',
             'decision_note' => 'সকাল ১১:৩০ এ আসুন',
@@ -74,9 +74,9 @@ class AppointmentTest extends TestCase
         $slot = now()->addWeek()->toDateString();
         $id = Upazila::find('galachipa')->run(fn () => Appointment::factory()->create(['appointment_date' => $slot])->id);
         Sanctum::actingAs($this->uno());
-        $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/approve", ['appointment_date' => $slot])->assertOk();
+        $this->postJson(self::GALACHIPA."/api/appointments/{$id}/approve", ['appointment_date' => $slot])->assertOk();
 
-        $this->getJson(self::GOLACHIPA.'/api/appointment-schedule')
+        $this->getJson(self::GALACHIPA.'/api/appointment-schedule')
             ->assertOk()
             ->assertJsonFragment(['id' => $id]);
     }
@@ -86,7 +86,7 @@ class AppointmentTest extends TestCase
         $id = Upazila::find('galachipa')->run(fn () => Appointment::factory()->create()->id);
         Sanctum::actingAs($this->uno());
 
-        $this->postJson(self::GOLACHIPA."/api/appointments/{$id}/reject", ['decision_note' => 'সময় নেই'])
+        $this->postJson(self::GALACHIPA."/api/appointments/{$id}/reject", ['decision_note' => 'সময় নেই'])
             ->assertOk()->assertJsonPath('data.status', 'rejected');
     }
 

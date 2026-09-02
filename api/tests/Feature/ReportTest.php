@@ -16,7 +16,7 @@ class ReportTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://galachipa.lvh.me';
+    private const GALACHIPA = 'http://galachipa.lvh.me';
     private const ADMIN = 'http://lvh.me';
 
     protected function setUp(): void
@@ -28,7 +28,7 @@ class ReportTest extends TestCase
     public function test_officer_gets_own_upazila_report_with_union_comparison(): void
     {
         Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
-        $res = $this->getJson(self::GOLACHIPA.'/api/reports')->assertOk();
+        $res = $this->getJson(self::GALACHIPA.'/api/reports')->assertOk();
 
         $res->assertJsonPath('scope.level', 'tenant');
         $this->assertSame(18, $res->json('kpis.pregnancies_total'));
@@ -48,7 +48,7 @@ class ReportTest extends TestCase
     public function test_delivery_and_resolution_rates_are_percentages(): void
     {
         Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
-        $k = $this->getJson(self::GOLACHIPA.'/api/reports')->json('kpis');
+        $k = $this->getJson(self::GALACHIPA.'/api/reports')->json('kpis');
 
         // 6 of 18 delivered ≈ 33.3%.
         $this->assertEqualsWithDelta(33.3, $k['delivery_rate'], 0.2);
@@ -60,7 +60,7 @@ class ReportTest extends TestCase
     {
         Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
         // A window far in the past excludes today's seeded rows.
-        $res = $this->getJson(self::GOLACHIPA.'/api/reports?from=2020-01-01&to=2020-12-31')->assertOk();
+        $res = $this->getJson(self::GALACHIPA.'/api/reports?from=2020-01-01&to=2020-12-31')->assertOk();
         $this->assertSame(0, $res->json('kpis.pregnancies_total'));
     }
 
@@ -77,6 +77,6 @@ class ReportTest extends TestCase
     public function test_citizen_cannot_access_reports(): void
     {
         Sanctum::actingAs(User::where('role', 'citizen')->firstOrFail());
-        $this->getJson(self::GOLACHIPA.'/api/reports')->assertStatus(403);
+        $this->getJson(self::GALACHIPA.'/api/reports')->assertStatus(403);
     }
 }

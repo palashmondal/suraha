@@ -16,7 +16,7 @@ class PregnancyTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://galachipa.lvh.me';
+    private const GALACHIPA = 'http://galachipa.lvh.me';
     private const DUMURIA = 'http://dumuria.lvh.me';
 
     protected function setUp(): void
@@ -34,7 +34,7 @@ class PregnancyTest extends TestCase
     {
         Sanctum::actingAs($this->fwa());
 
-        $res = $this->getJson(self::GOLACHIPA.'/api/pregnancies')->assertOk();
+        $res = $this->getJson(self::GALACHIPA.'/api/pregnancies')->assertOk();
 
         // 18 seeded in Galachipa (12 not delivered, 6 delivered).
         $tabs = collect($res->json('tabs'))->keyBy('key');
@@ -46,7 +46,7 @@ class PregnancyTest extends TestCase
     public function test_status_tab_filters_the_list(): void
     {
         Sanctum::actingAs($this->fwa());
-        $res = $this->getJson(self::GOLACHIPA.'/api/pregnancies?status=delivered')->assertOk();
+        $res = $this->getJson(self::GALACHIPA.'/api/pregnancies?status=delivered')->assertOk();
 
         $this->assertSame(6, $res->json('meta.total'));
         foreach ($res->json('data') as $row) {
@@ -66,7 +66,7 @@ class PregnancyTest extends TestCase
     {
         Sanctum::actingAs($this->fwa());
 
-        $this->postJson(self::GOLACHIPA.'/api/pregnancies', [
+        $this->postJson(self::GALACHIPA.'/api/pregnancies', [
             'mother_name_bn' => 'নতুন প্রসূতি',
             'husband_name' => 'স্বামী',
             'ward_no' => 3,
@@ -85,7 +85,7 @@ class PregnancyTest extends TestCase
     public function test_create_requires_mother_name(): void
     {
         Sanctum::actingAs($this->fwa());
-        $this->postJson(self::GOLACHIPA.'/api/pregnancies', ['husband_name' => 'x'])
+        $this->postJson(self::GALACHIPA.'/api/pregnancies', ['husband_name' => 'x'])
             ->assertStatus(422);
     }
 
@@ -93,10 +93,10 @@ class PregnancyTest extends TestCase
     {
         Sanctum::actingAs($this->fwa());
 
-        $id = $this->getJson(self::GOLACHIPA.'/api/pregnancies?status=not_delivered')
+        $id = $this->getJson(self::GALACHIPA.'/api/pregnancies?status=not_delivered')
             ->json('data.0.id');
 
-        $this->patchJson(self::GOLACHIPA."/api/pregnancies/{$id}/delivery-status", [
+        $this->patchJson(self::GALACHIPA."/api/pregnancies/{$id}/delivery-status", [
             'delivery_status' => 'delivered',
             'actual_delivery_date' => '2026-08-01',
             'mother_alive' => true,
@@ -121,6 +121,6 @@ class PregnancyTest extends TestCase
     public function test_citizen_cannot_access_pregnancies(): void
     {
         Sanctum::actingAs(User::where('role', 'citizen')->firstOrFail());
-        $this->getJson(self::GOLACHIPA.'/api/pregnancies')->assertStatus(403);
+        $this->getJson(self::GALACHIPA.'/api/pregnancies')->assertStatus(403);
     }
 }

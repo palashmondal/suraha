@@ -17,7 +17,7 @@ class TrackingTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://galachipa.lvh.me';
+    private const GALACHIPA = 'http://galachipa.lvh.me';
     private const DUMURIA = 'http://dumuria.lvh.me';
 
     protected function setUp(): void
@@ -34,7 +34,7 @@ class TrackingTest extends TestCase
     public function test_filing_a_complaint_returns_a_token_and_it_tracks(): void
     {
         Sanctum::actingAs($this->citizen());
-        $token = $this->postJson(self::GOLACHIPA.'/api/complaints', [
+        $token = $this->postJson(self::GALACHIPA.'/api/complaints', [
             'title' => 'রাস্তার সমস্যা', 'complainant_name' => 'করিম', 'ward_no' => 2,
         ])->assertCreated()->json('data.tracking_token');
 
@@ -42,7 +42,7 @@ class TrackingTest extends TestCase
         $this->assertStringStartsWith('SUR-CMP-', $token);
 
         // Public lookup — no auth.
-        $this->getJson(self::GOLACHIPA."/api/track/{$token}")
+        $this->getJson(self::GALACHIPA."/api/track/{$token}")
             ->assertOk()
             ->assertJsonPath('type', 'complaint')
             ->assertJsonPath('title', 'রাস্তার সমস্যা')
@@ -53,24 +53,24 @@ class TrackingTest extends TestCase
     public function test_filing_an_appointment_returns_a_token_and_it_tracks(): void
     {
         Sanctum::actingAs($this->citizen());
-        $token = $this->postJson(self::GOLACHIPA.'/api/appointments', [
+        $token = $this->postJson(self::GALACHIPA.'/api/appointments', [
             'applicant_name' => 'করিম', 'purpose' => 'ভূমি সমস্যা',
         ])->assertCreated()->json('data.tracking_token');
 
         $this->assertStringStartsWith('SUR-APT-', $token);
-        $this->getJson(self::GOLACHIPA."/api/track/{$token}")
+        $this->getJson(self::GALACHIPA."/api/track/{$token}")
             ->assertOk()->assertJsonPath('type', 'appointment')->assertJsonPath('status', 'pending');
     }
 
     public function test_unknown_token_is_404(): void
     {
-        $this->getJson(self::GOLACHIPA.'/api/track/SUR-CMP-NOPE99')->assertNotFound();
+        $this->getJson(self::GALACHIPA.'/api/track/SUR-CMP-NOPE99')->assertNotFound();
     }
 
     public function test_token_is_tenant_scoped(): void
     {
         Sanctum::actingAs($this->citizen());
-        $token = $this->postJson(self::GOLACHIPA.'/api/complaints', [
+        $token = $this->postJson(self::GALACHIPA.'/api/complaints', [
             'title' => 'x', 'complainant_name' => 'y',
         ])->json('data.tracking_token');
 

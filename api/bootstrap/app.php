@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             // Resolve the upazila (tenant) from the request subdomain, e.g. galachipa.suraha.net
             'tenant' => \Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain::class,
+            // Front door: routes a request to central / district / upazila handling.
+            'host' => \App\Http\Middleware\ResolveHost::class,
             'tenant.prevent-central' => \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
             // A deactivated upazila's subdomain serves nothing but the "disabled" notice.
             'tenant.active' => \App\Http\Middleware\EnsureTenantActive::class,

@@ -20,7 +20,7 @@ class PublicContentTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://galachipa.lvh.me';
+    private const GALACHIPA = 'http://galachipa.lvh.me';
 
     protected function setUp(): void
     {
@@ -36,13 +36,13 @@ class PublicContentTest extends TestCase
     public function test_public_sliders_returns_only_active(): void
     {
         // Seeder: 3 active + 1 stopped.
-        $this->getJson(self::GOLACHIPA.'/api/sliders')
+        $this->getJson(self::GALACHIPA.'/api/sliders')
             ->assertOk()->assertJsonCount(3, 'sliders');
     }
 
     public function test_public_general_info_is_grouped(): void
     {
-        $res = $this->getJson(self::GOLACHIPA.'/api/general-info')->assertOk();
+        $res = $this->getJson(self::GALACHIPA.'/api/general-info')->assertOk();
         $this->assertCount(4, $res->json('phones'));
         $this->assertCount(1, $res->json('about'));
     }
@@ -52,7 +52,7 @@ class PublicContentTest extends TestCase
         Storage::fake('public');
         Sanctum::actingAs($this->uno());
 
-        $this->post(self::GOLACHIPA.'/api/manage/sliders', [
+        $this->post(self::GALACHIPA.'/api/manage/sliders', [
             'title' => 'নতুন সচেতনতা',
             'image' => UploadedFile::fake()->image('slide.jpg'),
         ], ['Accept' => 'application/json'])
@@ -66,17 +66,17 @@ class PublicContentTest extends TestCase
         $slider = Upazila::find('galachipa')->run(fn () => Slider::factory()->create());
         Sanctum::actingAs($this->uno());
 
-        $this->post(self::GOLACHIPA."/api/manage/sliders/{$slider->id}", ['is_active' => false], ['Accept' => 'application/json'])
+        $this->post(self::GALACHIPA."/api/manage/sliders/{$slider->id}", ['is_active' => false], ['Accept' => 'application/json'])
             ->assertOk()->assertJsonPath('data.is_active', false);
 
-        $this->deleteJson(self::GOLACHIPA."/api/manage/sliders/{$slider->id}")->assertOk();
+        $this->deleteJson(self::GALACHIPA."/api/manage/sliders/{$slider->id}")->assertOk();
         $this->assertDatabaseMissing('sliders', ['id' => $slider->id]);
     }
 
     public function test_uno_manages_general_info(): void
     {
         Sanctum::actingAs($this->uno());
-        $this->postJson(self::GOLACHIPA.'/api/manage/general-info', [
+        $this->postJson(self::GALACHIPA.'/api/manage/general-info', [
             'type' => 'phone', 'title' => 'বিদ্যুৎ অফিস', 'value' => '01611112222',
         ])->assertCreated();
 
@@ -86,6 +86,6 @@ class PublicContentTest extends TestCase
     public function test_citizen_cannot_manage(): void
     {
         Sanctum::actingAs(User::where('role', 'citizen')->firstOrFail());
-        $this->getJson(self::GOLACHIPA.'/api/manage/sliders')->assertStatus(403);
+        $this->getJson(self::GALACHIPA.'/api/manage/sliders')->assertStatus(403);
     }
 }

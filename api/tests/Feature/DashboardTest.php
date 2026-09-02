@@ -67,4 +67,38 @@ class DashboardTest extends TestCase
         $res->assertJsonPath('scope.level', 'district')->assertJsonPath('scope.upazila_count', 1);
         $this->assertSame(18, $res->json('pregnancy.total'));
     }
+
+    /**
+     * The DC dashboard on its district host: the district aggregate by default, and one upazila
+     * when the DC picks it from the switcher. Both views come from the same endpoint — the
+     * X-Upazila header is the only difference.
+     */
+    public function test_dc_district_host_aggregates_then_narrows_to_one_upazila(): void
+    {
+        $host = 'http://patuakhali.lvh.me';
+        Sanctum::actingAs(User::where('username', 'dc_patuakhali')->firstOrFail());
+
+        $this->getJson($host.'/api/dashboard/stats')
+            ->assertOk()
+            ->assertJsonPath('scope.level', 'district');
+
+        $this->getJson($host.'/api/dashboard/stats', ['X-Upazila' => 'galachipa'])
+            ->assertOk()
+            ->assertJsonPath('scope.level', 'tenant')
+            ->assertJsonPath('scope.label', 'গলাচিপা');
+
+        // The switcher is bounded by district: Dumuria is Khulna's, not Patuakhali's.
+        $this->getJson($host.'/api/dashboard/stats', ['X-Upazila' => 'dumuria'])
+            ->assertStatus(403);
+    }
+
+    /** A DC may look, never touch — enforced server-side regardless of host. */
+    public function test_dc_cannot_write_from_its_district_host(): void
+    {
+        Sanctum::actingAs(User::where('username', 'dc_patuakhali')->firstOrFail());
+
+        $this->postJson('http://patuakhali.lvh.me/api/complaints', [
+            'title' => 'x', 'description' => 'y',
+        ], ['X-Upazila' => 'galachipa'])->assertStatus(403);
+    }
 }

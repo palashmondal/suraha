@@ -30,13 +30,17 @@ class ApplySelectedTenant
             config('tenancy.central_domains', []),
             true,
         );
+        // A district host (patuakhali.suraha.net) resolves no tenant either, and the DC switches
+        // upazila there exactly as SEAL does centrally — bounded by canAccessTenant, which for a
+        // DC only ever admits their own district.
+        $isDistrictHost = (bool) $request->attributes->get('district');
 
         // On a real upazila subdomain, tenancy is already correctly set — do nothing.
-        if (! $isCentralHost) {
+        if (! $isCentralHost && ! $isDistrictHost) {
             return $next($request);
         }
 
-        // On a central/admin host, no subdomain tenant was resolved. Clear any tenancy left
+        // On a central or district host, no subdomain tenant was resolved. Clear any tenancy left
         // initialized by a previous request in this process, then resolve from the header.
         if (tenancy()->initialized) {
             tenancy()->end();

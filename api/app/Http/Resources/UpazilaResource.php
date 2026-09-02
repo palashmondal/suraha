@@ -23,6 +23,8 @@ class UpazilaResource extends JsonResource
                 'id' => $this->district->id,
                 'name' => $this->district->name,
                 'name_bn' => $this->district->name_bn,
+                // Subdomain label for this district's DC dashboard host.
+                'slug' => $this->district->slug,
                 'division' => $this->district->relationLoaded('division') && $this->district->division
                     ? [
                         'id' => $this->district->division->id,

@@ -18,9 +18,10 @@ class AuthTenancyTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://galachipa.lvh.me';
+    private const GALACHIPA = 'http://galachipa.lvh.me';
     private const DUMURIA = 'http://dumuria.lvh.me';
     private const CENTRAL = 'http://localhost';
+    private const PATUAKHALI = 'http://patuakhali.lvh.me';
 
     protected function setUp(): void
     {
@@ -36,7 +37,7 @@ class AuthTenancyTest extends TestCase
 
     public function test_subdomain_resolves_upazila(): void
     {
-        $this->getJson(self::GOLACHIPA.'/api/registry/current-upazila')
+        $this->getJson(self::GALACHIPA.'/api/registry/current-upazila')
             ->assertOk()
             ->assertJsonPath('upazila.id', 'galachipa')
             ->assertJsonPath('upazila.name_bn', 'গলাচিপা');
@@ -45,7 +46,7 @@ class AuthTenancyTest extends TestCase
     public function test_unions_are_tenant_scoped(): void
     {
         // Galachipa has 3 unions, Dumuria 2 — each subdomain sees only its own.
-        $this->getJson(self::GOLACHIPA.'/api/registry/unions')
+        $this->getJson(self::GALACHIPA.'/api/registry/unions')
             ->assertOk()->assertJsonCount(3, 'unions');
 
         $this->getJson(self::DUMURIA.'/api/registry/unions')
@@ -54,7 +55,7 @@ class AuthTenancyTest extends TestCase
 
     public function test_officer_can_log_in_on_their_upazila(): void
     {
-        $this->postJson(self::GOLACHIPA.'/api/auth/officer/login', [
+        $this->postJson(self::GALACHIPA.'/api/auth/officer/login', [
             'username' => 'uno_galachipa',
             'password' => 'password',
         ])->assertOk()
@@ -81,7 +82,7 @@ class AuthTenancyTest extends TestCase
     public function test_seal_admin_cannot_log_in_on_a_upazila_subdomain(): void
     {
         // Admin login is central-only; the upazila host must reject SEAL.
-        $this->postJson(self::GOLACHIPA.'/api/auth/officer/login', [
+        $this->postJson(self::GALACHIPA.'/api/auth/officer/login', [
             'username' => 'admin',
             'password' => 'password',
         ])->assertStatus(422);
@@ -96,14 +97,37 @@ class AuthTenancyTest extends TestCase
         ])->assertStatus(422);
     }
 
-    public function test_dc_cannot_log_in_on_central_host(): void
+    public function test_dc_logs_in_on_its_own_district_host(): void
     {
-        // DC/district hosts are a deferred TODO; today only SEAL may log in centrally.
-        $this->postJson(self::CENTRAL.'/api/auth/officer/login', [
+        // The DC's home is the district dashboard host, not the central console.
+        // Every other DC test uses Sanctum::actingAs(), which never exercises this endpoint.
+        $this->postJson(self::PATUAKHALI.'/api/auth/officer/login', [
             'username' => 'dc_patuakhali',
+            'password' => 'password',
+        ])->assertOk()
+            ->assertJsonPath('user.role', 'dc')
+            ->assertJsonStructure(['token', 'user' => ['id', 'role_label_bn']]);
+    }
+
+    public function test_dc_cannot_log_in_on_another_districts_host(): void
+    {
+        // Khulna's DC has no business on the Patuakhali dashboard.
+        $this->postJson(self::PATUAKHALI.'/api/auth/officer/login', [
+            'username' => 'dc_khulna',
             'password' => 'password',
         ])->assertStatus(422);
     }
+
+    public function test_dc_cannot_log_in_centrally_or_on_a_upazila_subdomain(): void
+    {
+        foreach ([self::CENTRAL, self::GALACHIPA] as $host) {
+            $this->postJson($host.'/api/auth/officer/login', [
+                'username' => 'dc_patuakhali',
+                'password' => 'password',
+            ])->assertStatus(422);
+        }
+    }
+
 
     public function test_host_context_reports_central(): void
     {
@@ -113,7 +137,7 @@ class AuthTenancyTest extends TestCase
 
     public function test_host_context_reports_upazila(): void
     {
-        $this->getJson(self::GOLACHIPA.'/api/registry/host-context')
+        $this->getJson(self::GALACHIPA.'/api/registry/host-context')
             ->assertOk()
             ->assertJsonPath('kind', 'upazila')
             ->assertJsonPath('slug', 'galachipa')
@@ -128,7 +152,7 @@ class AuthTenancyTest extends TestCase
 
     public function test_wrong_password_is_rejected(): void
     {
-        $this->postJson(self::GOLACHIPA.'/api/auth/officer/login', [
+        $this->postJson(self::GALACHIPA.'/api/auth/officer/login', [
             'username' => 'uno_galachipa',
             'password' => 'wrong',
         ])->assertStatus(422);
@@ -136,14 +160,14 @@ class AuthTenancyTest extends TestCase
 
     public function test_citizen_otp_flow_creates_account_and_returns_token(): void
     {
-        $req = $this->postJson(self::GOLACHIPA.'/api/auth/citizen/request-otp', [
+        $req = $this->postJson(self::GALACHIPA.'/api/auth/citizen/request-otp', [
             'phone' => '01811111111',
         ])->assertOk();
 
         $code = $req->json('dev_code');
         $this->assertNotNull($code);
 
-        $this->postJson(self::GOLACHIPA.'/api/auth/citizen/verify-otp', [
+        $this->postJson(self::GALACHIPA.'/api/auth/citizen/verify-otp', [
             'phone' => '01811111111',
             'code' => $code,
             'name' => 'করিম',
@@ -177,11 +201,11 @@ class AuthTenancyTest extends TestCase
     {
         // A field officer (FWA) cannot manage accounts.
         Sanctum::actingAs(User::where('username', 'fwa_galachipa')->first());
-        $this->getJson(self::GOLACHIPA.'/api/officers')->assertStatus(403);
+        $this->getJson(self::GALACHIPA.'/api/officers')->assertStatus(403);
 
         // SEAL can create any role, including a UNO.
         Sanctum::actingAs(User::where('username', 'admin')->first());
-        $this->postJson(self::GOLACHIPA.'/api/officers', [
+        $this->postJson(self::GALACHIPA.'/api/officers', [
             'name' => 'নতুন কর্মকর্তা',
             'username' => 'new_uno',
             'password' => 'secret123',
