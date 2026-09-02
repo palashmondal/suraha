@@ -26,7 +26,8 @@ suraha/
 ## Architecture
 
 - **Multi-tenancy** — a single central database; each **upazila is a tenant** resolved from the
-  request subdomain (`galachipa.suraha.net` → tenant `galachipa`) via `stancl/tenancy`. Tenant rows
+  request subdomain (`galachipa.suraha.net` → tenant `galachipa`) via `stancl/tenancy`. A district
+  subdomain (`patuakhali.suraha.net`) resolves no tenant and serves the DC dashboard. Tenant rows
   are scoped by a `tenant_id` global scope (no per-tenant databases). Cross-tenant roles (SEAL/DC)
   work on the **central host** (`suraha.net`, which is also the national public site) and switch
   upazila in-app via an `X-Upazila` header — without changing the URL. (The old `admin.*` host is
@@ -42,9 +43,10 @@ suraha/
 
 | Area | Highlights |
 |---|---|
-| **Auth & tenancy** | Subdomain→upazila resolution, 7-role RBAC, officer + citizen (OTP) login, profile/password/avatar |
+| **Auth & tenancy** | Host-typed login (central / district / upazila), 7-role RBAC, officer + citizen (OTP) login, profile/password/avatar |
 | **Admin console (SEAL)** | Provision new upazila instances (tenant + subdomain), instance roster, officer provisioning, in-app upazila switcher |
-| **Dashboards** | Per-role dashboards with real data; SEAL/DC aggregate + district roll-up |
+| **Dashboards** | Per-role dashboards with real data; SEAL aggregate across all upazilas |
+| **ডিসি ড্যাশবোর্ড (DC)** | Each district with an instance gets `{district}.suraha.net` — read-only district aggregate, with a switcher to drill into one upazila |
 | **প্রসূতি (Pregnancy)** | FWA field capture → Sochib approval → **auto BDRIS birth registration** → downloadable certificate |
 | **নবজাতক (Birth)** | Birth-registration list, statuses, certificate download |
 | **অভিযোগ (Complaints)** | Full lifecycle: file → schedule → assign investigator → findings → resolve, with timeline |
@@ -53,9 +55,9 @@ suraha/
 | **Content** | Awareness image sliders + general info (emergency phones, about) |
 | **তথ্যচিত্র (Reporting)** | Scope-aware analytics (Recharts), multiple chart types |
 | **Notifications** | In-app, role/tenant-scoped bell + full **সকল নোটিফিকেশন** page (mark-read) |
-| **Cross-cutting** | Global pagination (10/20/30/50/all), loading/empty states, listing-page polish |
+| **Cross-cutting** | Pagination (10/page, shown only when a list overflows), loading/empty states, instance enable/disable |
 
-Verified by ~80 Laravel feature tests across `api/tests/Feature/` (auth/tenancy, admin, dashboards,
+Verified by 102 Laravel feature tests across `api/tests/Feature/` (auth/tenancy, admin, dashboards,
 pregnancy, birth, complaints, appointments, public content, tracking, reporting, notifications).
 
 ---

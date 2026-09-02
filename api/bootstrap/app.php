@@ -14,15 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            // Resolve the upazila (tenant) from the request subdomain, e.g. galachipa.suraha.net
-            'tenant' => \Stancl\Tenancy\Middleware\InitializeTenancyBySubdomain::class,
-            // Front door: routes a request to central / district / upazila handling.
+            // Front door: central host, district host (DC dashboard), or upazila tenant.
             'host' => \App\Http\Middleware\ResolveHost::class,
-            'tenant.prevent-central' => \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
             // A deactivated upazila's subdomain serves nothing but the "disabled" notice.
             'tenant.active' => \App\Http\Middleware\EnsureTenantActive::class,
-            // For cross-tenant roles (SEAL/DC) on the admin host: resolve the upazila from
-            // the X-Upazila header so they can switch context without changing the URL.
+            // Cross-tenant roles pick an upazila with the X-Upazila header — SEAL on the
+            // central host, the DC on its district host — without changing the URL.
             'tenant.selected' => \App\Http\Middleware\ApplySelectedTenant::class,
             // RBAC (see app/Http/Middleware)
             'role' => \App\Http\Middleware\EnsureRole::class,

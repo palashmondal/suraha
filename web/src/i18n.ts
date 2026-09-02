@@ -8,7 +8,6 @@ export const bnStrings = {
 
   footer: {
     brand: 'SURAHA',
-    expansion: '(Smart Upazila – Responsive, Accessible and Humane Administration)',
     copyright: '© SEAL Foundation - 2026',
   },
 
@@ -75,7 +74,6 @@ export const bnStrings = {
     deleteConfirmTitle: 'ইনস্ট্যান্স মুছে ফেলবেন?',
     deleteConfirmBody: 'এই উপজেলা এবং এর সকল তথ্য (অফিসার, অভিযোগ, সাক্ষাৎকার, নিবন্ধন ইত্যাদি) স্থায়ীভাবে মুছে যাবে। এটি ফিরিয়ে আনা যাবে না।',
     deleteConfirm: 'হ্যাঁ, মুছে ফেলুন',
-    deleted: 'ইনস্ট্যান্স মুছে ফেলা হয়েছে।',
     credsTitle: 'ডিফল্ট অ্যাকাউন্ট তৈরি হয়েছে',
     credsHelp: 'এই লগইন তথ্য এখনই সংরক্ষণ করুন — পাসওয়ার্ড আর দেখানো হবে না।',
     credUsername: 'ইউজারনেম',
@@ -88,8 +86,6 @@ export const bnStrings = {
     all: 'সকল',
     allUpazilas: 'সকল উপজেলা',
     addNew: 'নতুন যুক্ত করুন',
-    liveLocation: 'লাইভ লোকেশন',
-    goTo: 'Go to',
     noData: 'কোনো তথ্য নাই',
     noDataHelp: 'কোনো তথ্য পাওয়া যায়নি। নতুন তথ্য যুক্ত করুন',
     person: 'জন',
@@ -107,7 +103,6 @@ export const bnStrings = {
     filter: 'ফিল্টার',
     browse: 'ব্রাউজ করুন',
     maxFile: 'সর্বোচ্চ ১০ MB ফাইল অনুমোদিত',
-    newSuffix: 'new',
     total: 'মোট',
     track: 'ট্র্যাক করুন',
     download: 'ডাউনলোড',
@@ -127,7 +122,6 @@ export const bnStrings = {
     designationField: 'পদবী',
     save: 'সংরক্ষণ করুন',
     saved: 'সংরক্ষিত হয়েছে।',
-    avatar: 'প্রোফাইল ছবি',
     uploadAvatar: 'ছবি আপলোড করুন',
     currentPassword: 'বর্তমান পাসওয়ার্ড',
     newPassword: 'নতুন পাসওয়ার্ড',
@@ -200,7 +194,6 @@ export const bnStrings = {
     fBirthWeight: 'জন্ম ওজন (কেজি)',
     fBirthTime: 'জন্ম সময়',
     saved: 'সংরক্ষিত হয়েছে।',
-    birthRegSoon: 'জন্ম নিবন্ধন মডিউল শীঘ্রই আসছে।',
   },
 
   birthReg: {
@@ -222,7 +215,6 @@ export const bnStrings = {
     fatherName: 'পিতার নাম',
     approve: 'নিবন্ধন করুন',
     approved: 'জন্ম নিবন্ধন সম্পন্ন হয়েছে।',
-    viewBirthReg: 'জন্ম সনদ দেখুন',
   },
 
   complaint: {
@@ -300,9 +292,7 @@ export const bnStrings = {
     fDesc: 'বিস্তারিত বিবরণ',
     approve: 'গ্রহণ করুন',
     reject: 'নাকচ করুন',
-    note: 'মন্তব্য',
     done: 'সম্পন্ন হয়েছে।',
-    secProposed: 'প্রস্তাবিত সময়',
     proposedDate: 'প্রস্তাবিত তারিখ',
     proposedTime: 'প্রস্তাবিত সময়',
     confirmDate: 'নির্ধারিত তারিখ',
@@ -316,12 +306,8 @@ export const bnStrings = {
   },
 
   public: {
-    navHome: 'হোম',
-    navFeatures: 'ফিচারসমূহ',
     navTrack: 'ট্র্যাক করুন',
-    navFaq: 'জিজ্ঞাসা',
     navLogin: 'লগইন',
-    navRegister: 'রেজিস্টার',
     heroTitle: 'আপনার উপজেলার ডিজিটাল সেবা',
     heroSubtitle: 'প্রসূতি কল্যাণ, জন্ম নিবন্ধন, সাক্ষাৎকার ও অভিযোগ — সব সেবা এক জায়গায়। ঘরে বসেই আবেদন করুন এবং অগ্রগতি ট্র্যাক করুন।',
     ctaComplaint: 'অভিযোগ করুন',
@@ -360,7 +346,6 @@ export const bnStrings = {
     submittedHelp: 'নিচের টোকেনটি সংরক্ষণ করুন — এটি দিয়ে অবস্থা ট্র্যাক করতে পারবেন।',
     goTrack: 'এখন ট্র্যাক করুন',
     mySubmissions: 'আমার আবেদনসমূহ',
-    loginToFile: 'আবেদন করতে লগইন করুন',
   },
 
   reports: {
@@ -396,10 +381,8 @@ export const bnStrings = {
     createTitle: 'নতুন স্লাইডার',
     fTitle: 'শিরোনাম',
     fLink: 'বিস্তারিত লিংক',
-    fImage: 'ছবি',
     running: 'চলমান',
     stopped: 'বন্ধ আছে',
-    goTo: 'বিস্তারিত',
     save: 'সংরক্ষণ',
     cancel: 'বাতিল',
     deleteConfirm: 'এই স্লাইডারটি মুছে ফেলবেন?',
@@ -538,10 +521,7 @@ export const bnStrings = {
   },
 
   status: {
-    pending: 'পেন্ডিং আছে',
     approved: 'অনুমোদিত',
-    scheduled: 'শিডিউল করা হয়েছে',
-    officerAssigned: 'কর্মকর্তা নিযুক্ত',
     running: 'চলমান',
     stopped: 'বন্ধ আছে',
   },
