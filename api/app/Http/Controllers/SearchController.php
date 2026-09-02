@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Appointment;
 use App\Models\Assistance;
 use App\Models\BirthRegistration;
 use App\Models\Complaint;
@@ -17,7 +18,7 @@ use Illuminate\Http\Request;
 
 /**
  * One search box over everything an upazila office holds: mothers, birth registrations,
- * complaints, assistance applications, suggestions and staff.
+ * complaints, appointment requests, assistance applications, suggestions and staff.
  *
  * Ranking is done in PHP rather than SQL because "most matches first" means counting how many
  * distinct fields a term appears in, which no portable SQL expression gives cheaply. The candidate
@@ -49,6 +50,8 @@ class SearchController extends Controller
                 fn (BirthRegistration $b) => ['label' => 'জন্ম নিবন্ধন', 'name' => $b->child_name, 'mobile' => null, 'snippet' => trim('মাতা: '.($b->mother_name ?? '—').' · পিতা: '.($b->father_name ?? '—')), 'link' => '/birth']))
             ->concat($this->hunt(Complaint::query(), $term, ['complainant_name' => 3, 'mobile' => 3, 'tracking_token' => 3, 'title' => 1, 'description' => 1, 'address' => 1],
                 fn (Complaint $c) => ['label' => 'অভিযোগ', 'name' => $c->complainant_name, 'mobile' => $c->mobile, 'snippet' => $c->title, 'link' => '/complaint/'.$c->id]))
+            ->concat($this->hunt(Appointment::query(), $term, ['applicant_name' => 3, 'mobile' => 3, 'tracking_token' => 3, 'purpose' => 1, 'description' => 1, 'address' => 1],
+                fn (Appointment $a) => ['label' => 'সাক্ষাৎকার', 'name' => $a->applicant_name, 'mobile' => $a->mobile, 'snippet' => $a->purpose, 'link' => '/appointment/'.$a->id]))
             ->concat($this->hunt(Assistance::query(), $term, ['applicant_name' => 3, 'mobile' => 3, 'nid' => 3, 'tracking_token' => 3, 'title' => 1, 'description' => 1, 'address' => 1],
                 fn (Assistance $a) => ['label' => 'মানবিক সহায়তা', 'name' => $a->applicant_name, 'mobile' => $a->mobile, 'snippet' => $a->title, 'link' => '/humanitarian/'.$a->id]))
             // A confidential suggestion is searchable by its content, never by its author.
