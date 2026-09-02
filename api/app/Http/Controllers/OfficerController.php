@@ -6,12 +6,14 @@ namespace App\Http\Controllers;
 
 use App\Enums\Role;
 use App\Http\Resources\UserResource;
+use App\Models\Upazila;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Officer management (কর্মকর্তা → পদবী / কর্মকর্তা তালিকা, §8.6).
@@ -25,6 +27,47 @@ class OfficerController extends Controller
 {
     /** Roles a UNO may assign (upazila-level staff only). */
     private const UNO_ASSIGNABLE = [Role::FWA, Role::UP_SOCHIB, Role::INVESTIGATING_OFFICER];
+
+    /**
+     * Everyone attached to one upazila: its officers, its citizens, and the DC of its district —
+     * who carries no tenant_id but oversees the upazila, so a tenant_id filter alone would hide
+     * them. Read-only directory; provisioning stays in @see index().
+     *
+     * Filtering is done in SQL rather than in the browser because the citizen rows grow without
+     * bound as the public files complaints and books appointments.
+     */
+    public function directory(Request $request)
+    {
+        $tenantId = tenancy()->initialized
+            ? tenant()->getTenantKey()
+            : $request->user()->tenant_id;
+
+        abort_unless($tenantId, 422, 'কোন উপজেলার তালিকা দেখতে চান তা নির্বাচন করুন।');
+
+        $districtId = Upazila::find($tenantId)?->district_id;
+
+        $users = User::query()
+            ->where(function ($w) use ($tenantId, $districtId) {
+                $w->where('tenant_id', $tenantId)
+                    ->orWhere(fn ($d) => $d->where('role', Role::DC->value)->where('district_id', $districtId));
+            })
+            ->when($request->query('role'), fn ($q, $role) => $q->where('role', $role))
+            ->when($request->query('q'), function ($q, $term) {
+                $like = '%'.$term.'%';
+                $q->where(fn ($w) => $w->where('name', 'like', $like)
+                    ->orWhere('name_en', 'like', $like)
+                    ->orWhere('username', 'like', $like)
+                    ->orWhere('phone', 'like', $like));
+            })
+            ->with('upazila')
+            ->orderBy('role')
+            ->orderBy('name')
+            // ponytail: flat cap, no paging. Swap to paginate() when one upazila passes ~500 users.
+            ->limit(500)
+            ->get();
+
+        return UserResource::collection($users);
+    }
 
     public function index(Request $request)
     {
@@ -90,6 +133,22 @@ class OfficerController extends Controller
             }
             if ($role === Role::SEAL_ADMIN) {
                 $data['tenant_id'] = null;
+            }
+        }
+
+        // One serving UNO per upazila. Every upazila is provisioned with one already, so this
+        // normally blocks a duplicate; a deactivated predecessor is ignored, which is what makes
+        // a handover possible without first deleting the outgoing officer's account.
+        if ($role === Role::UNO) {
+            $taken = User::where('role', Role::UNO->value)
+                ->where('tenant_id', $data['tenant_id'])
+                ->where('is_active', true)
+                ->exists();
+
+            if ($taken) {
+                throw ValidationException::withMessages([
+                    'role' => ['এই উপজেলায় ইতিমধ্যে একজন সক্রিয় ইউএনও রয়েছেন। নতুন ইউএনও যুক্ত করার আগে পূর্বেরজনকে নিষ্ক্রিয় করুন।'],
+                ]);
             }
         }
 

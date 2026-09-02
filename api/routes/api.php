@@ -161,6 +161,8 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
         // ---- Officer management (§8.6) — SEAL (any) + UNO (own upazila staff) ----
         Route::middleware('deny.readonly', 'role:seal_admin,uno')->group(function () {
             Route::get('officers', [OfficerController::class, 'index']);
+            // Full user directory for one upazila (officers + citizens + the district's DC).
+            Route::get('users', [OfficerController::class, 'directory']);
             Route::get('officer-roles', [OfficerController::class, 'assignableRoles']);
             Route::post('officers', [OfficerController::class, 'store']);
             Route::patch('officers/{officer}/status', [OfficerController::class, 'updateStatus']);
