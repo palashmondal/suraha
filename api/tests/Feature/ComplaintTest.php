@@ -22,7 +22,7 @@ class ComplaintTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const GOLACHIPA = 'http://galachipa.lvh.me';
+    private const GALACHIPA = 'http://galachipa.lvh.me';
 
     protected function setUp(): void
     {
@@ -53,7 +53,7 @@ class ComplaintTest extends TestCase
     public function test_list_tabs_reflect_seeded_lifecycle(): void
     {
         Sanctum::actingAs($this->uno());
-        $tabs = collect($this->getJson(self::GOLACHIPA.'/api/complaints')->json('tabs'))->keyBy('key');
+        $tabs = collect($this->getJson(self::GALACHIPA.'/api/complaints')->json('tabs'))->keyBy('key');
 
         $this->assertSame(10, $tabs['all']['total']);   // 5 + 3 + 2
         $this->assertSame(5, $tabs['pending']['total']);
@@ -64,7 +64,7 @@ class ComplaintTest extends TestCase
     public function test_citizen_can_file_a_complaint(): void
     {
         Sanctum::actingAs(User::where('role', 'citizen')->firstOrFail());
-        $this->postJson(self::GOLACHIPA.'/api/complaints', [
+        $this->postJson(self::GALACHIPA.'/api/complaints', [
             'title' => 'রাস্তায় ময়লা',
             'complainant_name' => 'নাগরিক',
             'ward_no' => 2,
@@ -79,7 +79,7 @@ class ComplaintTest extends TestCase
 
         // UNO accepts & appoints with a due date.
         Sanctum::actingAs($this->uno());
-        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/accept", [
+        $this->postJson(self::GALACHIPA."/api/complaints/{$id}/accept", [
             'investigating_officer_id' => $officer->id,
             'due_date' => now()->addWeek()->toDateString(),
             'comment' => 'দ্রুত তদন্ত করুন',
@@ -89,7 +89,7 @@ class ComplaintTest extends TestCase
 
         // Officer submits a report with a PDF + an image.
         Sanctum::actingAs($officer);
-        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/report", [
+        $this->postJson(self::GALACHIPA."/api/complaints/{$id}/report", [
             'comment' => 'তদন্ত প্রতিবেদন সংযুক্ত',
             'document' => UploadedFile::fake()->create('report.pdf', 100, 'application/pdf'),
             'images' => [UploadedFile::fake()->image('site.jpg')],
@@ -100,14 +100,14 @@ class ComplaintTest extends TestCase
         // UNO schedules a hearing, then completes with an order.
         Sanctum::actingAs($this->uno());
         $hearing = now()->addWeek()->toDateString();
-        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/schedule-hearing", ['hearing_date' => $hearing])
+        $this->postJson(self::GALACHIPA."/api/complaints/{$id}/schedule-hearing", ['hearing_date' => $hearing])
             ->assertOk()->assertJsonPath('data.hearing_date', $hearing);
 
-        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/complete", ['comment' => 'নিষ্পত্তি করা হলো'])
+        $this->postJson(self::GALACHIPA."/api/complaints/{$id}/complete", ['comment' => 'নিষ্পত্তি করা হলো'])
             ->assertOk()->assertJsonPath('data.status', 'completed');
 
         // Timeline reflects every step in order.
-        $types = collect($this->getJson(self::GOLACHIPA."/api/complaints/{$id}")->json('data.timeline'))->pluck('type');
+        $types = collect($this->getJson(self::GALACHIPA."/api/complaints/{$id}")->json('data.timeline'))->pluck('type');
         $this->assertSame(['filed', 'accepted', 'report', 'hearing_scheduled', 'completed'], $types->all());
     }
 
@@ -117,17 +117,17 @@ class ComplaintTest extends TestCase
         $officer = $this->investigator();
 
         Sanctum::actingAs($this->uno());
-        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/accept", [
+        $this->postJson(self::GALACHIPA."/api/complaints/{$id}/accept", [
             'investigating_officer_id' => $officer->id, 'due_date' => now()->addWeek()->toDateString(),
         ])->assertOk();
 
         Sanctum::actingAs($officer);
-        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/report", ['comment' => 'প্রথম প্রতিবেদন'])->assertOk();
+        $this->postJson(self::GALACHIPA."/api/complaints/{$id}/report", ['comment' => 'প্রথম প্রতিবেদন'])->assertOk();
 
         Sanctum::actingAs($this->uno());
-        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/schedule-hearing", ['hearing_date' => now()->addWeek()->toDateString()])->assertOk();
+        $this->postJson(self::GALACHIPA."/api/complaints/{$id}/schedule-hearing", ['hearing_date' => now()->addWeek()->toDateString()])->assertOk();
         // Re-investigation keeps it assigned and clears the hearing date.
-        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/reinvestigate", ['comment' => 'আরও তথ্য প্রয়োজন'])
+        $this->postJson(self::GALACHIPA."/api/complaints/{$id}/reinvestigate", ['comment' => 'আরও তথ্য প্রয়োজন'])
             ->assertOk()
             ->assertJsonPath('data.status', 'assigned')
             ->assertJsonPath('data.hearing_date', null);
@@ -138,7 +138,7 @@ class ComplaintTest extends TestCase
         $id = $this->newComplaintId();
         Sanctum::actingAs($this->uno());
         // The UNO's own id is not an investigating officer → rejected.
-        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/accept", [
+        $this->postJson(self::GALACHIPA."/api/complaints/{$id}/accept", [
             'investigating_officer_id' => $this->uno()->id, 'due_date' => now()->addWeek()->toDateString(),
         ])->assertStatus(422);
     }
@@ -148,11 +148,11 @@ class ComplaintTest extends TestCase
         Sanctum::actingAs($this->investigator());
 
         // Seeder assigned 5 complaints (3 assigned + 2 completed) to this investigator.
-        $res = $this->getJson(self::GOLACHIPA.'/api/complaints')->assertOk();
+        $res = $this->getJson(self::GALACHIPA.'/api/complaints')->assertOk();
         $this->assertSame(5, $res->json('meta.total'));
 
         $id = $res->json('data.0.id');
-        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/report", ['comment' => 'তদন্ত সম্পন্ন'])
+        $this->postJson(self::GALACHIPA."/api/complaints/{$id}/report", ['comment' => 'তদন্ত সম্পন্ন'])
             ->assertOk()->assertJsonPath('data.status', 'assigned');
     }
 
@@ -160,7 +160,7 @@ class ComplaintTest extends TestCase
     {
         $id = $this->newComplaintId(); // assigned to nobody
         Sanctum::actingAs($this->investigator());
-        $this->postJson(self::GOLACHIPA."/api/complaints/{$id}/report", ['comment' => 'x'])
+        $this->postJson(self::GALACHIPA."/api/complaints/{$id}/report", ['comment' => 'x'])
             ->assertStatus(403);
     }
 

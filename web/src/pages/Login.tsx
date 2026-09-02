@@ -21,13 +21,17 @@ export default function Login() {
 
   // Login is gated by host type (mirrors the API):
   //  - central host (suraha.net) → SEAL admin only: no citizen tab, single admin form.
+  //  - district host → that district's DC only: officer form, no citizen tab.
   //  - upazila host → officer + citizen tabs (upazila officers / citizen OTP).
-  const isCentral = host?.kind === 'central';
-  const subtitle = isCentral
-    ? S.auth.adminLoginTitle
-    : host?.name_bn
-      ? `${host.name_bn} — ${S.auth.loginTitle}`
-      : S.auth.loginTitle;
+  const isCentral = host?.kind === 'central' || host?.kind === 'district';
+  const subtitle =
+    host?.kind === 'district' && host.name_bn
+      ? `${host.name_bn} ${S.auth.districtLoginSuffix}`
+      : host?.kind === 'central'
+        ? S.auth.adminLoginTitle
+        : host?.name_bn
+          ? `${host.name_bn} — ${S.auth.loginTitle}`
+          : S.auth.loginTitle;
 
   return (
     <Box

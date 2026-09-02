@@ -44,11 +44,11 @@ export default function TopBar() {
   const { selectedUpazilaId, selectedUpazilaLabel, setSelectedUpazila } = useSelectedTenant();
   const host = useHostContext();
 
-  // The switcher only makes sense on the central host, where a cross-tenant user (SEAL = global,
-  // DC = district) has no fixed tenant and picks one via the X-Upazila header. On a upazila
-  // subdomain the tenant is pinned by the URL, so NO ONE sees the switcher — not even SEAL/DC.
-  const isCentralHost = host?.kind === 'central';
-  const canSwitch = user ? user.scope !== 'tenant' && isCentralHost : false;
+  // The switcher makes sense wherever a cross-tenant user has no fixed tenant: SEAL on the
+  // central host, the DC on its district host. Both pick an upazila via the X-Upazila header.
+  // On a upazila subdomain the tenant is pinned by the URL, so NO ONE sees the switcher.
+  const isAggregateHost = host?.kind === 'central' || host?.kind === 'district';
+  const canSwitch = user ? user.scope !== 'tenant' && isAggregateHost : false;
 
   // Upazila switcher — real list from the registry (SEAL: all, DC: own district, §4).
   // Cross-tenant roles default to the aggregate view ("সকল উপজেলা") until they pick one upazila.

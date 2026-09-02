@@ -44,6 +44,9 @@ export const bnStrings = {
     title: 'সুরাহা উপজেলা ইনস্ট্যান্স',
     subtitle: 'সকল উপজেলা ইনস্ট্যান্স ও সাবডোমেইন তালিকা',
     addNew: 'নতুন উপজেলা যুক্ত করুন',
+    colKind: 'ধরন',
+    kindDc: 'ডিসি ড্যাশবোর্ড',
+    kindUno: 'ইউএনও ড্যাশবোর্ড',
     colUpazila: 'উপজেলা',
     colDistrict: 'জেলা',
     colDivision: 'বিভাগ',
@@ -422,6 +425,9 @@ export const bnStrings = {
     colRole: 'পদবি',
     colDesignation: 'পদবী (বিবরণ)',
     colWard: 'ওয়ার্ড',
+    colKind: 'ধরন',
+    kindDc: 'ডিসি ড্যাশবোর্ড',
+    kindUno: 'ইউএনও ড্যাশবোর্ড',
     colUpazila: 'উপজেলা',
     colStatus: 'অবস্থা',
     active: 'সক্রিয়',
@@ -468,6 +474,7 @@ export const bnStrings = {
 
   auth: {
     loginTitle: 'সুরাহায় লগইন',
+    districtLoginSuffix: 'জেলা ড্যাশবোর্ড — ডিসি লগইন',
     adminLoginTitle: 'অ্যাডমিন লগইন',
     officerTab: 'কর্মকর্তা',
     citizenTab: 'নাগরিক',

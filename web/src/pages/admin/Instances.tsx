@@ -31,7 +31,7 @@ interface UpazilaRow {
   name: string;
   name_bn: string;
   is_active: boolean;
-  district?: { id: number; name: string; name_bn: string; division?: Division | null };
+  district?: { id: number; name: string; name_bn: string; slug: string | null; division?: Division | null };
   domain: string;
   created_at: string | null;
 }
@@ -41,6 +41,17 @@ interface District {
   name: string;
   name_bn: string;
   division_id: number | null;
+}
+
+interface HostRow {
+  key: string;
+  kind: 'dc' | 'uno';
+  id?: string;
+  name_bn: string;
+  district_bn: string;
+  division_bn: string;
+  domain: string;
+  is_active: boolean;
 }
 
 interface Division {
@@ -84,7 +95,44 @@ export default function Instances() {
     load();
   };
 
-  const { pageRows, page, setPage, pageCount } = usePagination(rows);
+  // The roster lists every Suraha host, not just upazilas: each district that has at least one
+  // upazila also has a DC dashboard on its own subdomain. That host is not provisioned separately
+  // — it exists as soon as the district has an instance, and later upazilas just add to it.
+  const hostRows: HostRow[] = (() => {
+    const base = rows[0]?.domain.split('.').slice(1).join('.') ?? '';
+    const districts = new Map<number, HostRow>();
+
+    for (const u of rows) {
+      const d = u.district;
+      if (!d?.slug || districts.has(d.id)) continue;
+      districts.set(d.id, {
+        key: `dc-${d.slug}`,
+        kind: 'dc',
+        name_bn: '—',
+        district_bn: d.name_bn,
+        division_bn: d.division?.name_bn ?? '—',
+        domain: `${d.slug}.${base}`,
+        is_active: true,
+      });
+    }
+
+    const upazilas: HostRow[] = rows.map((u) => ({
+      key: u.id,
+      kind: 'uno',
+      id: u.id,
+      name_bn: u.name_bn,
+      district_bn: u.district?.name_bn ?? '—',
+      division_bn: u.district?.division?.name_bn ?? '—',
+      domain: u.domain,
+      is_active: u.is_active,
+    }));
+
+    return [...districts.values(), ...upazilas].sort(
+      (a, b) => a.district_bn.localeCompare(b.district_bn, 'bn') || a.kind.localeCompare(b.kind),
+    );
+  })();
+
+  const { pageRows, page, setPage, pageCount } = usePagination(hostRows);
 
   return (
     <Box sx={{ display: 'grid', gap: 3 }}>
@@ -104,6 +152,7 @@ export default function Instances() {
         <Table>
           <TableHead>
             <TableRow>
+              <TableCell>{S.instances.colKind}</TableCell>
               <TableCell>{S.instances.colUpazila}</TableCell>
               <TableCell>{S.instances.colDistrict}</TableCell>
               <TableCell>{S.instances.colDivision}</TableCell>
@@ -112,30 +161,36 @@ export default function Instances() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {pageRows.map((u) => (
+            {pageRows.map((r) => (
               <TableRow
-                key={u.id}
+                key={r.key}
                 hover
-                sx={{ cursor: 'pointer' }}
-                onClick={() => navigate(`/instances/${u.id}`)}
+                sx={{ cursor: r.kind === 'uno' ? 'pointer' : 'default' }}
+                onClick={() => r.kind === 'uno' && navigate(`/instances/${r.id}`)}
               >
-                <TableCell sx={{ fontWeight: 600 }}>{u.name_bn}</TableCell>
-                <TableCell>{u.district?.name_bn ?? '—'}</TableCell>
-                <TableCell>{u.district?.division?.name_bn ?? '—'}</TableCell>
+                <TableCell>
+                  <StatusPill
+                    label={r.kind === 'dc' ? S.instances.kindDc : S.instances.kindUno}
+                    tone={r.kind === 'dc' ? 'info' : 'pending'}
+                  />
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>{r.name_bn}</TableCell>
+                <TableCell>{r.district_bn}</TableCell>
+                <TableCell>{r.division_bn}</TableCell>
                 <TableCell sx={{ direction: 'ltr', fontFamily: 'monospace', fontSize: 13 }}>
-                  {u.domain}
+                  {r.domain}
                 </TableCell>
                 <TableCell>
                   <StatusPill
-                    label={u.is_active ? S.instances.active : S.instances.inactive}
-                    tone={u.is_active ? 'success' : 'pending'}
+                    label={r.is_active ? S.instances.active : S.instances.inactive}
+                    tone={r.is_active ? 'success' : 'pending'}
                   />
                 </TableCell>
               </TableRow>
             ))}
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ color: 'text.secondary', py: 4 }}>
+                <TableCell colSpan={6} align="center" sx={{ color: 'text.secondary', py: 4 }}>
                   {loading ? S.common.loading : S.common.noData}
                 </TableCell>
               </TableRow>

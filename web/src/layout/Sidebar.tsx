@@ -14,6 +14,7 @@ import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
 import FolderOutlinedIcon from '@mui/icons-material/FolderOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
+import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutlinedRounded';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
@@ -75,6 +76,15 @@ const instancesItem: Item = {
   route: '/instances',
 };
 
+// DC-only: reports live under প্রসূতি for everyone else, but a DC's whole job here is figures,
+// so it gets a direct entry instead of a group it may not otherwise open.
+const reportsItem: Item = {
+  key: 'report',
+  label: S.nav.report,
+  icon: <InsertChartOutlinedRoundedIcon />,
+  route: '/reports',
+};
+
 const officerSection: Child[] = [
   { key: 'officers', label: S.nav.officerList, route: '/officers' },
 ];
@@ -117,16 +127,22 @@ export default function Sidebar() {
   // An investigating officer only works on complaints assigned to their desk — no prosuti/birth,
   // no appointments, no management sections.
   const isInvestigator = user?.role === 'investigating_officer';
+  // The DC is read-only (DenyReadOnlyWrites enforces it server-side): dashboard and reports only,
+  // so the nav never offers a page whose actions would be refused.
+  const isDc = user?.role === 'dc';
 
   // Insert the SEAL-only instances item right after the dashboard; drop manager-only items
   // (e.g. slider management) for roles that can't manage content.
   const items: Item[] = (
-    user?.role === 'seal_admin'
-      ? [baseItems[0], instancesItem, ...baseItems.slice(1)]
-      : baseItems
+    isDc
+      ? [baseItems[0], reportsItem]
+      : user?.role === 'seal_admin'
+        ? [baseItems[0], instancesItem, ...baseItems.slice(1)]
+        : baseItems
   )
     .filter((it) => ! it.managerOnly || isManager)
-    .filter((it) => ! isInvestigator || it.key === 'dashboard' || it.key === 'complaint');
+    .filter((it) => ! isInvestigator || it.key === 'dashboard' || it.key === 'complaint')
+
 
   const activePill = theme.suraha.activePillBg;
   const activeText = theme.suraha.activePillText;

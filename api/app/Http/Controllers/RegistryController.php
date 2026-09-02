@@ -21,11 +21,24 @@ class RegistryController extends Controller
      * Host context for the requesting subdomain — lets the SPA render the right shell without
      * guessing district-vs-upazila from the hostname string:
      *  - central host (suraha.net)        → { kind: 'central' }
+     *  - district host ({district}.suraha.net) → { kind: 'district', slug, upazila_count }
      *  - upazila host ({upazila}.suraha…)     → { kind: 'upazila', slug, name_bn }
-     * (A 'district' kind is a deferred TODO — see the platform plan.)
      */
-    public function hostContext()
+    public function hostContext(Request $request)
     {
+        $district = $request->attributes->get('district');
+
+        if ($district) {
+            return response()->json([
+                'kind' => 'district',
+                'slug' => $district->slug,
+                'name_bn' => $district->name_bn,
+                'district_bn' => $district->name_bn,
+                'upazila_count' => Upazila::where('district_id', $district->id)->where('is_active', true)->count(),
+                'is_active' => true,
+            ]);
+        }
+
         if (! tenancy()->initialized) {
             return response()->json(['kind' => 'central', 'slug' => null, 'name_bn' => null, 'is_active' => true]);
         }
@@ -188,6 +201,14 @@ class RegistryController extends Controller
 
         // Central host: the national public site + the SEAL console.
         if ($domain === $base || $domain === 'www.'.$base) {
+            return response()->noContent();
+        }
+
+        // {district}.{base} — the DC dashboard, live once the district has an upazila on Suraha.
+        $label = str_ends_with($domain, '.'.$base) ? substr($domain, 0, -strlen('.'.$base)) : null;
+
+        if ($label !== null && ! str_contains($label, '.')
+            && District::where('slug', $label)->whereHas('upazilas')->exists()) {
             return response()->noContent();
         }
 
