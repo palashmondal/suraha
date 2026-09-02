@@ -42,7 +42,7 @@ export default function DataTable<T extends { id: string | number }>({
   emptyHelper?: string;
   loading?: boolean;
 }) {
-  const { pageRows, page, setPage, pageSize, setPageSize, pageCount } = usePagination(rows);
+  const { pageRows, page, setPage, pageCount } = usePagination(rows);
 
   // While fetching, show a loading state instead of flashing the empty state before data arrives.
   if (loading && rows.length === 0) {
@@ -109,7 +109,7 @@ export default function DataTable<T extends { id: string | number }>({
         </TableBody>
       </Table>
 
-      <PaginationBar page={page} pageCount={pageCount} pageSize={pageSize} onPage={setPage} onPageSize={setPageSize} />
+      <PaginationBar page={page} pageCount={pageCount} onPage={setPage} />
     </TableContainer>
   );
 }

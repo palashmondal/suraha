@@ -94,8 +94,6 @@ export const bnStrings = {
     person: 'জন',
     count: 'টি',
     loading: 'তথ্য লোড করা হচ্ছে',
-    show: 'দেখান',
-    allItems: 'সব',
     loadError: 'তথ্য লোড করা যায়নি।',
     retry: 'আবার চেষ্টা করুন',
     // Shared control labels for the design-system components.

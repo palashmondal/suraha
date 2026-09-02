@@ -86,7 +86,7 @@ export default function Instances() {
     load();
   };
 
-  const { pageRows, page, setPage, pageSize, setPageSize, pageCount } = usePagination(rows);
+  const { pageRows, page, setPage, pageCount } = usePagination(rows);
 
   return (
     <Box sx={{ display: 'grid', gap: 3 }}>
@@ -147,7 +147,7 @@ export default function Instances() {
           </TableBody>
         </Table>
         {rows.length > 0 && (
-          <PaginationBar page={page} pageCount={pageCount} pageSize={pageSize} onPage={setPage} onPageSize={setPageSize} />
+          <PaginationBar page={page} pageCount={pageCount} onPage={setPage} />
         )}
       </TableContainer>
 
