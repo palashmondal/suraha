@@ -499,7 +499,7 @@ export const bnStrings = {
   dashboard: {
     title: 'ড্যাশবোর্ড',
     titleUpazila: (upazila: string) => `${upazila} উপজেলা ড্যাশবোর্ড`,
-    aggregateOf: 'সম্মিলিত পরিসংখ্যান',
+    titleAggregate: 'সম্মিলিত ড্যাশবোর্ড',
     upazilaCount: 'টি উপজেলা',
     officer: {
       title: 'ব্যবহারকারী তথ্য',
