@@ -1,3 +1,45 @@
+# সুরাহা API (Laravel)
+
+REST API for the Suraha PWA. See [`../SURAHA_BUILD_PROMPT.md`](../SURAHA_BUILD_PROMPT.md) for the full spec.
+
+## Setup
+
+```bash
+composer install
+cp .env.example .env && php artisan key:generate
+touch database/database.sqlite       # default DB is sqlite; point .env at Postgres for the real stack
+php artisan migrate:fresh --seed     # creates the tenant registry + one officer per role + a demo citizen
+php artisan serve                    # http://localhost:8000
+php artisan test                     # auth + RBAC feature/unit tests
+```
+
+## Milestone 2 — Auth, RBAC & tenancy (done)
+
+- **Roles** (`app/Enums/Role.php`): fwa, sochib, uno, investigator, dc, seal, citizen — values match the PWA.
+- **Tenancy**: in-app scoping by `upazila_id` on a central DB (subdomain → `upazilas.subdomain`), resolved by
+  `ResolveTenant`; a local PWA sends `X-Suraha-Tenant`. `BelongsToTenant` scopes module models; DC/SEAL are cross-tenant.
+- **RBAC**: `role:uno,seal` gates routes; `can.write` blocks DC (read-only) from mutating requests.
+- **Auth** (Sanctum tokens): officers by username/password, citizens by mobile + OTP (SMS behind a swappable
+  `SmsSender`, OTP-only).
+
+### Endpoints
+
+| Method | Path | Who |
+|---|---|---|
+| POST | `/api/auth/officer/login` | officers → `{token, user}` |
+| POST | `/api/auth/citizen/otp` | citizens (request code) |
+| POST | `/api/auth/citizen/verify` | citizens → `{token, user}` |
+| GET | `/api/auth/me` | authenticated |
+| POST | `/api/auth/logout` | authenticated |
+
+### Demo credentials (after seeding)
+
+Officers log in with password **`password`** and username `fwa` / `sochib` / `uno` / `investigator` / `dc` / `seal`.
+The demo citizen is mobile **`01700000000`** (tenant `golachipa`). To log a citizen in without a live SMS
+gateway, set `SURAHA_OTP_BYPASS=000000` in `.env` and use that as the code.
+
+---
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
