@@ -14,10 +14,6 @@ use Illuminate\Validation\Rule;
  */
 class GeneralInfoController extends Controller
 {
-    private function requireTenant(): void
-    {
-        abort_unless(tenancy()->initialized, 400, 'উপজেলা নির্ধারণ করা যায়নি।');
-    }
 
     /** Grouped info for the public site (phones + about). */
     public function publicIndex(): JsonResponse

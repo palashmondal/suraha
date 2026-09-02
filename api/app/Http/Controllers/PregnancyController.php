@@ -141,10 +141,6 @@ class PregnancyController extends Controller
         ];
     }
 
-    private function requireTenant(): void
-    {
-        abort_unless(tenancy()->initialized, 400, 'উপজেলা নির্ধারণ করা যায়নি।');
-    }
 
     /**
      * Full §8.1 field rules. mother_name_bn is the only required field; everything else is

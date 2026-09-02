@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\UpazilaController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\AssistanceController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\BirthRegistrationController;
 use App\Http\Controllers\ComplaintController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\OfficerController;
 use App\Http\Controllers\PregnancyController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RegistryController;
+use App\Http\Controllers\SuggestionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -56,7 +58,7 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
     // ---- Authenticated (any role) -------------------------------------
     // tenant.selected lets cross-tenant roles (SEAL/DC) resolve the switched upazila from the
     // X-Upazila header when they are on the admin host (no subdomain).
-    Route::middleware(['auth:sanctum', 'tenant.selected'])->group(function () {
+    Route::middleware(['auth:sanctum', 'tenant.selected', 'tenant.access'])->group(function () {
         Route::get('auth/me', [AuthController::class, 'me']);
         Route::post('auth/logout', [AuthController::class, 'logout']);
 
@@ -148,6 +150,34 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
             Route::middleware('deny.readonly', 'role:uno,seal_admin')->group(function () {
                 Route::post('appointments/{appointment}/approve', [AppointmentController::class, 'approve']);
                 Route::post('appointments/{appointment}/reject', [AppointmentController::class, 'reject']);
+            });
+        });
+
+        // ---- মানবিক সহায়তা (§8) — citizen applies; UNO decides; DC/SEAL view ----
+        Route::middleware('deny.readonly', 'role:citizen,uno,seal_admin')
+            ->post('assistances', [AssistanceController::class, 'store']);
+
+        Route::middleware('role:uno,dc,seal_admin')->group(function () {
+            Route::get('assistances', [AssistanceController::class, 'index']);
+            Route::get('assistances/{assistance}', [AssistanceController::class, 'show']);
+
+            Route::middleware('deny.readonly', 'role:uno,seal_admin')->group(function () {
+                Route::post('assistances/{assistance}/approve', [AssistanceController::class, 'approve']);
+                Route::post('assistances/{assistance}/reject', [AssistanceController::class, 'reject']);
+            });
+        });
+
+        // ---- নাগরিক পরামর্শ (§8) — citizen suggests; UNO decides; DC/SEAL view ----
+        Route::middleware('deny.readonly', 'role:citizen,uno,seal_admin')
+            ->post('suggestions', [SuggestionController::class, 'store']);
+
+        Route::middleware('role:uno,dc,seal_admin')->group(function () {
+            Route::get('suggestions', [SuggestionController::class, 'index']);
+            Route::get('suggestions/{suggestion}', [SuggestionController::class, 'show']);
+
+            Route::middleware('deny.readonly', 'role:uno,seal_admin')->group(function () {
+                Route::post('suggestions/{suggestion}/accept', [SuggestionController::class, 'accept']);
+                Route::post('suggestions/{suggestion}/reject', [SuggestionController::class, 'reject']);
             });
         });
 

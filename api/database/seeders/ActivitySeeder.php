@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Models\Appointment;
+use App\Models\Assistance;
 use App\Models\BirthRegistration;
 use App\Models\Complaint;
+use App\Models\Suggestion;
 use App\Models\Pregnancy;
 use App\Models\Union;
 use App\Models\Upazila;
@@ -34,6 +36,8 @@ class ActivitySeeder extends Seeder
         'birth' => [3, 4, 6, 7, 9, 10],
         'complaint' => [3, 5, 4, 7, 8, 9],
         'appointment' => [4, 6, 7, 8, 11, 12],
+        'assistance' => [3, 4, 6, 6, 8, 9],
+        'suggestion' => [2, 4, 4, 5, 7, 8],
     ];
 
     public function run(): void
@@ -61,6 +65,8 @@ class ActivitySeeder extends Seeder
                     $this->make(BirthRegistration::class, self::VOLUME['birth'][$i], $month, $unionIds, $author);
                     $this->make(Complaint::class, self::VOLUME['complaint'][$i], $month, $unionIds, $author);
                     $this->make(Appointment::class, self::VOLUME['appointment'][$i], $month, $unionIds, $author);
+                    $this->make(Assistance::class, self::VOLUME['assistance'][$i], $month, $unionIds, $author);
+                    $this->make(Suggestion::class, self::VOLUME['suggestion'][$i], $month, $unionIds, $author);
                 }
             });
         }
@@ -74,7 +80,7 @@ class ActivitySeeder extends Seeder
      */
     private function scatterLeftovers(int $months): void
     {
-        foreach ([Pregnancy::class, BirthRegistration::class, Complaint::class, Appointment::class] as $model) {
+        foreach ([Pregnancy::class, BirthRegistration::class, Complaint::class, Appointment::class, Assistance::class, Suggestion::class] as $model) {
             $today = $model::whereDate('created_at', CarbonImmutable::today())->get();
 
             foreach ($today->skip(2) as $record) {
@@ -125,6 +131,8 @@ class ActivitySeeder extends Seeder
             Pregnancy::class => $factory->delivered(),
             BirthRegistration::class => $factory->entered(),
             Appointment::class => random_int(1, 10) > 2 ? $factory->approved() : $factory->rejected(),
+            Assistance::class => random_int(1, 10) > 3 ? $factory->approved() : $factory->rejected(),
+            Suggestion::class => random_int(1, 10) > 3 ? $factory->accepted() : $factory->rejected(),
             Complaint::class => random_int(1, 10) > 3 ? $factory->completed() : $factory->assigned(),
             default => $factory,
         };

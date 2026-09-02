@@ -187,8 +187,4 @@ class AppointmentController extends Controller
         }
     }
 
-    private function requireTenant(): void
-    {
-        abort_unless(tenancy()->initialized, 400, 'উপজেলা নির্ধারণ করা যায়নি।');
-    }
 }

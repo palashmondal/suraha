@@ -183,7 +183,7 @@ class AuthController extends Controller
         ]);
     }
 
-    private function requireTenant(): void
+    protected function requireTenant(): void
     {
         if (! tenancy()->initialized) {
             abort(400, 'উপজেলা নির্ধারণ করা যায়নি। সঠিক সাবডোমেইন ব্যবহার করুন।');
