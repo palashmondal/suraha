@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Appointment;
+use App\Models\Assistance;
 use App\Models\Complaint;
+use App\Models\Suggestion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -40,8 +42,33 @@ class MyController extends Controller
             'date' => $a->created_at?->toDateString(),
         ]);
 
+        $assistances = Assistance::where('citizen_id', $id)->latest()->get()->map(fn (Assistance $a) => [
+            'type' => 'assistance',
+            'type_label' => 'মানবিক সহায়তা',
+            'token' => $a->tracking_token,
+            'title' => $a->title,
+            'status_label' => $a->status->labelBn(),
+            'status_tone' => $a->status->tone(),
+            'date' => $a->created_at?->toDateString(),
+        ]);
+
+        $suggestions = Suggestion::where('citizen_id', $id)->latest()->get()->map(fn (Suggestion $s) => [
+            'type' => 'suggestion',
+            'type_label' => 'নাগরিক পরামর্শ',
+            'token' => $s->tracking_token,
+            'title' => $s->title,
+            'status_label' => $s->status->labelBn(),
+            'status_tone' => $s->status->tone(),
+            'date' => $s->created_at?->toDateString(),
+        ]);
+
         return response()->json([
-            'submissions' => $complaints->concat($appointments)->sortByDesc('date')->values(),
+            'submissions' => $complaints
+                ->concat($appointments)
+                ->concat($assistances)
+                ->concat($suggestions)
+                ->sortByDesc('date')
+                ->values(),
         ]);
     }
 }

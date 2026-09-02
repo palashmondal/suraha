@@ -74,9 +74,14 @@ class NotificationTest extends TestCase
 
     public function test_notifications_are_tenant_scoped(): void
     {
-        // The seeded UNO notifications belong to Galachipa → none resolve on the Dumuria subdomain.
+        // Galachipa's UNO has no business on Dumuria's subdomain at all. This used to return an
+        // empty list — tenancy scoped the query, but nothing checked the token against the host,
+        // so the same request against a module with rows would have read another upazila's data.
+        // EnsureTenantAccess now refuses the pairing outright.
         Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
-        $this->getJson('http://dumuria.lvh.me/api/notifications')
-            ->assertOk()->assertJsonPath('unread_count', 0);
+        $this->getJson('http://dumuria.lvh.me/api/notifications')->assertStatus(403);
+
+        // Their own upazila still works.
+        $this->getJson(self::GALACHIPA.'/api/notifications')->assertOk();
     }
 }

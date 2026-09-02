@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // Cross-tenant roles pick an upazila with the X-Upazila header — SEAL on the
             // central host, the DC on its district host — without changing the URL.
             'tenant.selected' => \App\Http\Middleware\ApplySelectedTenant::class,
+            // A token is only good for the upazilas its owner may reach.
+            'tenant.access' => \App\Http\Middleware\EnsureTenantAccess::class,
             // RBAC (see app/Http/Middleware)
             'role' => \App\Http\Middleware\EnsureRole::class,
             'deny.readonly' => \App\Http\Middleware\DenyReadOnlyWrites::class,

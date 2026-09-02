@@ -15,10 +15,6 @@ use Illuminate\Support\Facades\Storage;
  */
 class SliderController extends Controller
 {
-    private function requireTenant(): void
-    {
-        abort_unless(tenancy()->initialized, 400, 'উপজেলা নির্ধারণ করা যায়নি।');
-    }
 
     /** Active slides for the landing page + dashboard (public). */
     public function publicIndex(): JsonResponse
