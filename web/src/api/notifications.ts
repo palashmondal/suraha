@@ -2,7 +2,7 @@ import { api } from './client';
 
 export interface AppNotification {
   id: number;
-  module: 'pregnancy' | 'birth' | 'complaint' | 'appointment';
+  module: 'pregnancy' | 'birth' | 'complaint' | 'appointment' | 'assistance' | 'suggestion';
   title: string;
   detail: string | null;
   link: string | null;
