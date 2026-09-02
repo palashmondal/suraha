@@ -24,6 +24,8 @@ import { bnStrings as S } from '../../i18n';
 import { api, ApiError } from '../../api/client';
 import StatusPill from '../../components/StatusPill';
 import PaginationBar from '../../components/PaginationBar';
+import SectionTitle from '../../components/SectionTitle';
+import { bn } from '../../utils/bnNum';
 import { usePagination } from '../../components/usePagination';
 
 interface UpazilaRow {
@@ -43,15 +45,12 @@ interface District {
   division_id: number | null;
 }
 
-interface HostRow {
-  key: string;
-  kind: 'dc' | 'uno';
-  id?: string;
+interface DistrictRow {
+  id: number;
   name_bn: string;
-  district_bn: string;
   division_bn: string;
   domain: string;
-  is_active: boolean;
+  upazila_count: number;
 }
 
 interface Division {
@@ -95,44 +94,35 @@ export default function Instances() {
     load();
   };
 
-  // The roster lists every Suraha host, not just upazilas: each district that has at least one
-  // upazila also has a DC dashboard on its own subdomain. That host is not provisioned separately
-  // — it exists as soon as the district has an instance, and later upazilas just add to it.
-  const hostRows: HostRow[] = (() => {
+  // Two rosters, one page. Upazilas are the instances SEAL provisions; districts are derived —
+  // a DC dashboard exists as soon as its district has an upazila, and later upazilas only add to
+  // it, so there is nothing to create or edit here, just a host to see.
+  const districtRows: DistrictRow[] = (() => {
     const base = rows[0]?.domain.split('.').slice(1).join('.') ?? '';
-    const districts = new Map<number, HostRow>();
+    const byId = new Map<number, DistrictRow>();
 
     for (const u of rows) {
       const d = u.district;
-      if (!d?.slug || districts.has(d.id)) continue;
-      districts.set(d.id, {
-        key: `dc-${d.slug}`,
-        kind: 'dc',
-        name_bn: '—',
-        district_bn: d.name_bn,
+      if (!d?.slug) continue;
+      const seen = byId.get(d.id);
+      if (seen) {
+        seen.upazila_count += 1;
+        continue;
+      }
+      byId.set(d.id, {
+        id: d.id,
+        name_bn: d.name_bn,
         division_bn: d.division?.name_bn ?? '—',
         domain: `${d.slug}.${base}`,
-        is_active: true,
+        upazila_count: 1,
       });
     }
 
-    const upazilas: HostRow[] = rows.map((u) => ({
-      key: u.id,
-      kind: 'uno',
-      id: u.id,
-      name_bn: u.name_bn,
-      district_bn: u.district?.name_bn ?? '—',
-      division_bn: u.district?.division?.name_bn ?? '—',
-      domain: u.domain,
-      is_active: u.is_active,
-    }));
-
-    return [...districts.values(), ...upazilas].sort(
-      (a, b) => a.district_bn.localeCompare(b.district_bn, 'bn') || a.kind.localeCompare(b.kind),
-    );
+    return [...byId.values()].sort((a, b) => a.name_bn.localeCompare(b.name_bn, 'bn'));
   })();
 
-  const { pageRows, page, setPage, pageCount } = usePagination(hostRows);
+  const upazila = usePagination(rows);
+  const district = usePagination(districtRows);
 
   return (
     <Box sx={{ display: 'grid', gap: 3 }}>
@@ -152,7 +142,6 @@ export default function Instances() {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>{S.instances.colKind}</TableCell>
               <TableCell>{S.instances.colUpazila}</TableCell>
               <TableCell>{S.instances.colDistrict}</TableCell>
               <TableCell>{S.instances.colDivision}</TableCell>
@@ -161,45 +150,78 @@ export default function Instances() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {pageRows.map((r) => (
+            {upazila.pageRows.map((u) => (
               <TableRow
-                key={r.key}
+                key={u.id}
                 hover
-                sx={{ cursor: r.kind === 'uno' ? 'pointer' : 'default' }}
-                onClick={() => r.kind === 'uno' && navigate(`/instances/${r.id}`)}
+                sx={{ cursor: 'pointer' }}
+                onClick={() => navigate(`/instances/${u.id}`)}
               >
-                <TableCell>
-                  <StatusPill
-                    label={r.kind === 'dc' ? S.instances.kindDc : S.instances.kindUno}
-                    tone={r.kind === 'dc' ? 'info' : 'pending'}
-                  />
-                </TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>{r.name_bn}</TableCell>
-                <TableCell>{r.district_bn}</TableCell>
-                <TableCell>{r.division_bn}</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>{u.name_bn}</TableCell>
+                <TableCell>{u.district?.name_bn ?? '—'}</TableCell>
+                <TableCell>{u.district?.division?.name_bn ?? '—'}</TableCell>
                 <TableCell sx={{ direction: 'ltr', fontFamily: 'monospace', fontSize: 13 }}>
-                  {r.domain}
+                  {u.domain}
                 </TableCell>
                 <TableCell>
                   <StatusPill
-                    label={r.is_active ? S.instances.active : S.instances.inactive}
-                    tone={r.is_active ? 'success' : 'pending'}
+                    label={u.is_active ? S.instances.active : S.instances.inactive}
+                    tone={u.is_active ? 'success' : 'pending'}
                   />
                 </TableCell>
               </TableRow>
             ))}
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ color: 'text.secondary', py: 4 }}>
+                <TableCell colSpan={5} align="center" sx={{ color: 'text.secondary', py: 4 }}>
                   {loading ? S.common.loading : S.common.noData}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-        {rows.length > 0 && (
-          <PaginationBar page={page} pageCount={pageCount} onPage={setPage} />
-        )}
+        <PaginationBar page={upazila.page} pageCount={upazila.pageCount} onPage={upazila.setPage} />
+      </TableContainer>
+
+      {/* District (DC) dashboards — derived from the upazilas above, so read-only. */}
+      <Box sx={{ display: 'grid', gap: 1.5 }}>
+        <SectionTitle>{S.instances.districtSectionTitle}</SectionTitle>
+        <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>
+          {S.instances.districtSectionHelp}
+        </Typography>
+      </Box>
+
+      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: '16px' }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>{S.instances.colDistrict}</TableCell>
+              <TableCell>{S.instances.colDivision}</TableCell>
+              <TableCell>{S.instances.colSubdomain}</TableCell>
+              <TableCell align="center">{S.instances.colUpazilaCount}</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {district.pageRows.map((d) => (
+              <TableRow key={d.id} hover>
+                <TableCell sx={{ fontWeight: 600 }}>{d.name_bn}</TableCell>
+                <TableCell>{d.division_bn}</TableCell>
+                <TableCell sx={{ direction: 'ltr', fontFamily: 'monospace', fontSize: 13 }}>
+                  {d.domain}
+                </TableCell>
+                <TableCell align="center">{bn(d.upazila_count)}</TableCell>
+              </TableRow>
+            ))}
+            {districtRows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={4} align="center" sx={{ color: 'text.secondary', py: 4 }}>
+                  {loading ? S.common.loading : S.common.noData}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+        <PaginationBar page={district.page} pageCount={district.pageCount} onPage={district.setPage} />
       </TableContainer>
 
       <CreateInstanceDialog
