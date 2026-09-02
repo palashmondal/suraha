@@ -29,7 +29,7 @@ export default function SliderManage() {
   };
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [version]);
 
-  const { pageRows, page, setPage, pageSize, setPageSize, pageCount } = usePagination(rows);
+  const { pageRows, page, setPage, pageCount } = usePagination(rows);
 
   return (
     <Box>
@@ -59,7 +59,7 @@ export default function SliderManage() {
             </Paper>
           ))}
         </Box>
-        <PaginationBar page={page} pageCount={pageCount} pageSize={pageSize} onPage={setPage} onPageSize={setPageSize} />
+        <PaginationBar page={page} pageCount={pageCount} onPage={setPage} />
         </>
       )}
 

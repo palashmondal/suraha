@@ -1,25 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
 
-export type PageSize = number | 'all';
-export const PAGE_SIZES: PageSize[] = [10, 20, 30, 50, 'all'];
+/** Rows per page across every listing. Lists at or under this never show a pager. */
+export const PAGE_SIZE = 10;
 
-// Client-side pagination shared by every listing (tables + card grids). Defaults to 10/page and
-// resets to page 1 whenever the data set or page size changes (e.g. a tab switch).
+// Client-side pagination shared by every listing (tables + card grids). Resets to page 1 whenever
+// the data set changes (e.g. a tab switch).
 export function usePagination<T>(rows: T[]) {
-  const [pageSize, setPageSize] = useState<PageSize>(10);
   const [page, setPage] = useState(1);
 
   const total = rows.length;
-  const perPage = pageSize === 'all' ? Math.max(total, 1) : pageSize;
-  const pageCount = Math.max(1, Math.ceil(total / perPage));
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
 
-  useEffect(() => setPage(1), [pageSize, total]);
+  useEffect(() => setPage(1), [total]);
 
   const pageRows = useMemo(() => {
-    const start = (currentPage - 1) * perPage;
-    return rows.slice(start, start + perPage);
-  }, [rows, currentPage, perPage]);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return rows.slice(start, start + PAGE_SIZE);
+  }, [rows, currentPage]);
 
-  return { pageRows, page: currentPage, setPage, pageSize, setPageSize, pageCount, total };
+  return { pageRows, page: currentPage, setPage, pageCount, total };
 }

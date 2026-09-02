@@ -17,7 +17,7 @@ export default function MySubmissions() {
     getMySubmissions().then((r) => setItems(r.submissions)).catch(() => setItems([]));
   }, []);
 
-  const { pageRows, page, setPage, pageSize, setPageSize, pageCount } = usePagination(items ?? []);
+  const { pageRows, page, setPage, pageCount } = usePagination(items ?? []);
 
   return (
     <PublicLayout>
@@ -45,7 +45,7 @@ export default function MySubmissions() {
         </Stack>
         {items && items.length > 0 && (
           <Box sx={{ mt: 2, border: (t) => `1px solid ${t.palette.divider}`, borderRadius: '12px' }}>
-            <PaginationBar page={page} pageCount={pageCount} pageSize={pageSize} onPage={setPage} onPageSize={setPageSize} />
+            <PaginationBar page={page} pageCount={pageCount} onPage={setPage} />
           </Box>
         )}
       </Container>

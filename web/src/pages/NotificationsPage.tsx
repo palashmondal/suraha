@@ -42,7 +42,7 @@ export default function NotificationsPage() {
     setUnread(0);
   };
 
-  const { pageRows, page, setPage, pageSize, setPageSize, pageCount } = usePagination(items ?? []);
+  const { pageRows, page, setPage, pageCount } = usePagination(items ?? []);
 
   return (
     <Box>
@@ -113,7 +113,7 @@ export default function NotificationsPage() {
               </Box>
             );
           })}
-          <PaginationBar page={page} pageCount={pageCount} pageSize={pageSize} onPage={setPage} onPageSize={setPageSize} />
+          <PaginationBar page={page} pageCount={pageCount} onPage={setPage} />
         </Paper>
       )}
     </Box>

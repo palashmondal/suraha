@@ -47,7 +47,7 @@ export default function OfficerList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedUpazilaId]);
 
-  const { pageRows, page, setPage, pageSize, setPageSize, pageCount } = usePagination(rows);
+  const { pageRows, page, setPage, pageCount } = usePagination(rows);
 
   const toggle = async (o: Officer) => {
     try {
@@ -101,7 +101,7 @@ export default function OfficerList() {
         {loading && rows.length === 0 && <LoadingState />}
         {!loading && rows.length === 0 && <EmptyState />}
         {rows.length > 0 && (
-          <PaginationBar page={page} pageCount={pageCount} pageSize={pageSize} onPage={setPage} onPageSize={setPageSize} />
+          <PaginationBar page={page} pageCount={pageCount} onPage={setPage} />
         )}
       </TableContainer>
 
