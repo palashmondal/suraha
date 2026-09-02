@@ -21,12 +21,6 @@ export interface AssignableRole {
   label: string;
 }
 
-export function listOfficers(tenantId?: string) {
-  const suffix = tenantId ? `?tenant_id=${encodeURIComponent(tenantId)}` : '';
-  return api<{ data: Officer[] }>(`/officers${suffix}`);
-}
-
-export const getAssignableRoles = () => api<{ roles: AssignableRole[] }>('/officer-roles');
 
 export const createOfficer = (body: Record<string, unknown>) =>
   api<{ data: Officer }>('/officers', { method: 'POST', body });
