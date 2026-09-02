@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // All 64 districts first, so the instance-admin district dropdown is fully populated.
+        $this->call(DivisionSeeder::class);
         $this->call(DistrictSeeder::class);
         $barishal = District::where('name', 'Barishal')->firstOrFail();
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\District;
+use App\Models\Division;
 use App\Models\Union;
 use App\Models\Upazila;
 use Illuminate\Http\Request;
@@ -96,7 +97,19 @@ class RegistryController extends Controller
     public function districts()
     {
         return response()->json([
-            'districts' => District::orderBy('name_bn')->get(['id', 'name', 'name_bn']),
+            'districts' => District::orderBy('name_bn')->get(['id', 'name', 'name_bn', 'division_id']),
+        ]);
+    }
+
+    /**
+     * The eight divisions (বিভাগ), for the admin's বিভাগ → জেলা → উপজেলা cascade. The full list is
+     * tiny and static, so the client fetches it once and filters districts by division_id locally
+     * rather than round-tripping per selection.
+     */
+    public function divisions()
+    {
+        return response()->json([
+            'divisions' => Division::orderBy('name_bn')->get(['id', 'name', 'name_bn']),
         ]);
     }
 

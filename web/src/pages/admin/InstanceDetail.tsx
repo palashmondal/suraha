@@ -28,7 +28,7 @@ interface UpazilaDetail {
   name: string;
   name_bn: string;
   is_active: boolean;
-  district?: { id: number; name_bn: string };
+  district?: { id: number; name_bn: string; division?: DivisionOption | null };
   domain: string;
 }
 
@@ -36,11 +36,22 @@ interface DistrictOption {
   id: number;
   name: string;
   name_bn: string;
+  division_id: number | null;
+}
+
+interface DivisionOption {
+  id: number;
+  name: string;
+  name_bn: string;
 }
 
 // Instance edit page: rename the upazila (Bangla/English), move it to another of the 64 districts,
-// toggle active status, or delete the instance (and all its data). The subdomain slug is the
-// tenant's immutable identity, so it is shown read-only.
+// toggle active status, or delete the instance (and all its data). The subdomain is derived from
+// the tenant's immutable slug ({slug}.{base domain}) and so is shown read-only — renaming it would
+// change the instance's identity and break every existing link and bookmark.
+//
+// Location follows the বিভাগ → জেলা hierarchy: division filters the district list, and only the
+// district is persisted (the division is implied by it).
 export default function InstanceDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -48,10 +59,12 @@ export default function InstanceDetail() {
   const [nameBn, setNameBn] = useState('');
   const [nameEn, setNameEn] = useState('');
   const [districtId, setDistrictId] = useState<number | ''>('');
+  const [divisionId, setDivisionId] = useState<number | ''>('');
   const [isActive, setIsActive] = useState(true);
   const [domain, setDomain] = useState('');
 
   const [districts, setDistricts] = useState<DistrictOption[]>([]);
+  const [divisions, setDivisions] = useState<DivisionOption[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -67,6 +80,9 @@ export default function InstanceDetail() {
     api<{ districts: DistrictOption[] }>('/registry/districts')
       .then((r) => setDistricts(r.districts))
       .catch(() => setDistricts([]));
+    api<{ divisions: DivisionOption[] }>('/registry/divisions')
+      .then((r) => setDivisions(r.divisions))
+      .catch(() => setDivisions([]));
   }, []);
 
   useEffect(() => {
@@ -77,6 +93,7 @@ export default function InstanceDetail() {
         setNameBn(u.name_bn);
         setNameEn(u.name);
         setDistrictId(u.district?.id ?? '');
+        setDivisionId(u.district?.division?.id ?? '');
         setIsActive(u.is_active);
         setDomain(u.domain);
       })
@@ -142,16 +159,36 @@ export default function InstanceDetail() {
         <TextField label={S.instances.nameEn} value={nameEn} onChange={(e) => setNameEn(e.target.value)} fullWidth />
         <TextField
           select
+          label={S.instances.division}
+          value={divisionId}
+          onChange={(e) => {
+            setDivisionId(Number(e.target.value));
+            setDistrictId('');
+          }}
+          fullWidth
+        >
+          {divisions.map((v) => (
+            <MenuItem key={v.id} value={v.id}>
+              {v.name_bn}
+            </MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          select
           label={S.instances.district}
           value={districtId}
           onChange={(e) => setDistrictId(Number(e.target.value))}
           fullWidth
+          disabled={divisionId === ''}
+          helperText={divisionId === '' ? S.instances.divisionFirst : undefined}
         >
-          {districts.map((d) => (
-            <MenuItem key={d.id} value={d.id}>
-              {d.name_bn}
-            </MenuItem>
-          ))}
+          {districts
+            .filter((d) => d.division_id === divisionId)
+            .map((d) => (
+              <MenuItem key={d.id} value={d.id}>
+                {d.name_bn}
+              </MenuItem>
+            ))}
         </TextField>
         <FormControlLabel
           control={<Switch checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />}
