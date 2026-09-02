@@ -31,7 +31,7 @@ class OfficerController extends Controller
     /**
      * Everyone attached to one upazila: its officers, its citizens, and the DC of its district —
      * who carries no tenant_id but oversees the upazila, so a tenant_id filter alone would hide
-     * them. Read-only directory; provisioning stays in @see index().
+     * them. SEAL sees all of that; a UNO sees only the staff they may actually manage.
      *
      * Filtering is done in SQL rather than in the browser because the citizen rows grow without
      * bound as the public files complaints and books appointments.
@@ -46,11 +46,20 @@ class OfficerController extends Controller
 
         $districtId = Upazila::find($tenantId)?->district_id;
 
+        $actor = $request->user();
+
         $users = User::query()
             ->where(function ($w) use ($tenantId, $districtId) {
                 $w->where('tenant_id', $tenantId)
                     ->orWhere(fn ($d) => $d->where('role', Role::DC->value)->where('district_id', $districtId));
             })
+            // A UNO manages the staff below them, not their own account or the DC's — those are
+            // edited from the UNO's profile and the SEAL console respectively. Listing rows a UNO
+            // cannot act on would only invite a 403 (authorizeManage refuses them anyway).
+            ->when(
+                $actor->role === Role::UNO,
+                fn ($q) => $q->whereNotIn('role', [Role::UNO->value, Role::DC->value]),
+            )
             ->when($request->query('role'), fn ($q, $role) => $q->where('role', $role))
             ->when($request->query('q'), function ($q, $term) {
                 $like = '%'.$term.'%';
@@ -228,6 +237,47 @@ class OfficerController extends Controller
             'data' => new UserResource($officer->load('upazila')),
             'credentials' => ['username' => $data['phone'], 'temp_password' => $password], // shown once
         ], 201);
+    }
+
+    /**
+     * Edit an existing account's contact details, posting and password.
+     *
+     * Username and role are deliberately NOT editable: the username is the login and the
+     * identifier every other screen refers to, and the role decides what the account may do.
+     * Changing either would silently turn one person's account into another's, so a wrong role
+     * means deactivate and create — which leaves the original record intact for anything it
+     * already signed off on.
+     */
+    public function update(Request $request, User $officer): UserResource
+    {
+        abort_if($officer->role === Role::CITIZEN, 404);
+        $this->authorizeManage($request->user(), $officer);
+
+        // Posting requirements follow the account's own role, not anything the client sends.
+        $needsUnion = in_array($officer->role, [Role::FWA, Role::UP_SOCHIB], true);
+        $needsWard = $officer->role === Role::FWA;
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'designation' => ['required', 'string', 'max:120'],
+            'phone' => ['required', 'string', 'regex:/^01[0-9]{9}$/', Rule::unique('users', 'phone')->ignore($officer->id)],
+            'email' => ['required', 'email', 'max:120', Rule::unique('users', 'email')->ignore($officer->id)],
+            'password' => ['nullable', 'string', 'min:8'],
+            'is_active' => ['nullable', 'boolean'],
+            'union_id' => [$needsUnion ? 'required' : 'nullable', 'nullable', 'integer', Rule::exists('unions', 'id')],
+            'ward_no' => [$needsWard ? 'required' : 'nullable', 'nullable', 'integer', 'min:1', 'max:99'],
+        ]);
+
+        // An empty password box means "leave it alone", not "blank the password".
+        if (empty($data['password'])) {
+            unset($data['password']);
+        } else {
+            $data['password'] = Hash::make($data['password']);
+        }
+
+        $officer->update($data);
+
+        return new UserResource($officer->load('upazila'));
     }
 
     public function updateStatus(Request $request, User $officer): UserResource

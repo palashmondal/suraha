@@ -165,6 +165,7 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
             Route::get('users', [OfficerController::class, 'directory']);
             Route::get('officer-roles', [OfficerController::class, 'assignableRoles']);
             Route::post('officers', [OfficerController::class, 'store']);
+            Route::put('officers/{officer}', [OfficerController::class, 'update']);
             Route::patch('officers/{officer}/status', [OfficerController::class, 'updateStatus']);
 
             // Investigating officers (তদন্ত কর্মকর্তা তালিকা, §8.4) — mobile-keyed accounts the

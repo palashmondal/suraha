@@ -14,6 +14,7 @@ import { useSelectedTenant } from '../../tenant/SelectedTenantContext';
 import { useAuth } from '../../auth/AuthContext';
 import PageHeader from '../../components/PageHeader';
 import CreateOfficerDialog from '../officers/CreateOfficerDialog';
+import EditOfficerDialog from '../officers/EditOfficerDialog';
 import { bn } from '../../utils/bnNum';
 
 // Everyone attached to this upazila — officers, citizens, and the DC of its district. Read-only:
@@ -28,6 +29,7 @@ export default function UserList() {
   const [open, setOpen] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [editing, setEditing] = useState<DirectoryUser | null>(null);
   const [rows, setRows] = useState<DirectoryUser[]>([]);
   const [roles, setRoles] = useState<{ value: string; label: string }[]>([]);
   const [role, setRole] = useState('');
@@ -104,7 +106,13 @@ export default function UserList() {
           </TableHead>
           <TableBody>
             {pageRows.map((u) => (
-              <TableRow key={u.id} hover>
+              // Citizens have no account to manage here — they sign in with a mobile OTP.
+              <TableRow
+                key={u.id}
+                hover
+                sx={{ cursor: u.role === 'citizen' ? 'default' : 'pointer' }}
+                onClick={() => u.role !== 'citizen' && setEditing(u)}
+              >
                 <TableCell sx={{ fontWeight: 600 }}>{u.name}</TableCell>
                 <TableCell>{u.role_label_bn}</TableCell>
                 <TableCell sx={{ direction: 'ltr', fontFamily: 'monospace', fontSize: 13 }}>
@@ -129,6 +137,16 @@ export default function UserList() {
         </Table>
         <PaginationBar page={page} pageCount={pageCount} onPage={setPage} />
       </TableContainer>
+
+      <EditOfficerDialog
+        officer={editing}
+        onClose={() => setEditing(null)}
+        onSaved={() => {
+          setEditing(null);
+          setFlash(S.officers.saved);
+          setReloadKey((k) => k + 1);
+        }}
+      />
 
       <CreateOfficerDialog
         open={open}
