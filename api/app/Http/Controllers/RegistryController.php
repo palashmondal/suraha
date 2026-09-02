@@ -76,12 +76,29 @@ class RegistryController extends Controller
     }
 
     /** Unions/pourashavas of the current upazila (tenant-scoped). */
-    public function unions()
+    /**
+     * The unions of one upazila, for the public filing forms and the report/officer filters.
+     *
+     * Normally the upazila comes from the subdomain. This route is public — the citizen forms
+     * need it before anyone logs in — so it sits outside the middleware that applies X-Upazila,
+     * and a cross-tenant user who has switched upazila in the console would otherwise get an
+     * empty list. Fall back to the header here. Union names are already public per subdomain, so
+     * reading them for a named upazila discloses nothing new.
+     */
+    public function unions(Request $request)
     {
-        abort_unless(tenancy()->initialized, 400, 'উপজেলা নির্ধারণ করা যায়নি।');
+        $tenantId = tenancy()->initialized
+            ? tenant()->getTenantKey()
+            : $request->header('X-Upazila');
+
+        abort_unless($tenantId && Upazila::whereKey($tenantId)->exists(), 400, 'উপজেলা নির্ধারণ করা যায়নি।');
 
         return response()->json([
-            'unions' => Union::orderBy('name_bn')->get(['id', 'name', 'name_bn', 'type', 'ward_count']),
+            'unions' => Union::query()
+                ->withoutTenancy()
+                ->where('tenant_id', $tenantId)
+                ->orderBy('name_bn')
+                ->get(['id', 'name', 'name_bn', 'type', 'ward_count']),
         ]);
     }
 

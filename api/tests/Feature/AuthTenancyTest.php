@@ -268,4 +268,25 @@ class AuthTenancyTest extends TestCase
                 ->assertNotFound();
         }
     }
+
+    /**
+     * registry/unions is public — the citizen filing forms need it before login — so it sits
+     * outside the middleware that applies X-Upazila. A SEAL admin who switched upazila in the
+     * console would otherwise get an empty list from the central host.
+     */
+    public function test_unions_follow_the_switched_upazila_on_the_central_host(): void
+    {
+        Sanctum::actingAs(User::where('username', 'admin')->firstOrFail());
+
+        $galachipa = collect($this->getJson(self::CENTRAL.'/api/registry/unions', ['X-Upazila' => 'galachipa'])
+            ->assertOk()->json('unions'))->pluck('name_bn');
+        $dumuria = collect($this->getJson(self::CENTRAL.'/api/registry/unions', ['X-Upazila' => 'dumuria'])
+            ->assertOk()->json('unions'))->pluck('name_bn');
+
+        $this->assertContains('পানপট্টি', $galachipa);
+        $this->assertEmpty($galachipa->intersect($dumuria));
+
+        // With no upazila named there is nothing to list, and the console must not ask.
+        $this->getJson(self::CENTRAL.'/api/registry/unions')->assertStatus(400);
+    }
 }

@@ -16,11 +16,16 @@ import { chartColors } from '../../components/charts/palette';
 import { getReport, type ReportBundle } from '../../api/reports';
 import { api } from '../../api/client';
 import { useSelectedTenant } from '../../tenant/SelectedTenantContext';
+import { useHostContext } from '../../tenant/host';
 
 export default function Reports() {
   const theme = useTheme();
   const c = chartColors(theme);
-  const { version } = useSelectedTenant();
+  const { version, selectedUpazilaId } = useSelectedTenant();
+  const host = useHostContext();
+  // Unions belong to one upazila. On the central host with none picked there are none to list,
+  // and asking anyway is a guaranteed 400 in the console.
+  const hasUpazila = host ? host.kind !== 'central' || Boolean(selectedUpazilaId) : false;
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [unionId, setUnionId] = useState('');
@@ -29,8 +34,14 @@ export default function Reports() {
   const [toast, setToast] = useState(false);
 
   useEffect(() => {
-    api<{ unions: { id: number; name_bn: string }[] }>('/registry/unions').then((x) => setUnions(x.unions)).catch(() => setUnions([]));
-  }, [version]);
+    if (! hasUpazila) {
+      setUnions([]);
+      return;
+    }
+    api<{ unions: { id: number; name_bn: string }[] }>('/registry/unions')
+      .then((x) => setUnions(x.unions))
+      .catch(() => setUnions([]));
+  }, [version, hasUpazila]);
 
   useEffect(() => {
     getReport({ from: from || undefined, to: to || undefined, union_id: unionId || undefined })
