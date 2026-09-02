@@ -128,10 +128,14 @@ SEAL and DC are the only cross-tenant roles (SEAL = all, DC = one district).
 **Cross-cutting**
 - Citizen registration/login via **mobile + SMS OTP**; officers via **admin-created credentials**
   (no NID/SSO). **Filing a complaint or booking an appointment requires a citizen account.**
-- FWA field capture is delivered as an **installable PWA** (offline queue + background sync + GPS/camera).
+- **One installable PWA for all roles** (FWA, Sochib, UNO, investigator, DC, SEAL, **citizens**) — one
+  `web/` codebase, installable to the home screen on mobile, responsive on desktop. The **FWA capture
+  path is offline-first** (IndexedDB queue + background sync + GPS/camera); citizens install the same
+  app from their upazila subdomain to submit, track, and read UNO notices.
 - Profile management (image upload, password change, designation).
-- **Notifications are in-app only** (bell + "N new" badges); SMS is used **only** for login OTP —
-  citizens track status by logging in.
+- **Notifications are in-app first** (bell + "N new" badges); an **opt-in Web Push** channel can mirror
+  them to an installed PWA so citizens receive **UNO notices/updates** without keeping the app open.
+  **SMS is used only for login OTP** — in-app remains the source of truth for tracking status.
 - Audit logging of every state change; centralized error/bug logging & monitoring.
 - **Bangla-only UI** (no language toggle); English captured only in specific data fields.
 
@@ -227,8 +231,8 @@ supply its own credentials.
 |---|---|
 | Backend | **Laravel 11 (PHP 8.3+)** REST API, **Sanctum** auth |
 | Multi-tenancy | **`stancl/tenancy`**, subdomain-based (upazila = tenant); central Postgres with scoping now, per-tenant DB export for self-host later |
-| Frontend | **React (Vite) + MUI (Material Design 3)**; Bangla-only i18n; light/dark theme |
-| FWA client | **Installable PWA** (Workbox service worker, IndexedDB offline queue + Background Sync, GPS/camera) |
+| Frontend | **React (Vite) + MUI (Material Design 3)**; Bangla-only i18n; light/dark theme; **responsive** (desktop dashboards + mobile drawer/bottom-nav) |
+| Client / mobile | **One installable PWA for all roles** (Workbox service worker). **FWA capture** is offline-first (IndexedDB outbox + Background Sync, GPS/camera). **Citizens** install per-subdomain to submit/track/read notices. **Opt-in Web Push** mirrors in-app notifications. |
 | Database | **PostgreSQL 16** |
 | Cache / queue | **Redis** + **Laravel Queue/Horizon** (BDRIS, OTP SMS, notifications, PDF, PWA sync); Scheduler |
 | Object storage | **S3-compatible** (MinIO self-host / AWS S3) for attachments + certificates |

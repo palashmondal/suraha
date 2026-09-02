@@ -46,17 +46,33 @@ These were decided by the product owner — treat them as fixed constraints:
    endpoints are configuration and a self-hosted upazila can supply its own. Do **not** build a
    parallel manual path; do build a swappable adapter so a mock can stand in during development before
    access is granted.
-2. **FWA field client = installable PWA.** The FWA experience is a **Progressive Web App**:
-   installable, **offline-capable** (queue field entries locally and **background-sync** when
-   connectivity returns), with **GPS and camera** access. One codebase with the web app; no native app,
-   no app store.
+2. **One installable PWA for everyone (mobile + desktop).** There is a **single client codebase**
+   (`web/`) delivered as an installable **Progressive Web App**. **All** roles use it — FWA, Sochib,
+   UNO, investigating officer, DC, SEAL admin, and **citizens** — installable to the home screen on
+   mobile and usable on desktop. No native app, no app store.
+   - **FWA capture is offline-first:** queue field entries locally (IndexedDB) and **background-sync**
+     when connectivity returns, with **GPS and camera** access. Records created offline get a
+     client-generated UUID so they have a stable id before the server sees them.
+   - **Officers/DC (Sochib, UNO, investigator, DC, SEAL)** get **responsive** dashboards that work on
+     mobile (drawer + bottom nav under the small-width breakpoint); their actions are review/approve/
+     read and are **online submits**, not offline-queued.
+   - **Citizens** install the same PWA from their upazila subdomain and use it to register (mobile +
+     OTP), **file complaints, book appointments**, upload attachments, **track** their applications,
+     read public info/sliders, and receive **notices/updates shared by the UNO** (§8.8). Citizen
+     submissions are online submits; a failed submit on a flaky connection is retried, not silently
+     dropped.
 3. **Authentication = credentials + mobile OTP.** Officers log in with **admin-created username/
    password**; citizens with **mobile number + SMS OTP**. **No** NID verification and **no** government
    SSO in scope. (The SMS gateway is therefore used **for OTP only** — see decision 4.)
-4. **Notifications = in-app only.** The only notification channel is **in-app** (top-bar bell +
-   "N new" badges). **No** SMS, email, or push notifications for status updates. Consequently, citizens
-   learn appointment/complaint outcomes and certificate availability by **logging in and tracking**
-   (and via the in-app bell). SMS is used **solely** to deliver login OTPs.
+4. **Notifications = in-app first; Web Push optional for the installed PWA.** The canonical channel is
+   **in-app** (top-bar/app-bar bell + "N new" badges); every notification and UNO notice is always
+   readable in-app by logging in. **As an additive channel** for the installed PWA, **Web Push** may
+   deliver the same in-app notifications and UNO notices to a citizen's device even when the app is
+   closed (Android Chrome, and iOS 16.4+ for an installed PWA); push is **best-effort and opt-in** —
+   in-app remains the source of truth, and a device that denies/does not support push loses nothing but
+   the convenience. **No SMS or email** is used for status updates. **SMS is used solely to deliver
+   login/registration OTPs** (§1.1(3)). *(This amends the original "in-app only, no push" decision to
+   let citizens receive UNO updates without keeping the app open; the OTP-only SMS rule is unchanged.)*
 5. **UI language = Bangla only.** No language toggle. English is captured only in the few data fields
    that explicitly ask for it (e.g. mother's name in English).
 6. **Public actions require an account.** Citizens **must register (mobile + OTP) and log in** before
@@ -428,6 +444,25 @@ carousel renders on landing page and dashboard.
 district (read-only); SEAL views all. **Acceptance:** filters + PDF/Excel export work; DC/SEAL rollups
 respect read-only + scope; charts render in both themes; all labels in Bangla.
 
+### 8.8 নোটিশ / তথ্য — UNO Notices & Citizen Updates **[standalone, public-facing]**
+
+**Purpose:** let the **UNO** (and, scoped-up, SEAL) publish **notices/information** that citizens see
+inside the installed PWA — the "updates and information shared by the UNO" citizens ask for beyond
+their own application status.
+
+**Author side (UNO):** create a notice with a **title, body, optional attachment/link, publish
+window** (active/expired), and **audience** (all citizens of the upazila; later: union/ward-scoped).
+Publishing enqueues an in-app notification for citizens of that upazila and, where opted-in, a **Web
+Push** (§1.1(4)).
+
+**Citizen side:** a **নোটিশ / তথ্য** feed (list → detail) in the citizen area, plus the app-bar bell.
+Two distinct notification streams for a citizen: (a) **personal** — status changes on *their* complaint/
+appointment/certificate; (b) **broadcast** — UNO notices for their upazila. Both are read in-app; both
+may be pushed.
+
+**Acceptance:** UNO can publish/expire a notice; the citizen feed lists active notices newest-first,
+detail opens, unread badge counts work; scoped to the citizen's upazila; Bangla; both themes.
+
 ---
 
 ## 9. Cross-Cutting Concerns
@@ -437,10 +472,12 @@ respect read-only + scope; charts render in both themes; all labels in Bangla.
   reset. Officer accounts are provisioned via the officer-management area (§8.6).
 - **Profile management:** profile page with **avatar/profile-image upload**, **password change**,
   name, **designation**, contact. (Top-bar avatar shows name + role.)
-- **Notification system — in-app only:** the **only** channel is in-app (top-bar bell + sidebar
+- **Notification system — in-app first, Web Push optional:** the canonical channel is in-app (bell +
   "N new" badges), per §1.1(4). It surfaces **new and pending important items** per role — e.g. new
   mother/delivery/approval, new appointment, new/assigned complaint, findings submitted, certificate
-  ready. **No SMS/email/push** for status updates; citizens rely on the bell + logging in to track.
+  ready, and **UNO notices** for citizens (§8.8). For the **installed PWA**, an **opt-in Web Push**
+  channel may mirror those same notifications to the device when the app is closed (best-effort;
+  in-app stays the source of truth). **No SMS/email** for status updates; SMS is OTP-only (§1.1(3)).
 - **Internationalization:** **Bangla-only UI** (no language toggle, §1.1(5)) with Bangla numerals;
   English is captured only in the specific data fields that ask for it (names). Still centralize
   strings so copy is maintainable.
@@ -549,18 +586,24 @@ Not mandated, but strongly advised:
    sessions, officer accounts, profile management.
 3. **Dashboard shell:** per-role dashboards; SEAL all-upazila aggregate + upazila switcher; DC
    read-only district switcher.
-4. **Pregnancy module + BDRIS:** list/add(stepper)/detail, **FWA PWA** field capture (offline queue +
-   sync + GPS/camera), delivery confirm, Sochib approve → **BDRIS birth registration** (real adapter,
+3.5. **Mobile/PWA foundation (client shell for all roles):** app-wide routing + role-based route
+   guards; **responsive shell** (desktop sidebar → mobile drawer + bottom nav); citizen **mobile-first
+   area** scaffold; **offline outbox** infrastructure (IndexedDB queue + client UUIDs + online/offline
+   detection + background-sync flush); **A2HS install prompt** + offline banner. This is the substrate
+   the module screens (M4–M8) render into for both desktop and mobile.
+4. **Pregnancy module + BDRIS:** list/add(stepper)/detail, **FWA offline field capture** (uses the M3.5
+   outbox + GPS/camera), delivery confirm, Sochib approve → **BDRIS birth registration** (real adapter,
    mockable) → certificate; then the Birth Registration module.
 5. **Complaints:** list lifecycle tabs, detail timeline, investigator assignment + investigator
-   dashboards + findings, status/resolve.
-6. **Appointments:** list + detail + approve/reject/reschedule.
-7. **Public site:** landing page (features + sliders + CTAs), citizen register/login (OTP),
-   **account-required** appointment/complaint placing + tracking, public info.
-8. **Image sliders & general info** management.
+   dashboards + findings, status/resolve. **Citizen mobile:** file + track complaints.
+6. **Appointments:** list + detail + approve/reject/reschedule. **Citizen mobile:** book + track.
+7. **Public site & citizen area:** landing page (features + sliders + CTAs), citizen register/login
+   (OTP), **account-required** appointment/complaint placing + tracking, public info, and the
+   **UNO notices/updates feed** (§8.8).
+8. **Image sliders & general info** management; **UNO notice authoring** (§8.8).
 9. **Reporting & analytics** (per-module exports + DC/SEAL rollups, §8.7).
-10. **In-app notifications, audit logging, bug/error mechanism, polish**, and full light/dark +
-    Bangla QA.
+10. **Notifications (in-app + opt-in Web Push), audit logging, bug/error mechanism, polish**, and full
+    light/dark + Bangla QA.
 
 Verify each milestone against the relevant `concept_ui/` frames before proceeding.
 
@@ -578,10 +621,12 @@ Verify each milestone against the relevant `concept_ui/` frames before proceedin
       investigator findings.
 - [ ] **Public site** (landing, register/OTP, appointment, complaint, tracking) works per subdomain,
       with **filing gated behind a citizen account** (no anonymous submissions).
-- [ ] **FWA field client is an installable PWA** that captures data offline and background-syncs.
+- [ ] **One installable PWA serves all roles** on mobile + desktop; the **FWA capture path** works
+      offline (IndexedDB queue + background-sync); **citizens** can install it, submit, and track.
 - [ ] **Reporting & analytics**: per-module PDF/Excel exports work; DC/SEAL rollups respect scope +
       read-only; charts render in both themes.
-- [ ] **Notifications are in-app only** (bell + "N new"); SMS is used **only** for login OTP.
+- [ ] **Notifications are in-app** (bell + "N new"); **Web Push is optional/opt-in** for the installed
+      PWA and mirrors in-app only; **SMS is used only for login OTP**. UNO notices reach citizens (§8.8).
 - [ ] Profile management (image upload, password change, designation), audit logging, and error/bug
       logging are in place.
 - [ ] Integrations (BDRIS real+mockable, SMS-OTP-only, maps/GPS, file/PDF storage, certificate PDF)
