@@ -18,6 +18,7 @@ import { bn } from '../../utils/bnNum';
 import DetailRow from '../../components/DetailRow';
 import SummaryPanel from '../../components/SummaryPanel';
 import AppDialog from '../../components/AppDialog';
+import { ApiError } from '../../api/client';
 import { DateField, RadioGroupField, SelectField, FormField } from '../../components/form/FormFields';
 import { getPregnancy, updateDeliveryStatus, type Pregnancy } from '../../api/pregnancy';
 import { approvePregnancy } from '../../api/birthReg';
@@ -202,11 +203,13 @@ function ConfirmDeliveryDialog({
   id: number;
 }) {
   const [f, setF] = useState<Record<string, string>>({});
+  const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErr(null);
     setBusy(true);
     try {
       await updateDeliveryStatus(id, {
@@ -221,6 +224,10 @@ function ConfirmDeliveryDialog({
         newborn_count: 1,
       });
       onDone();
+    } catch (e) {
+      // A rejected submission used to reject into nothing: the dialog stayed open, unchanged and
+      // unexplained, which reads as a button that does not work.
+      setErr(e instanceof ApiError ? (Object.values(e.errors ?? {})[0]?.[0] ?? e.message) : S.auth.genericError);
     } finally {
       setBusy(false);
     }
@@ -228,6 +235,7 @@ function ConfirmDeliveryDialog({
 
   return (
     <AppDialog open={open} title={S.pregnancy.confirmDelivery} onClose={onClose} onSubmit={submit} submitLabel={S.common.save} submitting={busy}>
+      {err && <Alert severity="error">{err}</Alert>}
       <DateField label={S.pregnancy.fActualDate} value={f.actual_delivery_date ?? ''} onChange={set('actual_delivery_date')} />
       <SelectField
         label={S.pregnancy.fDeliveryType}
@@ -262,10 +270,12 @@ function ApproveDialog({
   const navigate = useNavigate();
   const [child, setChild] = useState('');
   const [father, setFather] = useState('');
+  const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErr(null);
     setBusy(true);
     try {
       await approvePregnancy(pregnancyId, {
@@ -274,6 +284,10 @@ function ApproveDialog({
       });
       onDone();
       navigate('/birth');
+    } catch (e) {
+      // A rejected submission used to reject into nothing: the dialog stayed open, unchanged and
+      // unexplained, which reads as a button that does not work.
+      setErr(e instanceof ApiError ? (Object.values(e.errors ?? {})[0]?.[0] ?? e.message) : S.auth.genericError);
     } finally {
       setBusy(false);
     }
@@ -281,6 +295,7 @@ function ApproveDialog({
 
   return (
     <AppDialog open={open} title={S.birthReg.approveTitle} onClose={onClose} onSubmit={submit} submitLabel={S.birthReg.approve} submitColor="error" submitting={busy}>
+      {err && <Alert severity="error">{err}</Alert>}
       <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>{S.birthReg.approveHelp}</Typography>
       <FormField label={S.birthReg.childName} value={child} onChange={setChild} />
       <FormField label={S.birthReg.fatherName} value={father} onChange={setFather} />

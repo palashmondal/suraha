@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, IconButton, Paper, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, IconButton, Paper, Stack, Typography } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
@@ -7,6 +7,7 @@ import { bnStrings as S } from '../../i18n';
 import { bn } from '../../utils/bnNum';
 import SectionTitle from '../../components/SectionTitle';
 import AppDialog from '../../components/AppDialog';
+import { ApiError } from '../../api/client';
 import { FormField } from '../../components/form/FormFields';
 import { useSelectedTenant } from '../../tenant/SelectedTenantContext';
 import { listGeneralInfo, createInfo, deleteInfo, type InfoItem } from '../../api/content';
@@ -75,6 +76,7 @@ export default function GeneralInfoManage() {
 function AddInfoDialog({ which, onClose, onDone }: { which: null | 'phone' | 'about'; onClose: () => void; onDone: () => void }) {
   const [title, setTitle] = useState('');
   const [value, setValue] = useState('');
+  const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => { setTitle(''); setValue(''); }, [which]);
@@ -82,10 +84,15 @@ function AddInfoDialog({ which, onClose, onDone }: { which: null | 'phone' | 'ab
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErr(null);
     setBusy(true);
     try {
       await createInfo({ type: which, title, value });
       onDone();
+    } catch (e) {
+      // A rejected submission used to reject into nothing: the dialog stayed open, unchanged and
+      // unexplained, which reads as a button that does not work.
+      setErr(e instanceof ApiError ? (Object.values(e.errors ?? {})[0]?.[0] ?? e.message) : S.auth.genericError);
     } finally {
       setBusy(false);
     }
@@ -93,6 +100,7 @@ function AddInfoDialog({ which, onClose, onDone }: { which: null | 'phone' | 'ab
 
   return (
     <AppDialog open title={which === 'phone' ? S.generalInfo.addPhone : S.generalInfo.addAbout} onClose={onClose} onSubmit={submit} submitLabel={S.generalInfo.save} submitting={busy} maxWidth="xs">
+      {err && <Alert severity="error">{err}</Alert>}
       <FormField label={S.generalInfo.fLabel} value={title} onChange={setTitle} />
       <FormField
         label={which === 'phone' ? S.generalInfo.fNumber : S.generalInfo.fBody}
