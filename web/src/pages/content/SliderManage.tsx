@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert, Box, IconButton, Paper, Stack, Switch, Typography } from '@mui/material';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import { bnStrings as S } from '../../i18n';
-import { bn } from '../../utils/bnNum';
+import { bnDate } from '../../utils/bnNum';
 import PageHeader from '../../components/PageHeader';
 import StatusPill from '../../components/StatusPill';
 import EmptyState from '../../components/EmptyState';
@@ -51,7 +51,7 @@ export default function SliderManage() {
                   <Typography sx={{ flex: 1, fontWeight: 600 }} noWrap>{s.title}</Typography>
                   <IconButton size="small" color="error" onClick={() => setDel(s)}><DeleteOutlineRoundedIcon fontSize="small" /></IconButton>
                 </Stack>
-                <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>{s.slide_date ? bn(s.slide_date) : ''}</Typography>
+                <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>{s.slide_date ? bnDate(s.slide_date) : ''}</Typography>
                 <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
                   <StatusPill label={s.is_active ? S.sliders.running : S.sliders.stopped} tone={s.is_active ? 'success' : 'pending'} />
                   <Switch size="small" checked={s.is_active} onChange={async () => { await toggleSlider(s.id, !s.is_active); load(); }} />
