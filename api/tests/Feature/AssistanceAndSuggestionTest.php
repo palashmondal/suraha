@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Appointment;
+use App\Models\Assistance;
+use App\Models\Complaint;
+use App\Models\Pregnancy;
+use App\Models\Suggestion;
+use App\Models\Upazila;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -18,6 +24,7 @@ class AssistanceAndSuggestionTest extends TestCase
     use RefreshDatabase;
 
     private const GALACHIPA = 'http://galachipa.lvh.me';
+
     private const DUMURIA = 'http://dumuria.lvh.me';
 
     protected function setUp(): void
@@ -54,7 +61,7 @@ class AssistanceAndSuggestionTest extends TestCase
         $this->assertStringStartsWith('SUR-AID-', $token);
 
         // The UNO may grant a different figure from the one asked for.
-        $id = \App\Models\Assistance::where('tracking_token', $token)->value('id');
+        $id = Assistance::where('tracking_token', $token)->value('id');
 
         Sanctum::actingAs($this->uno());
         $this->postJson(self::GALACHIPA."/api/assistances/{$id}/approve", [
@@ -83,7 +90,7 @@ class AssistanceAndSuggestionTest extends TestCase
             'description' => 'প্রতিদিন শিক্ষার্থীরা নৌকায় পার হয়।',
         ])->assertCreated()->json('data.tracking_token');
 
-        $id = \App\Models\Suggestion::where('tracking_token', $token)->value('id');
+        $id = Suggestion::where('tracking_token', $token)->value('id');
 
         Sanctum::actingAs($this->uno());
         $this->postJson(self::GALACHIPA."/api/suggestions/{$id}/accept", ['decision_note' => 'পরিকল্পনায় নেওয়া হলো।'])
@@ -115,7 +122,7 @@ class AssistanceAndSuggestionTest extends TestCase
             ->json('data.tracking_token');
 
         Sanctum::actingAs($this->uno());
-        $id = \App\Models\Suggestion::where('tracking_token', $token)->value('id');
+        $id = Suggestion::where('tracking_token', $token)->value('id');
 
         $row = $this->getJson(self::GALACHIPA."/api/suggestions/{$id}")->assertOk()->json('data');
 
@@ -128,6 +135,43 @@ class AssistanceAndSuggestionTest extends TestCase
         $this->getJson(self::GALACHIPA.'/api/track/'.$token)
             ->assertOk()
             ->assertJsonPath('applicant', 'গোপনীয়');
+    }
+
+    public function test_assistance_offline_replay_with_same_client_uuid_is_idempotent(): void
+    {
+        Sanctum::actingAs($this->citizen());
+
+        $body = [
+            'applicant_name' => 'রহিমা বেগম',
+            'kind' => 'financial',
+            'title' => 'চিকিৎসার জন্য আর্থিক সহায়তা',
+            'client_uuid' => '33333333-3333-4333-8333-333333333333',
+        ];
+
+        $first = $this->postJson(self::GALACHIPA.'/api/assistances', $body)->assertCreated();
+        $second = $this->postJson(self::GALACHIPA.'/api/assistances', $body)->assertSuccessful();
+
+        $this->assertSame($first->json('data.id'), $second->json('data.id'));
+        $this->assertSame(1, Assistance::where('client_uuid', $body['client_uuid'])->count());
+    }
+
+    public function test_suggestion_offline_replay_with_same_client_uuid_is_idempotent(): void
+    {
+        Sanctum::actingAs($this->citizen());
+
+        $body = [
+            'applicant_name' => 'শাহীন আলম',
+            'kind' => 'bridge',
+            'title' => 'খেয়াঘাটে সেতু প্রয়োজন',
+            'description' => 'প্রতিদিন শিক্ষার্থীরা নৌকায় পার হয়।',
+            'client_uuid' => '44444444-4444-4444-8444-444444444444',
+        ];
+
+        $first = $this->postJson(self::GALACHIPA.'/api/suggestions', $body)->assertCreated();
+        $second = $this->postJson(self::GALACHIPA.'/api/suggestions', $body)->assertSuccessful();
+
+        $this->assertSame($first->json('data.id'), $second->json('data.id'));
+        $this->assertSame(1, Suggestion::where('client_uuid', $body['client_uuid'])->count());
     }
 
     public function test_both_listings_are_tenant_scoped_and_tabbed(): void
@@ -153,8 +197,8 @@ class AssistanceAndSuggestionTest extends TestCase
     public function test_dc_is_read_only_on_both_modules(): void
     {
         // The demo history seeder is skipped under tests, so make the row this needs.
-        $id = \App\Models\Upazila::find('galachipa')
-            ->run(fn () => \App\Models\Assistance::factory()->create()->id);
+        $id = Upazila::find('galachipa')
+            ->run(fn () => Assistance::factory()->create()->id);
 
         Sanctum::actingAs(User::where('username', 'dc_patuakhali')->firstOrFail());
 
@@ -170,14 +214,14 @@ class AssistanceAndSuggestionTest extends TestCase
     {
         Sanctum::actingAs($this->uno());
 
-        \App\Models\Upazila::find('galachipa')->run(function () {
-            \App\Models\Assistance::factory()->create([
+        Upazila::find('galachipa')->run(function () {
+            Assistance::factory()->create([
                 'applicant_name' => 'রহিমা বেগম', 'mobile' => '01777000111', 'title' => 'চিকিৎসা সহায়তা',
             ]);
-            \App\Models\Complaint::factory()->create([
+            Complaint::factory()->create([
                 'complainant_name' => 'করিম মিয়া', 'title' => 'রহিমা সড়কে পানি জমে থাকে',
             ]);
-            \App\Models\Appointment::factory()->create([
+            Appointment::factory()->create([
                 'applicant_name' => 'রহিমা খাতুন', 'mobile' => '01777000222', 'purpose' => 'ভূমি সংক্রান্ত',
             ]);
         });
@@ -215,7 +259,7 @@ class AssistanceAndSuggestionTest extends TestCase
     /** Search must not become a way to put a name to a confidential suggestion. */
     public function test_search_never_reveals_a_confidential_author(): void
     {
-        \App\Models\Upazila::find('galachipa')->run(fn () => \App\Models\Suggestion::factory()->create([
+        Upazila::find('galachipa')->run(fn () => Suggestion::factory()->create([
             'applicant_name' => 'অজ্ঞাতনামা তথ্যদাতা',
             'mobile' => '01999888777',
             'title' => 'গোপন প্রস্তাব',
@@ -241,10 +285,10 @@ class AssistanceAndSuggestionTest extends TestCase
      */
     public function test_search_is_scoped_to_what_the_role_may_open(): void
     {
-        \App\Models\Upazila::find('galachipa')->run(function () {
-            \App\Models\Pregnancy::factory()->create(['mother_name_bn' => 'শাপলা বেগম']);
-            \App\Models\Complaint::factory()->create(['complainant_name' => 'শাপলা বেগম']);
-            \App\Models\Assistance::factory()->create(['applicant_name' => 'শাপলা বেগম']);
+        Upazila::find('galachipa')->run(function () {
+            Pregnancy::factory()->create(['mother_name_bn' => 'শাপলা বেগম']);
+            Complaint::factory()->create(['complainant_name' => 'শাপলা বেগম']);
+            Assistance::factory()->create(['applicant_name' => 'শাপলা বেগম']);
         });
 
         $labels = function (string $username): array {

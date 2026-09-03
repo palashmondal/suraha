@@ -52,6 +52,23 @@ class AppointmentTest extends TestCase
         ])->assertCreated()->assertJsonPath('data.status', 'pending');
     }
 
+    public function test_offline_replay_with_same_client_uuid_is_idempotent(): void
+    {
+        Sanctum::actingAs(User::where('role', 'citizen')->firstOrFail());
+
+        $body = [
+            'applicant_name' => 'নাগরিক',
+            'purpose' => 'ভূমি সংক্রান্ত',
+            'client_uuid' => '22222222-2222-4222-8222-222222222222',
+        ];
+
+        $first = $this->postJson(self::GALACHIPA.'/api/appointments', $body)->assertCreated();
+        $second = $this->postJson(self::GALACHIPA.'/api/appointments', $body)->assertSuccessful();
+
+        $this->assertSame($first->json('data.id'), $second->json('data.id'));
+        $this->assertSame(1, Appointment::where('client_uuid', $body['client_uuid'])->count());
+    }
+
     public function test_uno_accepts_with_a_modified_time(): void
     {
         $id = Upazila::find('galachipa')->run(fn () => Appointment::factory()->create()->id);
