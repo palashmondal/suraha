@@ -1,14 +1,14 @@
-import { Preferences } from '@capacitor/preferences';
+import { SecureStorage } from '@aparajita/capacitor-secure-storage';
 import { apiBaseFor, CENTRAL_BASE, getSelectedUpazila } from './tenant';
 
-// NOTE: the token lives in Capacitor Preferences for v1. Harden to a Keystore-backed secure
-// storage plugin before production (see FWA_MOBILE_APP_PLAN §7).
+// The bearer token sits in the Android Keystore (SecureStorage), not Preferences — Preferences is
+// plain SharedPreferences and this token grants access to a whole upazila's records.
 const TOKEN_KEY = 'suraha_token';
 
 export const tokenStore = {
-  get: async () => (await Preferences.get({ key: TOKEN_KEY })).value,
-  set: (t: string) => Preferences.set({ key: TOKEN_KEY, value: t }),
-  clear: () => Preferences.remove({ key: TOKEN_KEY }),
+  get: () => SecureStorage.getItem(TOKEN_KEY),
+  set: (t: string) => SecureStorage.setItem(TOKEN_KEY, t),
+  clear: () => SecureStorage.remove(TOKEN_KEY).then(() => undefined),
 };
 
 export class ApiError extends Error {

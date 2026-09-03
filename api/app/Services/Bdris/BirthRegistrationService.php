@@ -16,31 +16,102 @@ use Illuminate\Support\Facades\Storage;
  */
 class BirthRegistrationService
 {
+    /** Printed on the certificate; editable per record, because a parent may not be Bangladeshi. */
+    private const NATIONALITY = 'বাংলাদেশী';
+
     public function __construct(private BdrisGateway $bdris) {}
 
     /**
-     * Sochib approval of a delivered pregnancy: create (or reuse) the linked birth-registration
-     * record from the already-collected fields, then submit it to BDRIS. Idempotent per pregnancy.
+     * Everything the certificate prints, prefilled from the mother's record — what the সচিব's
+     * form opens with. Nothing here is invented: a field the প্রসূতি record never captured (an
+     * English spelling, or a child's name the FWA could not give on the day) comes back null and
+     * the form shows it blank.
+     *
+     * Also the defaults `approveFromPregnancy` fills, so the form and the saved record cannot
+     * drift apart.
+     *
+     * @return array<string, mixed>
      */
-    public function approveFromPregnancy(Pregnancy $pregnancy, array $overrides = [], ?int $userId = null): BirthRegistration
+    public function draftFor(Pregnancy $pregnancy): array
+    {
+        return [
+            'child_name' => $pregnancy->child_name,
+            'child_name_en' => null,
+            'date_of_birth' => $pregnancy->actual_delivery_date?->toDateString(),
+            'sex' => $pregnancy->baby_sex,
+
+            'mother_name' => $pregnancy->mother_name_bn,
+            'mother_name_en' => $pregnancy->mother_name_en,
+            'mother_nid' => $pregnancy->mother_nid,
+            'mother_birth_reg_no' => $pregnancy->mother_birth_reg_no,
+            'mother_nationality' => self::NATIONALITY,
+
+            // The child's father is the mother's husband — the same mapping §8.1 has always used.
+            'father_name' => $pregnancy->husband_name,
+            'father_name_en' => $pregnancy->husband_name_en,
+            'father_nid' => $pregnancy->father_nid,
+            'father_birth_reg_no' => $pregnancy->father_birth_reg_no,
+            'father_nationality' => self::NATIONALITY,
+
+            'union_id' => $pregnancy->union_id,
+            'ward_no' => $pregnancy->ward_no,
+            'place_of_birth' => $this->placeOfBirth(),
+            'permanent_address' => $this->permanentAddress($pregnancy->address, $pregnancy->union?->name_bn, $pregnancy->ward_no),
+        ];
+    }
+
+    /**
+     * The নবজাতক তালিকা row for a delivered mother, জন্মনিবন্ধন সম্পন্ন হয়নি: written the moment
+     * the FWA confirms the delivery, so the সচিব finds the newborn in their list instead of having
+     * to open the mother's record. While it is still pending it is re-synced from her record on
+     * every call, so a corrected delivery date or baby's sex carries over. Once BDRIS has entered
+     * it, it is returned untouched — a filed certificate is never rewritten.
+     *
+     * @param  array<string, mixed>  $overrides  the সচিব's edits; each key replaces the draft value.
+     */
+    public function pendingFor(Pregnancy $pregnancy, ?int $userId = null, array $overrides = []): BirthRegistration
     {
         $reg = BirthRegistration::firstOrNew(['pregnancy_id' => $pregnancy->id]);
 
-        if (! $reg->exists) {
-            $reg->fill([
-                'child_name' => $overrides['child_name'] ?? null,
-                'mother_name' => $pregnancy->mother_name_bn,
-                'father_name' => $overrides['father_name'] ?? $pregnancy->husband_name,
-                'union_id' => $pregnancy->union_id,
-                'ward_no' => $pregnancy->ward_no,
-                'date_of_birth' => $pregnancy->actual_delivery_date,
-                'sex' => $pregnancy->baby_sex,
-                'created_by' => $userId,
-            ]);
+        if (! $reg->isEntered()) {
+            $reg->fill(array_merge($this->draftFor($pregnancy), $overrides));
+            $reg->created_by ??= $userId;
             $reg->save(); // tenant_id auto-fills via BelongsToTenant
         }
 
-        return $this->submitToBdris($reg);
+        return $reg;
+    }
+
+    /**
+     * Sochib approval of a delivered pregnancy: take the pending record (creating it if the
+     * delivery predates that behaviour), apply their edits, and submit it to BDRIS. Idempotent
+     * per pregnancy — a second approval returns the entered record untouched.
+     *
+     * @param  array<string, mixed>  $overrides  the সচিব's edits; each key replaces the draft value.
+     */
+    public function approveFromPregnancy(Pregnancy $pregnancy, array $overrides = [], ?int $userId = null): BirthRegistration
+    {
+        return $this->submitToBdris($this->pendingFor($pregnancy, $userId, $overrides));
+    }
+
+    /** Upazila, district — the office's own location, which is where a home birth is registered. */
+    private function placeOfBirth(): string
+    {
+        $upazila = Upazila::with('district')->find(tenant()?->getTenantKey());
+
+        return trim(implode(', ', array_filter([$upazila?->name_bn, $upazila?->district?->name_bn])));
+    }
+
+    private function permanentAddress(?string $address, ?string $union, ?int $ward): string
+    {
+        $upazila = Upazila::with('district')->find(tenant()?->getTenantKey());
+
+        return trim(implode(', ', array_filter([
+            $address,
+            $union ? $union.' ইউনিয়ন' : null,
+            $ward ? 'ওয়ার্ড-'.$ward : null,
+            $upazila?->district?->name_bn,
+        ])));
     }
 
     /**
@@ -82,9 +153,9 @@ class BirthRegistrationService
      * scannable QR and barcode, registration/issuance dates either side of the number, and the
      * bilingual identity rows over a watermark.
      *
-     * Bengali labels sit beside their English counterparts as on the official form, but each row
-     * carries ONE value. The record holds only Bengali names — printing a transliteration we do
-     * not have would be inventing what the certificate asserts.
+     * Four columns as on the official form — Bengali label and value, then English label and
+     * value. The English side prints only what the সচিব actually entered on the approval form; a
+     * transliteration we do not hold shows as — rather than being invented.
      */
     private function certificateHtml(BirthRegistration $reg): string
     {
@@ -97,28 +168,29 @@ class BirthRegistrationService
         $dob = $reg->date_of_birth;
         $issued = $reg->bdris_submitted_at ?? $reg->updated_at ?? now();
 
-        $place = trim(implode(', ', array_filter([$upazila?->name_bn, $district])));
-        $address = trim(implode(', ', array_filter([
-            $reg->pregnancy?->address,
-            $union ? $union.' ইউনিয়ন' : null,
-            $reg->ward_no ? 'ওয়ার্ড-'.$reg->ward_no : null,
-            $district,
-        ])));
+        // Records approved before the সচিব's form existed have no stored place/address, so fall
+        // back to deriving them the way the form's draft would have.
+        $place = $reg->place_of_birth ?: $this->placeOfBirth();
+        $address = $reg->permanent_address ?: $this->permanentAddress($reg->pregnancy?->address, $union, $reg->ward_no);
 
         $rows = [
-            ['নাম', 'Name', $reg->child_name ?? '—'],
-            ['মাতা', 'Mother', $reg->mother_name ?? '—'],
-            ['মাতার জাতীয়তা', 'Nationality', 'বাংলাদেশী'],
-            ['পিতা', 'Father', $reg->father_name ?? '—'],
-            ['পিতার জাতীয়তা', 'Nationality', 'বাংলাদেশী'],
-            ['জন্মস্থান', 'Place of Birth', $place ?: '—'],
-            ['স্থায়ী ঠিকানা', 'Permanent Address', $address ?: '—'],
+            ['নাম', $reg->child_name, 'Name', $reg->child_name_en],
+            ['মাতা', $reg->mother_name, 'Mother', $reg->mother_name_en],
+            ['মাতার জাতীয়তা', $reg->mother_nationality, 'Nationality', $reg->mother_nationality],
+            ['পিতা', $reg->father_name, 'Father', $reg->father_name_en],
+            ['পিতার জাতীয়তা', $reg->father_nationality, 'Nationality', $reg->father_nationality],
+            ['জন্মস্থান', $place, 'Place of Birth', $place],
+            ['স্থায়ী ঠিকানা', $address, 'Permanent Address', $address],
         ];
 
         $body = '';
-        foreach ($rows as [$bn, $en, $value]) {
-            $body .= '<tr><td class="lb">'.e($bn).'</td><td class="le">'.e($en).'</td>'
-                .'<td class="v">: '.e((string) $value).'</td></tr>';
+        foreach ($rows as [$bnLabel, $bnValue, $enLabel, $enValue]) {
+            $body .= '<tr>'
+                .'<td class="lb">'.e($bnLabel).'</td>'
+                .'<td class="v">: '.e((string) ($bnValue ?: '—')).'</td>'
+                .'<td class="le">'.e($enLabel).'</td>'
+                .'<td class="v">: '.e((string) ($enValue ?: '—')).'</td>'
+                .'</tr>';
         }
 
         $crest = CertificateAssets::seal('bd-govt-seal.png');
@@ -168,7 +240,7 @@ class BirthRegistrationService
           .word{font-size:10.5pt;margin-bottom:6mm}
           table{width:100%;border-collapse:collapse;position:relative;z-index:1}
           td{padding:2.1mm 0;font-size:10.5pt;vertical-align:top}
-          .lb{width:32mm}.le{width:34mm}.v{font-weight:500}
+          .lb{width:26mm}.le{width:30mm;padding-left:6mm}.v{font-weight:500}
           .sign{display:flex;justify-content:space-between;margin-top:24mm;font-size:10pt;text-align:center}
           .sign div{width:70mm}
           .sign b{display:block;font-weight:600;margin-bottom:1mm}

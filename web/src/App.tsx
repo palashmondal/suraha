@@ -120,7 +120,10 @@ export default function App() {
       <Route path="/change-password" element={<RequireAuth><ChangePassword /></RequireAuth>} />
       <Route path="/ui" element={<RequireAuth><Showcase /></RequireAuth>} />
       <Route path="/pregnancy" element={<RequireAuth><PregnancyList /></RequireAuth>} />
-      <Route path="/pregnancy/new" element={<RequireAuth><PregnancyAdd /></RequireAuth>} />
+      {/* Entering a mother is the FWA's job — the সচিব/UNO/DC only read the register (the API
+          gates this too; this keeps the UI from offering a form that would 403 on save). */}
+      <Route path="/pregnancy/new" element={<RequireAuth roles={['fwa', 'seal_admin']}><PregnancyAdd /></RequireAuth>} />
+      <Route path="/pregnancy/:id/edit" element={<RequireAuth roles={['fwa', 'seal_admin']}><PregnancyAdd /></RequireAuth>} />
       <Route path="/pregnancy/:id" element={<RequireAuth><PregnancyDetail /></RequireAuth>} />
       <Route path="/birth" element={<RequireAuth><BirthRegList /></RequireAuth>} />
       <Route path="/complaint" element={<RequireAuth><ComplaintList /></RequireAuth>} />

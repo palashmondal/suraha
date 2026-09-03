@@ -10,9 +10,12 @@ use Database\Factories\AssistanceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Scopes\VisibleTenantScope;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /** মানবিক সহায়তা application. Tenant-scoped. */
+#[ScopedBy(VisibleTenantScope::class)]
 class Assistance extends Model
 {
     /** @use HasFactory<AssistanceFactory> */

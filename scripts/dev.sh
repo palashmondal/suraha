@@ -7,7 +7,8 @@
 # It:
 #   1. ensures suraha.net + every upazila and district subdomain resolve to 127.0.0.1
 #      (adds any missing /etc/hosts entries — needs sudo),
-#   2. applies pending DB migrations (safe/idempotent),
+#   2. applies pending DB migrations (safe/idempotent) — needs Postgres running:
+#      `brew services start postgresql@17`,
 #   3. starts the Laravel API (:8000) and the Vite web app (:5173) in the background,
 #   4. starts the Caddy reverse proxy on :80/:443 (trusted HTTPS via Caddy's internal CA).
 #
@@ -20,7 +21,6 @@ API="$ROOT/api"
 WEB="$ROOT/web"
 LOGDIR="$ROOT/.dev-logs"
 BASE_DOMAIN="suraha.net"
-DB="$API/database/database.sqlite"
 mkdir -p "$LOGDIR"
 
 say() { printf '\033[1;35m▶\033[0m %s\n' "$*"; }
@@ -30,20 +30,13 @@ say "Suraha local dev"
 
 # --- 1. DNS: /etc/hosts must map the central host + each upazila subdomain to 127.0.0.1 -------
 hosts_needed=("$BASE_DOMAIN")
-if [[ -f "$DB" ]] && command -v sqlite3 >/dev/null 2>&1; then
-  # Every Suraha host: one per provisioned upazila (UNO dashboards) plus one per district that
-  # has at least one upazila (the DC dashboards). Hosts files have no wildcards, so each needs
-  # its own line — which is why this list is rebuilt on every run.
-  while IFS= read -r d; do
-    [[ -n "$d" ]] && hosts_needed+=("$d.$BASE_DOMAIN")
-  done < <(sqlite3 "$DB" "
-    select domain from domains
-    union
-    select d.slug from districts d
-      join tenants t on t.district_id = d.id
-     where d.slug is not null;
-  ")
-fi
+# Every Suraha host: one per provisioned upazila (UNO dashboards) plus one per district that has
+# at least one upazila (the DC dashboards). Hosts files have no wildcards, so each needs its own
+# line — which is why this list is rebuilt on every run. Asked of the app rather than the database
+# directly, so it keeps working now that the DB is Postgres.
+while IFS= read -r d; do
+  [[ -n "$d" ]] && hosts_needed+=("$d.$BASE_DOMAIN")
+done < <(cd "$API" && php artisan suraha:hosts 2>/dev/null || true)
 
 missing=()
 for h in "${hosts_needed[@]}"; do

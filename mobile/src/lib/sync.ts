@@ -1,4 +1,4 @@
-import { db } from './db';
+import { db, fromStored } from './db';
 import { api, ApiError } from './api';
 import { isOnline } from './net';
 import { getSelectedUpazila } from './tenant';
@@ -37,11 +37,12 @@ export async function syncNow(): Promise<void> {
     // FIFO — process oldest queued op first so create precedes its later updates.
     const items = await d.outbox.orderBy('id').toArray();
     for (const item of items) {
-      const mother = await d.mothers.get(item.local_id);
-      if (!mother) {
+      const row = await d.mothers.get(item.local_id);
+      if (!row) {
         await d.outbox.delete(item.id!);
         continue;
       }
+      const mother = await fromStored(row);
 
       try {
         await d.mothers.update(mother.local_id, { sync_status: 'syncing' });

@@ -3,7 +3,7 @@ import { bn } from '../utils/bnNum';
 
 // Shared listing footer: numbered page navigation in Bengali digits, centred.
 //
-// Renders nothing while everything fits on one page (10 rows), so short lists end at the last row
+// Renders nothing while everything fits on one page (PAGE_SIZE rows), so short lists end at the last row
 // instead of carrying a control that cannot do anything. Every caller gets that for free rather
 // than guarding at each call site.
 export default function PaginationBar({

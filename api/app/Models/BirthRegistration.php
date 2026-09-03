@@ -9,6 +9,8 @@ use Database\Factories\BirthRegistrationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Scopes\RoleVisibilityScope;
+use App\Models\Scopes\VisibleTenantScope;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /**
@@ -24,6 +26,14 @@ class BirthRegistration extends Model
     protected $attributes = [
         'status' => 'pending_entry',
     ];
+
+    protected static function booted(): void
+    {
+        // সচিব → only their union. No FWA ownership rule: the সচিব files these, and the FWA must
+        // still be able to read the registration number that came back for her own mother.
+        static::addGlobalScope(new VisibleTenantScope);
+        static::addGlobalScope(new RoleVisibilityScope(fwaOwnershipColumn: null));
+    }
 
     protected function casts(): array
     {

@@ -28,8 +28,14 @@ export default function AddMother() {
   const [nameError, setNameError] = useState(false);
 
   useEffect(() => {
-    if (editing) getMother(editing).then((m) => m && setF(m));
-  }, [editing]);
+    if (!editing) return;
+    getMother(editing)
+      .then((m) => {
+        if (m) setF(m);
+        else present({ message: S.detail.notFound, duration: 2500, color: 'danger' });
+      })
+      .catch(() => present({ message: S.detail.notFound, duration: 2500, color: 'danger' }));
+  }, [editing, present]);
 
   const set = <K extends keyof MotherFields>(k: K, v: MotherFields[K]) => setF((s) => ({ ...s, [k]: v }));
   const num = (v: string) => (v === '' ? null : Number(v));
@@ -94,6 +100,28 @@ export default function AddMother() {
             </IonItem>
             <IonItem>
               <IonInput label={S.add.husband} labelPlacement="stacked" value={f.husband_name ?? ''} onIonInput={(e) => set('husband_name', e.detail.value)} />
+            </IonItem>
+            <IonItem>
+              <IonInput label={S.add.husbandEn} labelPlacement="stacked" value={f.husband_name_en ?? ''} onIonInput={(e) => set('husband_name_en', e.detail.value)} />
+            </IonItem>
+            <IonItem>
+              <IonInput type="tel" inputmode="numeric" label={S.add.motherNid} labelPlacement="stacked"
+                placeholder={S.add.nidHint} value={f.mother_nid ?? ''} onIonInput={(e) => set('mother_nid', e.detail.value)} />
+            </IonItem>
+            <IonItem>
+              <IonInput type="tel" inputmode="numeric" label={S.add.motherBrn} labelPlacement="stacked"
+                placeholder={S.add.brnHint} value={f.mother_birth_reg_no ?? ''} onIonInput={(e) => set('mother_birth_reg_no', e.detail.value)} />
+            </IonItem>
+            <IonItem>
+              <IonInput type="tel" inputmode="numeric" label={S.add.fatherNid} labelPlacement="stacked"
+                placeholder={S.add.nidHint} value={f.father_nid ?? ''} onIonInput={(e) => set('father_nid', e.detail.value)} />
+            </IonItem>
+            <IonItem>
+              <IonInput type="tel" inputmode="numeric" label={S.add.fatherBrn} labelPlacement="stacked"
+                placeholder={S.add.brnHint} value={f.father_birth_reg_no ?? ''} onIonInput={(e) => set('father_birth_reg_no', e.detail.value)} />
+            </IonItem>
+            <IonItem lines="none">
+              <IonNote>{S.add.identityHelp}</IonNote>
             </IonItem>
             <IonItem>
               <IonInput label={S.add.registerNo} labelPlacement="stacked" value={f.register_no ?? ''} onIonInput={(e) => set('register_no', e.detail.value)} />

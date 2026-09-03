@@ -34,7 +34,16 @@ export default function TableTabs({
         display: 'flex',
         gap: 3,
         borderBottom: `1px solid ${theme.palette.divider}`,
+        // The tab row scrolls sideways on a narrow screen, never up and down: `overflow-x: auto`
+        // alone computes overflow-y to `auto` as well, so a sub-pixel height difference was enough
+        // to grow a vertical scrollbar beside the tabs.
         overflowX: 'auto',
+        overflowY: 'hidden',
+        // Keeps its full height inside a page that is a flex column, rather than being squeezed.
+        flexShrink: 0,
+        // The sideways scroll works by drag/wheel; the bar itself is noise on a one-line strip.
+        scrollbarWidth: 'none',
+        '&::-webkit-scrollbar': { display: 'none' },
       }}
     >
       {tabs.map((t) => {

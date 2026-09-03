@@ -17,4 +17,18 @@ abstract class Controller
     {
         abort_unless(tenancy()->initialized, 400, 'উপজেলা নির্ধারণ করা যায়নি।');
     }
+
+    /**
+     * Same, but for a **listing**: a cross-tenant role (SEAL globally, a DC across their district)
+     * reading the console's "সকল উপজেলা" view is not missing an upazila — they are asking for all
+     * of the ones they oversee, which is what the dashboards have always given them. Only a
+     * single-upazila role still needs one, because their records mean nothing outside it.
+     *
+     * The filtering itself is VisibleTenantScope's job; this only decides whether the request is
+     * answerable at all.
+     */
+    protected function requireTenantForListing(\App\Models\User $user): void
+    {
+        abort_unless(tenancy()->initialized || $user->role->isCrossTenant(), 400, 'উপজেলা নির্ধারণ করা যায়নি।');
+    }
 }

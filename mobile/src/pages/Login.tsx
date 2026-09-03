@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   IonButton, IonContent, IonHeader, IonInput, IonItem, IonList, IonPage, IonTitle, IonToolbar,
-  IonText, IonNote, IonButtons, IonBackButton,
+  IonText, IonNote,
 } from '@ionic/react';
 import { useAuth } from '../lib/auth';
 import { ApiError } from '../lib/api';

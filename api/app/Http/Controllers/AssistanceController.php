@@ -24,14 +24,14 @@ class AssistanceController extends Controller
     /** List with সকল / অপেক্ষমান / অনুমোদিত / নাকচ tabs, counts, search and a kind filter. */
     public function index(Request $request): JsonResponse
     {
-        $this->requireTenant();
+        $this->requireTenantForListing($request->user());
 
         $base = Assistance::query()
             ->when($request->query('kind'), fn ($b, $k) => $b->where('kind', $k))
             ->when($request->query('q'), fn ($b, $q) => $b->where(fn ($w) => $w
-                ->where('applicant_name', 'like', "%{$q}%")
-                ->orWhere('title', 'like', "%{$q}%")
-                ->orWhere('tracking_token', 'like', "%{$q}%")));
+                ->where('applicant_name', 'ilike', "%{$q}%")
+                ->orWhere('title', 'ilike', "%{$q}%")
+                ->orWhere('tracking_token', 'ilike', "%{$q}%")));
 
         $status = $request->query('status', 'all');
         $statuses = ['pending', 'approved', 'rejected'];

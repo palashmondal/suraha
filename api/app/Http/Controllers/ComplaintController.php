@@ -30,14 +30,14 @@ class ComplaintController extends Controller
     /** List with the lifecycle tabs + counts + search. Scoped to the assignee for investigators. */
     public function index(Request $request): JsonResponse
     {
-        $this->requireTenant();
+        $this->requireTenantForListing($request->user());
         $user = $request->user();
 
         $base = Complaint::query()
             ->when($user->role === Role::INVESTIGATING_OFFICER, fn ($b) => $b->where('investigating_officer_id', $user->id))
             ->when($request->query('q'), fn ($b, $q) => $b->where(fn ($w) => $w
-                ->where('title', 'like', "%{$q}%")
-                ->orWhere('complainant_name', 'like', "%{$q}%")));
+                ->where('title', 'ilike', "%{$q}%")
+                ->orWhere('complainant_name', 'ilike', "%{$q}%")));
 
         $statuses = ['pending', 'assigned', 'completed', 'rejected'];
         $status = $request->query('status', 'all');

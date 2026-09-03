@@ -28,12 +28,12 @@ class AppointmentController extends Controller
     /** List with সকল / অপেক্ষমান / অনুমোদিত / নাকচ tabs, counts, search. */
     public function index(Request $request): JsonResponse
     {
-        $this->requireTenant();
+        $this->requireTenantForListing($request->user());
 
         $base = Appointment::query()
             ->when($request->query('q'), fn ($b, $q) => $b->where(fn ($w) => $w
-                ->where('applicant_name', 'like', "%{$q}%")
-                ->orWhere('purpose', 'like', "%{$q}%")));
+                ->where('applicant_name', 'ilike', "%{$q}%")
+                ->orWhere('purpose', 'ilike', "%{$q}%")));
 
         $status = $request->query('status', 'all');
         $statuses = ['pending', 'approved', 'rejected'];

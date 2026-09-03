@@ -10,9 +10,12 @@ use Database\Factories\SuggestionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Scopes\VisibleTenantScope;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /** নাগরিক পরামর্শ. Tenant-scoped. */
+#[ScopedBy(VisibleTenantScope::class)]
 class Suggestion extends Model
 {
     /** @use HasFactory<SuggestionFactory> */

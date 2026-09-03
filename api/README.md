@@ -7,15 +7,22 @@ endpoints. See [`../SURAHA_BUILD_PROMPT.md`](../SURAHA_BUILD_PROMPT.md) for the 
 ## Commands
 
 ```bash
+# PostgreSQL 17 (dev and production run the same engine)
+brew install postgresql@17 && brew services start postgresql@17
+psql -d postgres -c "create role suraha login password 'secret' createdb"
+createdb -O suraha suraha && createdb -O suraha suraha_test
+
 composer install
 cp .env.example .env && php artisan key:generate
 php artisan migrate:fresh --seed      # Galachipa + Dumuria, officers, DC, SEAL, citizen, demo data
 php artisan serve --host=0.0.0.0 --port=8000
-php artisan test                      # 123 feature tests
+php artisan test                      # 129 feature tests, against suraha_test
 ```
 
-Dev defaults to SQLite (`database/database.sqlite`); production uses PostgreSQL via
-[`infra/`](../infra). Seed logins (password `password`): `admin` (SEAL), `uno_galachipa`,
+**PostgreSQL everywhere** — dev, tests ([`phpunit.xml`](phpunit.xml)) and production
+([`infra/`](../infra)) all run Postgres, so nothing differs between them at deploy time. The
+searches use `ILIKE` rather than `LIKE`, because Postgres `LIKE` is case-sensitive and an English
+name typed in the wrong case would otherwise return nothing. Seed logins (password `password`): `admin` (SEAL), `uno_galachipa`,
 `fwa_galachipa`, `tdonto_galachipa`, `dc_patuakhali`, `dc_khulna`. Citizens log in with mobile + OTP
 (the dev SMS gateway returns the code in the response).
 

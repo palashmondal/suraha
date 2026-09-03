@@ -61,7 +61,7 @@ export default function SuggestionList() {
   ];
 
   return (
-    <Box>
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <PageHeader title={S.suggestion.listTitle} />
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>

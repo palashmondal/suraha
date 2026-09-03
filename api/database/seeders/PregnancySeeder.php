@@ -10,8 +10,10 @@ use Illuminate\Database\Seeder;
 
 /**
  * Sample প্রসূতি data for development so the module has real rows to render. Seeds Galachipa with
- * a mix of not-delivered and delivered mothers, spread across the upazila's unions/wards and
- * attributed to the seeded FWA. Runs within the tenant context so tenant_id auto-fills.
+ * a mix of not-delivered and delivered mothers, attributed to the seeded FWA and filed under that
+ * FWA's own union — a FWA is posted to one union, and RoleVisibilityScope shows a সচিব only their
+ * union's records, so records scattered across twelve unions left both roles staring at an almost
+ * empty register. Wards still vary. Runs within the tenant context so tenant_id auto-fills.
  */
 class PregnancySeeder extends Seeder
 {
@@ -26,10 +28,9 @@ class PregnancySeeder extends Seeder
 
         tenancy()->initialize($galachipa);
 
-        $unionIds = Union::pluck('id')->all();
-        // state() closure runs per-record, so each mother lands in a random union.
+        $unionId = $fwa?->union_id ?? Union::value('id');
         $attrs = fn () => [
-            'union_id' => $unionIds ? $unionIds[array_rand($unionIds)] : null,
+            'union_id' => $unionId,
             'created_by' => $fwa?->id,
         ];
 

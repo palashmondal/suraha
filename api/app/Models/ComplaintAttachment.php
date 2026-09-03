@@ -6,12 +6,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Scopes\VisibleTenantScope;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /**
  * A file attached to an investigation report event — the report PDF (kind=pdf) or a photo
  * (kind=image). Stored on the public disk; `url` mirrors the avatar pattern in UserResource.
  */
+#[ScopedBy(VisibleTenantScope::class)]
 class ComplaintAttachment extends Model
 {
     use BelongsToTenant;

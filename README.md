@@ -114,10 +114,15 @@ npm run dev      # http://localhost:5173  (try the light/dark toggle in the top 
 
 ### 2. API
 
-Defaults to SQLite for dev (no PostgreSQL needed to try it):
+PostgreSQL 17, the same engine the deploy target runs — dev, tests and production no longer differ:
 
 ```bash
+brew install postgresql@17 && brew services start postgresql@17
+psql -d postgres -c "create role suraha login password 'secret' createdb"
+createdb -O suraha suraha && createdb -O suraha suraha_test
+
 cd api
+cp .env.example .env
 composer install
 php artisan key:generate
 php artisan migrate:fresh --seed   # Galachipa + Dumuria (Barishal), officers, DC, SEAL, citizen, demo data

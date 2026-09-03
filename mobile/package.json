@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test.e2e": "cypress run",
+    "android": "npm run build && cap sync android",
     "test.unit": "vitest",
     "lint": "eslint"
   },
   "dependencies": {
+    "@aparajita/capacitor-secure-storage": "^8.0.0",
+    "@capacitor/android": "^8.5.0",
     "@capacitor/app": "8.1.1",
     "@capacitor/core": "8.5.0",
     "@capacitor/geolocation": "^8.2.1",
@@ -43,7 +45,6 @@
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-legacy": "^5.0.0",
     "@vitejs/plugin-react": "^4.0.1",
-    "cypress": "^13.5.0",
     "eslint": "^9.20.1",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^5.1.0",
@@ -54,7 +55,7 @@
     "typescript": "~5.9.0",
     "typescript-eslint": "^8.24.0",
     "vite": "^5.0.0",
-    "vitest": "^0.34.6"
+    "vitest": "^2.1.9"
   },
   "description": "An Ionic project"
 }

@@ -2,6 +2,11 @@
 
 **Goal:** an offline-first Android app for the FWA (পরিবার কল্যাণ সহকারী) to register and manage প্রসূতি (expecting mother) records in the field, syncing to the existing Suraha backend.
 
+**Scope note (2026-09-04):** the app ships as **one app for every role** — UNO, DC, সচিব, FWA,
+নাগরিক — role-gated after login. Everything below describes the FWA workflow, which is what v1
+ships; the other roles' screens are tracked in [`TODO.md`](TODO.md) §3.6. The app identity is
+therefore role-neutral: **"সুরাহা" / `net.suraha.app`**.
+
 **Locked decisions:** Ionic **React + Capacitor** (Android first; Flutter port later) · **offline-first** (enter with no signal, auto-sync) · **full field workflow** (login → my mothers → add/edit → delivery → sync) · **distribution = signed APK** side-loaded for the pilot (Play Store later) · **v1 captures GPS only; photo capture is a later phase**.
 
 ---
@@ -162,7 +167,9 @@ Everything else — auth, tenancy, the pregnancy schema and endpoints — is **a
 ## 11. Confirmed & remaining questions
 **Confirmed:** distribution = **signed APK** side-loaded for the pilot (a self-signed release keystore; no Play account needed) · **GPS only in v1**, photo capture deferred to a later phase.
 
-**Still to confirm before Phase 0:**
-1. **One upazila per device, or can an FWA switch?** (Plan supports switching via Settings; confirm it's needed.)
-2. **Min Android version** to support (affects plugin choices; default target: Android 9+).
-3. **App identity:** "Suraha FWA" branding, or a distinct field-app name/icon?
+**Answered 2026-09-04:**
+1. **Switching stays** — Settings → উপজেলা পরিবর্তন logs out, clears the pinned host, and returns to
+   the picker. Local records are namespaced per upazila so switching cannot mix them.
+2. **minSdk 28** (Android 9+), `targetSdk 36`. Set in `mobile/android/variables.gradle`.
+3. **Identity: "সুরাহা" / `net.suraha.app`** — role-neutral, because this is the one app for all
+   roles. The launcher icon in the repo is a placeholder mark on Suraha purple.

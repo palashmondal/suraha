@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
   IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel,
-  IonList, IonListHeader, IonNote, IonPage, IonTitle, IonToolbar, useIonRouter, IonAlert,
+  IonList, IonListHeader, IonNote, IonPage, IonSpinner, IonTitle, IonToolbar, useIonRouter,
+  IonAlert, useIonToast,
 } from '@ionic/react';
 import { createOutline, checkmarkDoneOutline, cloudUploadOutline, warningOutline, cloudDoneOutline } from 'ionicons/icons';
 import { useParams } from 'react-router-dom';
@@ -27,12 +28,33 @@ export default function MotherDetail() {
   const router = useIonRouter();
   const { id } = useParams<{ id: string }>();
   const [m, setM] = useState<MotherRecord | null>(null);
+  const [loading, setLoading] = useState(true);
   const [askDelivery, setAskDelivery] = useState(false);
+  const [present] = useIonToast();
 
-  const load = () => getMother(id).then((x) => setM(x ?? null));
+  const load = () =>
+    getMother(id)
+      .then((x) => setM(x ?? null))
+      .catch(() => setM(null))
+      .finally(() => setLoading(false));
   useEffect(() => { load(); }, [id]);
 
-  if (!m) return null;
+  // A missing record used to render a blank white page forever — say so and offer a way back.
+  if (!m) {
+    return (
+      <IonPage>
+        <IonHeader>
+          <IonToolbar color="primary">
+            <IonButtons slot="start"><IonBackButton defaultHref="/mothers" /></IonButtons>
+            <IonTitle>{S.detail.title}</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent className="ion-padding ion-text-center">
+          {loading ? <IonSpinner aria-label={S.common.loading} /> : <IonNote color="danger">{S.detail.notFound}</IonNote>}
+        </IonContent>
+      </IonPage>
+    );
+  }
 
   const syncInfo =
     m.sync_status === 'synced' ? { icon: cloudDoneOutline, color: 'success', text: S.sync.synced }
@@ -46,7 +68,7 @@ export default function MotherDetail() {
           <IonButtons slot="start"><IonBackButton defaultHref="/mothers" /></IonButtons>
           <IonTitle>{S.detail.title}</IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={() => router.push(`/mother/${m.local_id}/edit`)}>
+            <IonButton onClick={() => router.push(`/mother/${m.local_id}/edit`)} aria-label={S.detail.edit}>
               <IonIcon slot="icon-only" icon={createOutline} />
             </IonButton>
           </IonButtons>
@@ -65,6 +87,11 @@ export default function MotherDetail() {
           <IonListHeader>{S.detail.general}</IonListHeader>
           <Row label={S.add.motherNameEn} value={m.mother_name_en} />
           <Row label={S.add.husband} value={m.husband_name} />
+          <Row label={S.add.husbandEn} value={m.husband_name_en} />
+          <Row label={S.add.motherNid} value={m.mother_nid} />
+          <Row label={S.add.motherBrn} value={m.mother_birth_reg_no} />
+          <Row label={S.add.fatherNid} value={m.father_nid} />
+          <Row label={S.add.fatherBrn} value={m.father_birth_reg_no} />
           <Row label={S.add.registerNo} value={m.register_no} />
           <Row label={S.add.whichChild} value={m.which_child} />
           <Row label={S.add.currentAge} value={m.current_age} />
@@ -101,9 +128,13 @@ export default function MotherDetail() {
             {
               text: S.common.ok,
               handler: async (data) => {
-                await markDelivery(m.local_id, data.date);
-                if (await isOnline()) syncNow();
-                load();
+                try {
+                  await markDelivery(m.local_id, data.date);
+                  if (await isOnline()) syncNow();
+                  load();
+                } catch {
+                  present({ message: S.detail.deliveryError, duration: 2500, color: 'danger' });
+                }
               },
             },
           ]}

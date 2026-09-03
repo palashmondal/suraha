@@ -6,12 +6,15 @@ namespace App\Models;
 
 use App\Enums\Role;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Scopes\VisibleTenantScope;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /**
  * In-app notification (§9). Tenant-scoped; targeted at a single role. Created via push() from the
  * module controllers when a citizen/FWA files something the office needs to see.
  */
+#[ScopedBy(VisibleTenantScope::class)]
 class Notification extends Model
 {
     use BelongsToTenant;

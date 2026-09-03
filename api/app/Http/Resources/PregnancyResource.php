@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
+use App\Support\VulnerabilityIndex;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
@@ -24,6 +25,11 @@ class PregnancyResource extends JsonResource
             'mother_name_bn' => $this->mother_name_bn,
             'mother_name_en' => $this->mother_name_en,
             'husband_name' => $this->husband_name,
+            'husband_name_en' => $this->husband_name_en,
+            'mother_nid' => $this->mother_nid,
+            'mother_birth_reg_no' => $this->mother_birth_reg_no,
+            'father_nid' => $this->father_nid,
+            'father_birth_reg_no' => $this->father_birth_reg_no,
             'register_no' => $this->register_no,
             'which_child' => $this->which_child,
             'height_inch' => $this->height_inch,
@@ -36,6 +42,10 @@ class PregnancyResource extends JsonResource
             // Address & contact
             'union_id' => $this->union_id,
             'union' => $this->whenLoaded('union', fn () => $this->union?->name_bn),
+            // Where this mother is registered. The listing shows জেলা/উপজেলা on every row, not
+            // just in the SEAL/DC aggregate view where rows come from several upazilas.
+            'upazila' => $this->whenLoaded('upazila', fn () => $this->upazila?->name_bn),
+            'district' => $this->whenLoaded('upazila', fn () => $this->upazila?->district?->name_bn),
             'ward_no' => $this->ward_no,
             'address' => $this->address,
             'latitude' => $this->latitude,
@@ -67,10 +77,22 @@ class PregnancyResource extends JsonResource
             'delivery_place' => $this->delivery_place,
             'newborn_count' => $this->newborn_count,
             'newborn_alive' => $this->newborn_alive,
+            'child_name' => $this->child_name,
             'baby_sex' => $this->baby_sex,
             'birth_weight_kg' => $this->birth_weight_kg,
             'birth_height_inch' => $this->birth_height_inch,
             'birth_time' => $this->birth_time,
+
+            // জন্ম নিবন্ধন outcome. The সচিব files the registration; the number that comes back
+            // belongs on the mother's record, where the FWA who entered her — and the UNO and DC —
+            // can read it without access to the birth-registration module itself.
+            'birth_registration_id' => $this->whenLoaded('birthRegistration', fn () => $this->birthRegistration?->id),
+            'birth_registration_no' => $this->whenLoaded('birthRegistration', fn () => $this->birthRegistration?->registration_no),
+            'birth_registration_status' => $this->whenLoaded('birthRegistration', fn () => $this->birthRegistration?->status?->value),
+
+            // ঝুঁকি মাত্রা — a screening score computed from the fields above, never stored, so it
+            // can never go stale against the record it describes. See VulnerabilityIndex.
+            'vulnerability' => VulnerabilityIndex::for($this->resource),
 
             'created_at' => $this->created_at?->toDateString(),
         ];

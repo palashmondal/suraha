@@ -109,7 +109,9 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
             Route::middleware(['deny.readonly', 'role:up_sochib,seal_admin'])->group(function () {
                 Route::post('birth-registrations', [BirthRegistrationController::class, 'store']);
                 Route::post('birth-registrations/{birthRegistration}/submit', [BirthRegistrationController::class, 'submit']);
-                // Sochib approval of a delivered pregnancy → BDRIS → certificate.
+                // Sochib approval of a delivered pregnancy → BDRIS → certificate. The draft is the
+                // certificate form's starting values, prefilled from the mother's record.
+                Route::get('pregnancies/{pregnancy}/birth-registration-draft', [BirthRegistrationController::class, 'draftFromPregnancy']);
                 Route::post('pregnancies/{pregnancy}/approve', [BirthRegistrationController::class, 'approveFromPregnancy']);
             });
         });

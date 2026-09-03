@@ -6,6 +6,7 @@ use App\Enums\DeliveryStatus;
 use App\Models\BirthRegistration;
 use App\Models\Pregnancy;
 use App\Models\Union;
+use App\Models\User;
 use App\Models\Upazila;
 use App\Services\Bdris\BirthRegistrationService;
 use Illuminate\Database\Seeder;
@@ -32,8 +33,9 @@ class BirthRegistrationSeeder extends Seeder
             ->take(3)->get()
             ->each(fn (Pregnancy $p) => $service->approveFromPregnancy($p, ['child_name' => 'নবজাতক']));
 
-        // A couple of manual entries still awaiting BDRIS entry.
-        $unionId = Union::value('id');
+        // A couple of manual entries still awaiting BDRIS entry, filed under the সচিব's own union
+        // so they are visible to the role that has to enter them (RoleVisibilityScope).
+        $unionId = User::where('username', 'sochib_galachipa')->value('union_id') ?? Union::value('id');
         BirthRegistration::factory()->count(2)->create(['union_id' => $unionId]);
 
         tenancy()->end();

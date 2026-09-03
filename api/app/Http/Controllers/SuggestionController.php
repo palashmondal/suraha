@@ -26,14 +26,14 @@ class SuggestionController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $this->requireTenant();
+        $this->requireTenantForListing($request->user());
 
         $base = Suggestion::query()
             ->when($request->query('kind'), fn ($b, $k) => $b->where('kind', $k))
             ->when($request->query('q'), fn ($b, $q) => $b->where(fn ($w) => $w
-                ->where('title', 'like', "%{$q}%")
-                ->orWhere('tracking_token', 'like', "%{$q}%")
-                ->orWhere(fn ($n) => $n->where('is_confidential', false)->where('applicant_name', 'like', "%{$q}%"))));
+                ->where('title', 'ilike', "%{$q}%")
+                ->orWhere('tracking_token', 'ilike', "%{$q}%")
+                ->orWhere(fn ($n) => $n->where('is_confidential', false)->where('applicant_name', 'ilike', "%{$q}%"))));
 
         $status = $request->query('status', 'all');
         $statuses = ['pending', 'accepted', 'rejected'];

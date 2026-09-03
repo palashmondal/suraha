@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Enums;
 
 /**
- * Birth-registration state (জন্ম নিবন্ধন, §8.2). A record is created কার্যকর কিন্তু এন্ট্রি হয়নি
+ * Birth-registration state (জন্ম নিবন্ধন, §8.2). A record is created জন্মনিবন্ধন সম্পন্ন হয়নি
  * (PENDING_ENTRY) and becomes এন্ট্রি হয়েছে (ENTERED) once BDRIS returns a registration number.
  */
 enum BirthRegStatus: string

@@ -60,7 +60,7 @@ export default function BirthRegList() {
   ];
 
   return (
-    <Box>
+    <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
       <PageHeader title={S.birthReg.listTitle} onSearch={() => {}} onFilter={() => {}} />
       <Box sx={{ mb: 2 }}>
         <TableTabs tabs={tableTabs} active={status} onChange={setStatus} />

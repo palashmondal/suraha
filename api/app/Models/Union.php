@@ -6,12 +6,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Scopes\VisibleTenantScope;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /**
  * Union / Pourashava (ইউনিয়ন / পৌরসভা) within an upazila. Tenant-scoped: the BelongsToTenant
  * global scope filters by the current upazila and auto-fills tenant_id on create.
  */
+#[ScopedBy(VisibleTenantScope::class)]
 class Union extends Model
 {
     use BelongsToTenant;

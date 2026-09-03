@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { db } from './db';
+import { db, fromStored, toStored } from './db';
 import type { MotherFields, MotherRecord } from '../data/mother';
 import { getSelectedUpazila } from './tenant';
 
@@ -10,7 +10,8 @@ async function slug(): Promise<string> {
 }
 
 export async function listMothers(query?: string): Promise<MotherRecord[]> {
-  const rows = await db(await slug()).mothers.orderBy('updated_at').reverse().toArray();
+  const stored = await db(await slug()).mothers.orderBy('updated_at').reverse().toArray();
+  const rows = await Promise.all(stored.map(fromStored));
   if (!query) return rows;
   const q = query.trim().toLowerCase();
   return rows.filter(
@@ -22,7 +23,8 @@ export async function listMothers(query?: string): Promise<MotherRecord[]> {
 }
 
 export async function getMother(localId: string): Promise<MotherRecord | undefined> {
-  return db(await slug()).mothers.get(localId);
+  const row = await db(await slug()).mothers.get(localId);
+  return row ? fromStored(row) : undefined;
 }
 
 /** Create or update a mother locally and queue it for sync. Never touches the network. */
@@ -39,7 +41,8 @@ export async function saveMother(
 
   if (localId) {
     const existing = await d.mothers.get(localId);
-    record = { ...(existing as MotherRecord), ...fields, sync_status: 'pending', sync_error: null, updated_at: now };
+    if (!existing) throw new Error('রেকর্ডটি পাওয়া যায়নি।');
+    record = { ...(await fromStored(existing)), ...fields, sync_status: 'pending', sync_error: null, updated_at: now };
     op = 'update';
   } else {
     record = {
@@ -54,8 +57,9 @@ export async function saveMother(
     op = 'create';
   }
 
+  const stored = await toStored(record);
   await d.transaction('rw', d.mothers, d.outbox, async () => {
-    await d.mothers.put(record);
+    await d.mothers.put(stored);
     await d.outbox.add({
       local_id: record.local_id,
       op,

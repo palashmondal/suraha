@@ -1,7 +1,8 @@
-// Bangla-only UI, mirroring the web app's copy for the pregnancy (প্রসূতি) module.
+// Bangla-only UI, mirroring the web app's copy. One app for every role — the FWA (প্রসূতি) screens
+// are what v1 ships; other roles' screens land behind the same login.
 export const S = {
-  appName: 'সুরাহা FWA',
-  appTagline: 'পরিবার কল্যাণ সহকারী',
+  appName: 'সুরাহা',
+  appTagline: 'উপজেলা সেবা ব্যবস্থাপনা',
 
   common: {
     next: 'পরবর্তী',
@@ -58,6 +59,11 @@ export const S = {
     add: 'নতুন প্রসূতি',
     empty: 'এখনো কোনো প্রসূতি যুক্ত করা হয়নি।',
     searchPlaceholder: 'নাম বা মোবাইল দিয়ে খুঁজুন',
+    noMatch: 'এই নামে কোনো প্রসূতি পাওয়া যায়নি।',
+    loadError: 'তালিকা খোলা যায়নি। অ্যাপটি বন্ধ করে আবার চালু করুন।',
+    syncNowLabel: 'এখনই পাঠান',
+    settingsLabel: 'সেটিংস',
+    addLabel: 'নতুন প্রসূতি যুক্ত করুন',
     expected: 'সম্ভাব্য ডেলিভারি',
     ward: 'ওয়ার্ড',
   },
@@ -73,7 +79,15 @@ export const S = {
     // fields
     motherNameBn: 'প্রসূতি মায়ের নাম (বাংলা)',
     motherNameEn: 'নাম (ইংরেজি)',
-    husband: 'স্বামীর নাম',
+    husband: 'স্বামীর নাম (সন্তানের পিতা)',
+    husbandEn: 'স্বামীর নাম (ইংরেজি)',
+    motherNid: 'প্রসূতি মায়ের এনআইডি নম্বর',
+    motherBrn: 'প্রসূতি মায়ের জন্ম নিবন্ধন নম্বর',
+    fatherNid: 'স্বামীর এনআইডি নম্বর',
+    fatherBrn: 'স্বামীর জন্ম নিবন্ধন নম্বর',
+    identityHelp: 'জন্ম নিবন্ধনের আবেদনে বাবা-মায়ের এনআইডি বা জন্ম নিবন্ধন নম্বর লাগে।',
+    nidHint: '১০ / ১৩ / ১৭ সংখ্যা',
+    brnHint: '১৭ সংখ্যা',
     registerNo: 'রেজিস্টার নং',
     whichChild: 'কততম সন্তান',
     currentAge: 'বর্তমান বয়স',
@@ -101,6 +115,8 @@ export const S = {
   detail: {
     title: 'প্রসূতি তথ্য',
     edit: 'সম্পাদনা',
+    notFound: 'রেকর্ডটি পাওয়া যায়নি।',
+    deliveryError: 'ডেলিভারি নিশ্চিত করা যায়নি।',
     markDelivery: 'ডেলিভারি নিশ্চিত করুন',
     general: 'সাধারণ তথ্য',
     address: 'ঠিকানা',

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 /** Rows per page across every listing. Lists at or under this never show a pager. */
-export const PAGE_SIZE = 10;
+export const PAGE_SIZE = 11;
 
 // Client-side pagination shared by every listing (tables + card grids). Resets to page 1 whenever
 // the data set changes (e.g. a tab switch).

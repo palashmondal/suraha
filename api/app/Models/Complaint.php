@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Scopes\VisibleTenantScope;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /**
@@ -17,6 +19,7 @@ use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
  * order, re-investigation) lives in complaint_events and feeds the detail timeline; the complaint
  * row keeps the current status + officer + due/hearing dates for listing and the UNO schedule.
  */
+#[ScopedBy(VisibleTenantScope::class)]
 class Complaint extends Model
 {
     /** @use HasFactory<ComplaintFactory> */

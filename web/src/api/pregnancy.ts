@@ -1,5 +1,16 @@
 import { api } from './client';
 
+/** ঝুঁকি মাত্রা — see App\Support\VulnerabilityIndex for what the number means and where it comes from. */
+export interface Vulnerability {
+  /** 0–100, or null when too little is known to score the record honestly. */
+  score: number | null;
+  points: number;
+  band: 'low' | 'moderate' | 'high' | 'unknown';
+  label_bn: string;
+  known_inputs: number;
+  factors: { label: string; points: number }[];
+}
+
 // Mirrors PregnancyResource on the API.
 export interface Pregnancy {
   id: number;
@@ -10,8 +21,14 @@ export interface Pregnancy {
   mother_name_bn: string;
   mother_name_en: string | null;
   husband_name: string | null;
+  husband_name_en: string | null;
+  mother_nid: string | null;
+  mother_birth_reg_no: string | null;
+  father_nid: string | null;
+  father_birth_reg_no: string | null;
   register_no: string | null;
   which_child: number | null;
+  child_name?: string | null;
   height_inch: number | null;
   weight_kg: number | null;
   current_age: number | null;
@@ -21,6 +38,8 @@ export interface Pregnancy {
 
   union_id: number | null;
   union: string | null;
+  upazila?: string | null;
+  district?: string | null;
   ward_no: number | null;
   address: string | null;
   latitude: number | null;
@@ -36,6 +55,10 @@ export interface Pregnancy {
   prior_normal_deliveries: number | null;
   prior_cesarean_deliveries: number | null;
   prior_delivery_place: string | null;
+
+  birth_registration_id?: number | null;
+  birth_registration_no?: string | null;
+  birth_registration_status?: 'pending_entry' | 'entered' | null;
 
   expected_delivery_date: string | null;
   delivery_place_plan: string | null;
@@ -54,6 +77,7 @@ export interface Pregnancy {
   birth_height_inch: number | null;
   birth_time: string | null;
 
+  vulnerability: Vulnerability;
   created_at: string | null;
 }
 
@@ -88,6 +112,8 @@ export function createPregnancy(payload: Record<string, unknown>) {
 
 export interface DeliveryPayload {
   delivery_status: 'not_delivered' | 'delivered';
+  /** Optional — often no name has been chosen the day she delivers. */
+  child_name?: string;
   actual_delivery_date?: string;
   mother_alive?: boolean;
   delivery_type?: string;

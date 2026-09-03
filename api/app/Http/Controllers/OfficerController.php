@@ -69,10 +69,10 @@ class OfficerController extends Controller
             ->when($request->query('role'), fn ($q, $role) => $q->where('role', $role))
             ->when($request->query('q'), function ($q, $term) {
                 $like = '%'.$term.'%';
-                $q->where(fn ($w) => $w->where('name', 'like', $like)
-                    ->orWhere('name_en', 'like', $like)
-                    ->orWhere('username', 'like', $like)
-                    ->orWhere('phone', 'like', $like));
+                $q->where(fn ($w) => $w->where('name', 'ilike', $like)
+                    ->orWhere('name_en', 'ilike', $like)
+                    ->orWhere('username', 'ilike', $like)
+                    ->orWhere('phone', 'ilike', $like));
             })
             ->with('upazila')
             ->orderBy('role')

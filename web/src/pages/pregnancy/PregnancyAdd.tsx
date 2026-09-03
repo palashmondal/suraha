@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Box, Button, IconButton, Paper, Typography } from '@mui/material';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import MyLocationRoundedIcon from '@mui/icons-material/MyLocationRounded';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
 import VerticalStepper from '../../components/VerticalStepper';
 import FieldCard from '../../components/form/FieldCard';
@@ -10,6 +10,7 @@ import { FormField, SelectField, DateField, RadioGroupField, type Option } from 
 import { useUnionOptions } from '../../tenant/useUnionOptions';
 import { ApiError } from '../../api/client';
 import { useSync } from '../../offline/SyncProvider';
+import { getPregnancy, type Pregnancy } from '../../api/pregnancy';
 
 type Form = Record<string, string>;
 
@@ -26,17 +27,39 @@ const STEPS = [
   { key: 'delivery', label: S.pregnancy.stepDelivery },
 ];
 
+const TEXTS = ['mother_name_bn', 'mother_name_en', 'husband_name', 'husband_name_en', 'mother_nid', 'mother_birth_reg_no', 'father_nid', 'father_birth_reg_no', 'register_no', 'blood_group', 'chronic_diseases', 'address', 'mobile', 'last_tt_date', 'last_menstruation_date', 'prior_delivery_place', 'expected_delivery_date', 'delivery_place_plan'];
 const NUMS = ['which_child', 'height_inch', 'weight_kg', 'current_age', 'marriage_age', 'ward_no', 'union_id', 'tt_vaccine_count', 'gravida_count', 'prior_miscarriages', 'last_child_age', 'prior_normal_deliveries', 'prior_cesarean_deliveries', 'latitude', 'longitude'];
 const BOOLS = ['emergency_transport', 'enough_money', 'blood_donor_arranged'];
+/** The fields this form owns — everything else on the record (status, delivery, risk) is edited elsewhere. */
+const EDITABLE = [...TEXTS, ...NUMS, ...BOOLS];
 
+/** Existing record → form strings, for the edit route. */
+const toForm = (p: Pregnancy): Form => {
+  const f: Form = {};
+  for (const k of EDITABLE) {
+    const v = (p as unknown as Record<string, unknown>)[k];
+    if (v == null) continue;
+    if (typeof v === 'boolean') f[k] = v ? '1' : '0';
+    else if (Array.isArray(v)) f[k] = v.join(', ');
+    else f[k] = String(v);
+  }
+  return f;
+};
+
+/** Doubles as the edit form: with an :id in the route it loads the record and PUTs it back. */
 export default function PregnancyAdd() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>({});
   const unions = useUnionOptions();
   const { submit: submitOrQueue } = useSync();
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (id) getPregnancy(id).then((r) => setForm(toForm(r.data))).catch(() => setErr(S.auth.genericError));
+  }, [id]);
 
   const set = (k: string) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -49,7 +72,12 @@ export default function PregnancyAdd() {
   const toPayload = (): Record<string, unknown> => {
     const p: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(form)) {
-      if (v === '' || v == null) continue;
+      if (!EDITABLE.includes(k)) continue;
+      // On edit a blank box means "clear it" — dropping the key would leave the old value standing.
+      if (v === '' || v == null) {
+        if (id) p[k] = null;
+        continue;
+      }
       if (NUMS.includes(k)) p[k] = Number(v);
       else if (BOOLS.includes(k)) p[k] = v === '1';
       else if (k === 'chronic_diseases') p[k] = v.split(',').map((s) => s.trim()).filter(Boolean);
@@ -67,13 +95,16 @@ export default function PregnancyAdd() {
       // background-syncs it on reconnect. The offline/pending banner in the app shell shows status.
       const payload = toPayload();
       const res = await submitOrQueue({
-        kind: 'pregnancy.create',
-        endpoint: '/pregnancies',
-        method: 'POST',
+        kind: id ? 'pregnancy.update' : 'pregnancy.create',
+        endpoint: id ? `/pregnancies/${id}` : '/pregnancies',
+        method: id ? 'PUT' : 'POST',
         label: (payload.mother_name_bn as string) ?? undefined,
         payload,
       });
-      navigate('/pregnancy', res.queued ? { state: { queued: true } } : undefined);
+      // A queued edit has not landed yet, so go to the list (with its pending banner) rather than
+      // to a detail page still showing the old values.
+      if (res.queued) navigate('/pregnancy', { state: { queued: true } });
+      else navigate(id ? `/pregnancy/${id}` : '/pregnancy');
     } catch (e) {
       if (e instanceof ApiError) setErr(Object.values(e.errors ?? {})[0]?.[0] ?? e.message);
       else setErr(S.auth.genericError);
@@ -88,10 +119,12 @@ export default function PregnancyAdd() {
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 300px' }, gap: 3, alignItems: 'start' }}>
       <Box sx={{ display: 'grid', gap: 2 }}>
         <Paper elevation={0} sx={{ borderRadius: '16px', p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton onClick={() => navigate('/pregnancy')}>
+          <IconButton onClick={() => navigate(id ? `/pregnancy/${id}` : '/pregnancy')}>
             <ArrowBackRoundedIcon />
           </IconButton>
-          <Typography sx={{ fontSize: 19, fontWeight: 700 }}>{S.pregnancy.addTitle}</Typography>
+          <Typography sx={{ fontSize: 19, fontWeight: 700 }}>
+            {id ? S.pregnancy.editTitle : S.pregnancy.addTitle}
+          </Typography>
         </Paper>
 
         {err && <Alert severity="error">{err}</Alert>}
@@ -101,6 +134,11 @@ export default function PregnancyAdd() {
             <FormField label={S.pregnancy.fMotherBn} value={form.mother_name_bn ?? ''} onChange={set('mother_name_bn')} placeholder="নাম লিখুন" />
             <FormField label={S.pregnancy.fMotherEn} value={form.mother_name_en ?? ''} onChange={set('mother_name_en')} placeholder="Mother's name" />
             <FormField label={S.pregnancy.fHusband} value={form.husband_name ?? ''} onChange={set('husband_name')} />
+            <FormField label={S.pregnancy.fHusbandEn} value={form.husband_name_en ?? ''} onChange={set('husband_name_en')} placeholder="Husband's name" />
+            <FormField label={S.pregnancy.fMotherNid} value={form.mother_nid ?? ''} onChange={set('mother_nid')} placeholder="১০ / ১৩ / ১৭ সংখ্যা" />
+            <FormField label={S.pregnancy.fMotherBrn} value={form.mother_birth_reg_no ?? ''} onChange={set('mother_birth_reg_no')} placeholder="১৭ সংখ্যা" />
+            <FormField label={S.pregnancy.fFatherNid} value={form.father_nid ?? ''} onChange={set('father_nid')} placeholder="১০ / ১৩ / ১৭ সংখ্যা" />
+            <FormField label={S.pregnancy.fFatherBrn} value={form.father_birth_reg_no ?? ''} onChange={set('father_birth_reg_no')} placeholder="১৭ সংখ্যা" />
             <FormField label={S.pregnancy.fRegister} value={form.register_no ?? ''} onChange={set('register_no')} />
             <FormField label={S.pregnancy.fWhichChild} value={form.which_child ?? ''} onChange={set('which_child')} type="number" />
             <FormField label={S.pregnancy.fHeight} value={form.height_inch ?? ''} onChange={set('height_inch')} type="number" />
@@ -157,7 +195,7 @@ export default function PregnancyAdd() {
           </>
         )}
 
-        <Box sx={{ display: 'flex', gap: 1.5, mt: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1.5, mt: 1, mb: 3 }}>
           {step > 0 && (
             <Button variant="outlined" onClick={() => setStep((s) => s - 1)} disabled={busy}>
               {S.common.prev}

@@ -21,20 +21,20 @@ class BirthRegistrationController extends Controller
 {
     public function __construct(private BirthRegistrationService $service) {}
 
-    /** List with সকল / কার্যকর কিন্তু এন্ট্রি হয়নি / কার্যকর তালিকা tabs, counts, search. */
+    /** নবজাতক তালিকা: সকল / জন্মনিবন্ধন সম্পন্ন হয়নি / জন্মনিবন্ধন সম্পন্ন tabs, counts, search. */
     public function index(Request $request): JsonResponse
     {
-        abort_unless(tenancy()->initialized, 400, 'উপজেলা নির্ধারণ করা যায়নি।');
+        $this->requireTenantForListing($request->user());
 
         $status = $request->query('status', 'all');
         $q = trim((string) $request->query('q', ''));
 
         $base = BirthRegistration::query()
             ->when($q !== '', fn ($b) => $b->where(fn ($w) => $w
-                ->where('child_name', 'like', "%{$q}%")
-                ->orWhere('mother_name', 'like', "%{$q}%")
-                ->orWhere('father_name', 'like', "%{$q}%")
-                ->orWhere('registration_no', 'like', "%{$q}%")));
+                ->where('child_name', 'ilike', "%{$q}%")
+                ->orWhere('mother_name', 'ilike', "%{$q}%")
+                ->orWhere('father_name', 'ilike', "%{$q}%")
+                ->orWhere('registration_no', 'ilike', "%{$q}%")));
 
         $list = (clone $base)
             ->when(in_array($status, ['pending_entry', 'entered'], true), fn ($b) => $b->where('status', $status))
@@ -49,12 +49,26 @@ class BirthRegistrationController extends Controller
                 'last_page' => $list->lastPage(),
                 'total' => $list->total(),
             ],
-            'tabs' => [
-                ['key' => 'all', 'total' => (clone $base)->count()],
-                ['key' => 'pending_entry', 'total' => (clone $base)->where('status', 'pending_entry')->count()],
-                ['key' => 'entered', 'total' => (clone $base)->where('status', 'entered')->count()],
-            ],
+            'tabs' => $this->tabCounts($base),
         ]);
+    }
+
+    /** All three tab totals in one grouped pass instead of three scans of the same rows. */
+    private function tabCounts($base): array
+    {
+        $totals = (clone $base)
+            ->reorder()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $of = fn (string $key) => (int) ($totals[$key] ?? 0);
+
+        return [
+            ['key' => 'all', 'total' => $of('pending_entry') + $of('entered')],
+            ['key' => 'pending_entry', 'total' => $of('pending_entry')],
+            ['key' => 'entered', 'total' => $of('entered')],
+        ];
     }
 
     public function show(BirthRegistration $birthRegistration): BirthRegistrationResource
@@ -62,7 +76,7 @@ class BirthRegistrationController extends Controller
         return new BirthRegistrationResource($birthRegistration->load('union', 'pregnancy'));
     }
 
-    /** Manual entry (§8.2) — created কার্যকর কিন্তু এন্ট্রি হয়নি until submitted to BDRIS. */
+    /** Manual entry (§8.2) — created জন্মনিবন্ধন সম্পন্ন হয়নি until submitted to BDRIS. */
     public function store(Request $request): BirthRegistrationResource
     {
         abort_unless(tenancy()->initialized, 400, 'উপজেলা নির্ধারণ করা যায়নি।');
@@ -77,6 +91,9 @@ class BirthRegistrationController extends Controller
             'sex' => ['nullable', 'in:male,female'],
         ]);
         $data['created_by'] = $request->user()->id;
+        // A সচিব only ever sees their own union (RoleVisibilityScope), so a manual entry filed
+        // without one would vanish the moment it was saved. Default it to theirs.
+        $data['union_id'] ??= $request->user()->union_id;
 
         $reg = BirthRegistration::create($data);
 
@@ -86,18 +103,77 @@ class BirthRegistrationController extends Controller
     /**
      * Sochib approval of a delivered pregnancy → auto-submit to BDRIS → certificate (§8.1 step 4–5).
      */
+    /**
+     * The certificate form the সচিব opens from a delivered pregnancy: every field prefilled from
+     * the mother's record, blank where she never gave one. Returned rather than assembled in the
+     * browser so the derived parts (place of birth, permanent address) are computed once, here.
+     */
+    public function draftFromPregnancy(Pregnancy $pregnancy): JsonResponse
+    {
+        abort_unless($pregnancy->isDelivered(), 422, 'ডেলিভারি নিশ্চিত না হলে জন্ম নিবন্ধন করা যাবে না।');
+
+        // Already filed with BDRIS → show what was filed, not a fresh draft (approval is
+        // idempotent). A row merely waiting in the নবজাতক তালিকা since the delivery was confirmed
+        // is not "filed": the সচিব still gets the editable draft.
+        $filed = $pregnancy->birthRegistration?->isEntered() ? $pregnancy->birthRegistration : null;
+
+        return response()->json([
+            'data' => $filed
+                ? (new BirthRegistrationResource($filed->load('union')))->resolve()
+                : $this->service->draftFor($pregnancy),
+            'already_registered' => (bool) $filed,
+        ]);
+    }
+
     public function approveFromPregnancy(Request $request, Pregnancy $pregnancy): BirthRegistrationResource
     {
         abort_unless($pregnancy->isDelivered(), 422, 'ডেলিভারি নিশ্চিত না হলে জন্ম নিবন্ধন করা যাবে না।');
 
-        $overrides = $request->validate([
-            'child_name' => ['nullable', 'string', 'max:120'],
-            'father_name' => ['nullable', 'string', 'max:120'],
-        ]);
+        $overrides = $request->validate($this->certificateRules());
+
+        // An emptied field means "the certificate leaves this blank", not "keep the draft value".
+        $overrides = array_map(fn ($v) => $v === '' ? null : $v, $overrides);
 
         $reg = $this->service->approveFromPregnancy($pregnancy, $overrides, $request->user()->id);
 
         return new BirthRegistrationResource($reg->load('union'));
+    }
+
+    /**
+     * The face of the certificate. Everything is optional — a সচিব may have to file with what the
+     * family could produce — except the formats, which BDRIS itself rejects: an NID is 10, 13 or
+     * 17 digits and a birth-registration number is 17.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    private function certificateRules(): array
+    {
+        $nid = ['nullable', 'string', 'regex:/^(\d{10}|\d{13}|\d{17})$/'];
+        $brn = ['nullable', 'string', 'regex:/^\d{17}$/'];
+
+        return [
+            'child_name' => ['nullable', 'string', 'max:120'],
+            'child_name_en' => ['nullable', 'string', 'max:120'],
+            'date_of_birth' => ['nullable', 'date'],
+            'sex' => ['nullable', 'in:male,female'],
+
+            'mother_name' => ['nullable', 'string', 'max:120'],
+            'mother_name_en' => ['nullable', 'string', 'max:120'],
+            'mother_nid' => $nid,
+            'mother_birth_reg_no' => $brn,
+            'mother_nationality' => ['nullable', 'string', 'max:60'],
+
+            'father_name' => ['nullable', 'string', 'max:120'],
+            'father_name_en' => ['nullable', 'string', 'max:120'],
+            'father_nid' => $nid,
+            'father_birth_reg_no' => $brn,
+            'father_nationality' => ['nullable', 'string', 'max:60'],
+
+            'union_id' => ['nullable', 'integer', 'exists:unions,id'],
+            'ward_no' => ['nullable', 'integer', 'min:1', 'max:99'],
+            'place_of_birth' => ['nullable', 'string', 'max:255'],
+            'permanent_address' => ['nullable', 'string', 'max:500'],
+        ];
     }
 
     /** Submit an existing pending manual entry to BDRIS. */

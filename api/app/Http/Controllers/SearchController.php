@@ -24,6 +24,11 @@ use Illuminate\Http\Request;
  * birth registrations, the UNO everything. Searching wider would surface records the searcher
  * cannot read and hand them a result that 403s on click.
  *
+ * Matching uses ILIKE, not LIKE: Postgres LIKE is case-sensitive, so an English name typed in the
+ * wrong case would silently return nothing. (Bangla has no case; the roman-script columns —
+ * name_en, username, email — are the ones that need it.) Every list endpoint's search does the
+ * same, which ties the app to Postgres — the deploy target since the SQLite dev DB was retired.
+ *
  * Ranking is done in PHP rather than SQL because "most matches first" means counting how many
  * distinct fields a term appears in, which no portable SQL expression gives cheaply. The candidate
  * set is small — one upazila's records, capped per module — so the cost is a few hundred rows.
@@ -99,7 +104,7 @@ class SearchController extends Controller
         $rows = $query
             ->where(function (Builder $w) use ($fields, $like) {
                 foreach (array_keys($fields) as $f) {
-                    $w->orWhere($f, 'like', $like);
+                    $w->orWhere($f, 'ilike', $like);
                 }
             })
             ->limit(self::PER_MODULE)

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\BirthRegStatus;
 use App\Enums\DeliveryStatus;
 use App\Http\Resources\PregnancyResource;
 use App\Models\Pregnancy;
+use App\Services\Bdris\BirthRegistrationService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -17,21 +20,25 @@ use Illuminate\Validation\Rule;
  */
 class PregnancyController extends Controller
 {
+    public function __construct(private BirthRegistrationService $births) {}
+
     /** List with the সকল / ডেলিভারী হয়নি / ডেলিভারি হয়েছে tabs, counts, search + filters. */
     public function index(Request $request): JsonResponse
     {
-        $this->requireTenant();
+        $this->requireTenantForListing($request->user());
 
         $status = $request->query('status', 'all');
         $q = trim((string) $request->query('q', ''));
 
         // Base query: search + union/ward filters (shared by the list and the tab counts).
+        // Words are separate terms, each of which must match somewhere — "ডুমুরিয়া আয়েশা" means
+        // that upazila AND that name, not the one literal string, which matched no column at all.
         $base = Pregnancy::query()
-            ->when($q !== '', fn ($b) => $b->where(fn ($w) => $w
-                ->where('mother_name_bn', 'like', "%{$q}%")
-                ->orWhere('husband_name', 'like', "%{$q}%")
-                ->orWhere('mobile', 'like', "%{$q}%")
-                ->orWhere('register_no', 'like', "%{$q}%")))
+            ->when($q !== '', function (Builder $b) use ($q) {
+                foreach (preg_split('/\s+/u', $q, -1, PREG_SPLIT_NO_EMPTY) as $term) {
+                    $b->where(fn (Builder $w) => $this->searchClause($w, $term));
+                }
+            })
             ->when($request->query('union_id'), fn ($b, $u) => $b->where('union_id', $u))
             ->when($request->query('ward_no'), fn ($b, $w) => $b->where('ward_no', $w));
 
@@ -40,7 +47,7 @@ class PregnancyController extends Controller
                 in_array($status, ['not_delivered', 'delivered'], true),
                 fn ($b) => $b->where('delivery_status', $status),
             )
-            ->with('union')
+            ->with('union', 'birthRegistration', 'upazila.district')
             ->latest()
             ->paginate(15);
 
@@ -88,7 +95,7 @@ class PregnancyController extends Controller
 
     public function show(Pregnancy $pregnancy): PregnancyResource
     {
-        return new PregnancyResource($pregnancy->load('union', 'creator'));
+        return new PregnancyResource($pregnancy->load('union', 'creator', 'birthRegistration', 'upazila.district'));
     }
 
     public function update(Request $request, Pregnancy $pregnancy): PregnancyResource
@@ -107,6 +114,8 @@ class PregnancyController extends Controller
     {
         $data = $request->validate([
             'delivery_status' => ['required', Rule::enum(DeliveryStatus::class)],
+            // Optional: often no name has been chosen on the day of the delivery.
+            'child_name' => ['nullable', 'string', 'max:120'],
             'actual_delivery_date' => ['nullable', 'date'],
             'mother_alive' => ['nullable', 'boolean'],
             'delivery_type' => ['nullable', Rule::in(['normal', 'cesarean'])],
@@ -121,23 +130,73 @@ class PregnancyController extends Controller
 
         $pregnancy->update($data);
 
-        return new PregnancyResource($pregnancy->load('union'));
+        // A confirmed delivery puts the newborn straight into the নবজাতক তালিকা (§8.2) as
+        // জন্মনিবন্ধন সম্পন্ন হয়নি; the সচিব's approval is what later files it with BDRIS.
+        if ($pregnancy->isDelivered()) {
+            $this->births->pendingFor($pregnancy, $request->user()->id);
+        } else {
+            // Status reversed (a mistaken confirmation) — take the newborn back out, unless it
+            // has already been entered, in which case the certificate stands.
+            $pregnancy->birthRegistration()->where('status', BirthRegStatus::PENDING_ENTRY)->delete();
+        }
+
+        return new PregnancyResource($pregnancy->load('union', 'birthRegistration'));
     }
 
     // ---- helpers ---------------------------------------------------------
 
+    /**
+     * One term of the search, matched against exactly the columns the listing shows — her name, her husband's, district, upazila,
+     * union, ward and mobile — and nothing else. Fewer than the table displays makes the box look
+     * broken; more (address, register number, the English name) returns rows with the term nowhere
+     * on screen, which reads as a wrong result.
+     *
+     * Ward is typed as it is displayed, in Bengali digits, so those are folded to ASCII first.
+     * Delivery status is a tab, not a search term, and the dates are formatted for display only.
+     */
+    private function searchClause(Builder $w, string $q): Builder
+    {
+        $like = '%'.$q.'%';
+        $digits = strtr($q, ['০' => '0', '১' => '1', '২' => '2', '৩' => '3', '৪' => '4',
+            '৫' => '5', '৬' => '6', '৭' => '7', '৮' => '8', '৯' => '9']);
+
+        return $w
+            ->where('mother_name_bn', 'ilike', $like)
+            ->orWhere('husband_name', 'ilike', $like)
+            ->orWhere('mobile', 'ilike', $like)
+            ->when(ctype_digit($digits), fn ($b) => $b->orWhere('ward_no', (int) $digits))
+            ->orWhereHas('union', fn ($u) => $u->where('name_bn', 'ilike', $like)->orWhere('name', 'ilike', $like))
+            ->orWhereHas('upazila', fn ($t) => $t
+                ->where('name_bn', 'ilike', $like)
+                ->orWhere('name', 'ilike', $like)
+                ->orWhereHas('district', fn ($d) => $d->where('name_bn', 'ilike', $like)->orWhere('name', 'ilike', $like)));
+    }
+
+    /**
+     * Every tab's total and "new this week" in ONE grouped pass, rather than six count queries
+     * that each scan the same rows. `count(*) filter (where …)` is standard SQL; Postgres runs
+     * both aggregates off the single scan the index already gives us.
+     */
     private function tabCounts($base): array
     {
-        $countNew = fn ($b) => (clone $b)->where('created_at', '>=', now()->subDays(7))->count();
+        $rows = (clone $base)
+            ->reorder()
+            ->selectRaw('delivery_status, count(*) as total, count(*) filter (where created_at >= ?) as fresh', [now()->subDays(7)])
+            ->groupBy('delivery_status')
+            ->get()
+            ->keyBy('delivery_status');
 
-        $all = clone $base;
-        $notDelivered = (clone $base)->where('delivery_status', 'not_delivered');
-        $delivered = (clone $base)->where('delivery_status', 'delivered');
+        $total = fn (string $key) => (int) ($rows[$key]->total ?? 0);
+        $fresh = fn (string $key) => (int) ($rows[$key]->fresh ?? 0);
 
         return [
-            ['key' => 'all', 'total' => (clone $all)->count(), 'new' => $countNew($all)],
-            ['key' => 'not_delivered', 'total' => (clone $notDelivered)->count(), 'new' => $countNew($notDelivered)],
-            ['key' => 'delivered', 'total' => (clone $delivered)->count(), 'new' => $countNew($delivered)],
+            [
+                'key' => 'all',
+                'total' => $total('not_delivered') + $total('delivered'),
+                'new' => $fresh('not_delivered') + $fresh('delivered'),
+            ],
+            ['key' => 'not_delivered', 'total' => $total('not_delivered'), 'new' => $fresh('not_delivered')],
+            ['key' => 'delivered', 'total' => $total('delivered'), 'new' => $fresh('delivered')],
         ];
     }
 
@@ -156,6 +215,13 @@ class PregnancyController extends Controller
             'mother_name_bn' => [$req, 'string', 'max:120'],
             'mother_name_en' => ['nullable', 'string', 'max:120'],
             'husband_name' => ['nullable', 'string', 'max:120'],
+            'husband_name_en' => ['nullable', 'string', 'max:120'],
+            // Parent identity for the BDRIS birth-registration application. A BD NID is 10, 13 or
+            // 17 digits; a birth-registration number is always 17.
+            'mother_nid' => ['nullable', 'string', 'regex:/^(\d{10}|\d{13}|\d{17})$/'],
+            'father_nid' => ['nullable', 'string', 'regex:/^(\d{10}|\d{13}|\d{17})$/'],
+            'mother_birth_reg_no' => ['nullable', 'string', 'regex:/^\d{17}$/'],
+            'father_birth_reg_no' => ['nullable', 'string', 'regex:/^\d{17}$/'],
             'register_no' => ['nullable', 'string', 'max:40'],
             'which_child' => ['nullable', 'integer', 'min:1', 'max:20'],
             'height_inch' => ['nullable', 'numeric', 'min:0', 'max:100'],

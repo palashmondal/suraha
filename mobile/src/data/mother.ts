@@ -7,6 +7,13 @@ export interface MotherFields {
   mother_name_bn: string;
   mother_name_en?: string | null;
   husband_name?: string | null;
+  husband_name_en?: string | null;
+  // Parent identity — a BDRIS birth-registration application needs the parents' NID and/or their
+  // own birth-registration numbers. "Father" is the child's father, i.e. husband_name above.
+  mother_nid?: string | null;
+  mother_birth_reg_no?: string | null;
+  father_nid?: string | null;
+  father_birth_reg_no?: string | null;
   register_no?: string | null;
   which_child?: number | null;
   current_age?: number | null;

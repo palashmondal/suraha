@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Enums\DeliveryStatus;
 use App\Models\BirthRegistration;
 use App\Models\Pregnancy;
+use App\Models\Union;
 use App\Models\Upazila;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,6 +35,22 @@ class BirthRegistrationTest extends TestCase
         return User::where('username', 'sochib_galachipa')->firstOrFail();
     }
 
+    /**
+     * A সচিব only sees their own union (RoleVisibilityScope), so test fixtures have to be filed
+     * there — as the seeder and the real FWA→সচিব flow do.
+     */
+    private function pregnancyInSochibUnion(bool $delivered = true, array $attrs = []): int
+    {
+        $unionId = $this->sochib()->union_id;
+
+        return Upazila::find('galachipa')->run(function () use ($delivered, $attrs, $unionId) {
+            $factory = Pregnancy::factory();
+
+            return ($delivered ? $factory->delivered() : $factory)
+                ->create($attrs + ['union_id' => $unionId])->id;
+        });
+    }
+
     private function deliveredPregnancyId(): int
     {
         return Upazila::find('galachipa')->run(fn () =>
@@ -57,9 +74,7 @@ class BirthRegistrationTest extends TestCase
     public function test_sochib_approves_delivered_pregnancy_and_gets_bdris_number(): void
     {
         // Create a fresh delivered pregnancy to approve.
-        $id = Upazila::find('galachipa')->run(function () {
-            return Pregnancy::factory()->delivered()->create(['mother_name_bn' => 'পরীক্ষা মা'])->id;
-        });
+        $id = $this->pregnancyInSochibUnion(attrs: ['mother_name_bn' => 'পরীক্ষা মা']);
 
         Sanctum::actingAs($this->sochib());
         $res = $this->postJson(self::GALACHIPA."/api/pregnancies/{$id}/approve", ['child_name' => 'শিশু'])
@@ -73,8 +88,7 @@ class BirthRegistrationTest extends TestCase
 
     public function test_approval_is_idempotent_per_pregnancy(): void
     {
-        $id = Upazila::find('galachipa')->run(fn () =>
-            Pregnancy::factory()->delivered()->create()->id);
+        $id = $this->pregnancyInSochibUnion();
 
         Sanctum::actingAs($this->sochib());
         $first = $this->postJson(self::GALACHIPA."/api/pregnancies/{$id}/approve")->json('data.registration_no');
@@ -86,8 +100,7 @@ class BirthRegistrationTest extends TestCase
 
     public function test_cannot_approve_a_not_delivered_pregnancy(): void
     {
-        $id = Upazila::find('galachipa')->run(fn () =>
-            Pregnancy::factory()->create()->id); // not delivered
+        $id = $this->pregnancyInSochibUnion(delivered: false);
 
         Sanctum::actingAs($this->sochib());
         $this->postJson(self::GALACHIPA."/api/pregnancies/{$id}/approve")->assertStatus(422);
@@ -95,8 +108,7 @@ class BirthRegistrationTest extends TestCase
 
     public function test_certificate_is_downloadable(): void
     {
-        $id = Upazila::find('galachipa')->run(fn () =>
-            Pregnancy::factory()->delivered()->create()->id);
+        $id = $this->pregnancyInSochibUnion();
 
         Sanctum::actingAs($this->sochib());
         $regId = $this->postJson(self::GALACHIPA."/api/pregnancies/{$id}/approve")->json('data.id');
@@ -104,6 +116,116 @@ class BirthRegistrationTest extends TestCase
         $this->get(self::GALACHIPA."/api/birth-registrations/{$regId}/certificate")
             ->assertOk()
             ->assertHeader('content-disposition');
+    }
+
+    public function test_draft_prefills_the_certificate_from_the_mother(): void
+    {
+        $id = $this->pregnancyInSochibUnion(attrs: [
+            'mother_name_bn' => 'রোকেয়া বেগম',
+            'mother_name_en' => 'Rokeya Begum',
+            'husband_name' => 'করিম মিয়া',
+            'mother_nid' => '1234567890',
+            'father_nid' => '1990123456789',
+        ]);
+
+        Sanctum::actingAs($this->sochib());
+        $draft = $this->getJson(self::GALACHIPA."/api/pregnancies/{$id}/birth-registration-draft")
+            ->assertOk()
+            ->assertJsonPath('already_registered', false)
+            ->json('data');
+
+        $this->assertSame('রোকেয়া বেগম', $draft['mother_name']);
+        $this->assertSame('Rokeya Begum', $draft['mother_name_en']);
+        $this->assertSame('করিম মিয়া', $draft['father_name']);      // husband = the child's father
+        $this->assertSame('1234567890', $draft['mother_nid']);
+        $this->assertSame('1990123456789', $draft['father_nid']);
+        $this->assertSame('বাংলাদেশী', $draft['mother_nationality']);
+        $this->assertNull($draft['child_name']);                      // never captured → blank
+        $this->assertNotEmpty($draft['place_of_birth']);
+        $this->assertStringContainsString('গলাচিপা', $draft['place_of_birth']);
+    }
+
+    public function test_sochib_edits_are_saved_and_printed_on_the_certificate(): void
+    {
+        $id = $this->pregnancyInSochibUnion(attrs: ['mother_name_bn' => 'ভুল বানান']);
+
+        Sanctum::actingAs($this->sochib());
+        $reg = $this->postJson(self::GALACHIPA."/api/pregnancies/{$id}/approve", [
+            'child_name' => 'মোছাঃ জান্নাত আক্তার',
+            'child_name_en' => 'Mst Jannat Akter',
+            'mother_name' => 'মোছাঃ রিনা আক্তার',   // corrected by the সচিব
+            'mother_name_en' => 'Mst Rina Akter',
+            'father_name' => 'মোঃ বাচ্চু মিয়া',
+            'place_of_birth' => 'কিশোরগঞ্জ, বাংলাদেশ',
+            'permanent_address' => 'ঢালারপাড়, করিমগঞ্জ',
+        ])->assertCreated()->json('data');
+
+        $this->assertSame('মোছাঃ জান্নাত আক্তার', $reg['child_name']);
+        $this->assertSame('Mst Rina Akter', $reg['mother_name_en']);
+        $this->assertDatabaseHas('birth_registrations', [
+            'id' => $reg['id'],
+            'mother_name' => 'মোছাঃ রিনা আক্তার',
+            'place_of_birth' => 'কিশোরগঞ্জ, বাংলাদেশ',
+        ]);
+
+        $certificate = $this->get(self::GALACHIPA."/api/birth-registrations/{$reg['id']}/certificate")
+            ->assertOk()->streamedContent();
+
+        foreach (['মোছাঃ জান্নাত আক্তার', 'Mst Jannat Akter', 'কিশোরগঞ্জ, বাংলাদেশ', 'ঢালারপাড়, করিমগঞ্জ'] as $printed) {
+            $this->assertStringContainsString($printed, $certificate);
+        }
+
+        // Approval is idempotent: reopening the form shows what was filed, not a fresh draft.
+        $this->getJson(self::GALACHIPA."/api/pregnancies/{$id}/birth-registration-draft")
+            ->assertOk()
+            ->assertJsonPath('already_registered', true)
+            ->assertJsonPath('data.child_name', 'মোছাঃ জান্নাত আক্তার');
+    }
+
+    public function test_certificate_form_rejects_a_malformed_nid(): void
+    {
+        $id = $this->pregnancyInSochibUnion();
+
+        Sanctum::actingAs($this->sochib());
+        $this->postJson(self::GALACHIPA."/api/pregnancies/{$id}/approve", ['mother_nid' => '123'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['mother_nid']);
+    }
+
+    public function test_registration_number_is_visible_on_the_mother_record(): void
+    {
+        $fwa = User::where('username', 'fwa_galachipa')->firstOrFail();
+        $id = $this->pregnancyInSochibUnion(attrs: ['created_by' => $fwa->id]);
+
+        Sanctum::actingAs($this->sochib());
+        $regNo = $this->postJson(self::GALACHIPA."/api/pregnancies/{$id}/approve")->json('data.registration_no');
+        $this->assertNotEmpty($regNo);
+
+        // The FWA who entered her, and the UNO overseeing the upazila, both read the number off
+        // the প্রসূতি record — neither has access to the birth-registration module.
+        foreach ([$fwa, User::where('username', 'uno_galachipa')->firstOrFail()] as $reader) {
+            Sanctum::actingAs($reader);
+            $this->getJson(self::GALACHIPA."/api/pregnancies/{$id}")
+                ->assertOk()
+                ->assertJsonPath('data.birth_registration_no', $regNo);
+        }
+    }
+
+    public function test_sochib_sees_only_their_own_union(): void
+    {
+        $otherUnion = Upazila::find('galachipa')->run(fn () =>
+            Union::where('id', '!=', $this->sochib()->union_id)->value('id'));
+
+        $id = Upazila::find('galachipa')->run(fn () =>
+            Pregnancy::factory()->delivered()->create(['union_id' => $otherUnion])->id);
+
+        Sanctum::actingAs($this->sochib());
+
+        // Not in their union → not listed, and not reachable by id either.
+        $this->postJson(self::GALACHIPA."/api/pregnancies/{$id}/approve")->assertNotFound();
+        $this->getJson(self::GALACHIPA.'/api/pregnancies')
+            ->assertOk()
+            ->assertJsonMissing(['id' => $id]);
     }
 
     public function test_fwa_cannot_manage_birth_registrations(): void

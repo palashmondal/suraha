@@ -279,14 +279,34 @@ class AssistanceAndSuggestionTest extends TestCase
         $this->assertNotContains('অজ্ঞাতনামা তথ্যদাতা', $names);
     }
 
+    public function test_search_ignores_case_in_english_names(): void
+    {
+        $fwaId = User::where('username', 'fwa_galachipa')->value('id');
+        Upazila::find('galachipa')->run(fn () => Pregnancy::factory()->create([
+            'mother_name_bn' => 'রেহানা', 'mother_name_en' => 'Rehana Begum', 'created_by' => $fwaId,
+        ]));
+
+        Sanctum::actingAs(User::where('username', 'fwa_galachipa')->firstOrFail());
+
+        // Postgres LIKE is case-sensitive, so the stored "Rehana" would only ever match that exact
+        // spelling; the endpoints use ILIKE, so either casing must find her.
+        foreach (['rehana', 'REHANA'] as $typed) {
+            $this->assertNotEmpty($this->getJson(self::GALACHIPA."/api/search?q={$typed}")->json('results'));
+        }
+    }
+
     /**
      * Each role searches only what it can already open. Offering an FWA a complaint would hand
      * them a result that 403s on click, and show them a record they may not read on the way.
      */
+
     public function test_search_is_scoped_to_what_the_role_may_open(): void
     {
-        Upazila::find('galachipa')->run(function () {
-            Pregnancy::factory()->create(['mother_name_bn' => 'শাপলা বেগম']);
+        // The mother is entered BY the FWA — an FWA only searches their own caseload
+        // (RoleVisibilityScope).
+        $fwaId = User::where('username', 'fwa_galachipa')->value('id');
+        Upazila::find('galachipa')->run(function () use ($fwaId) {
+            Pregnancy::factory()->create(['mother_name_bn' => 'শাপলা বেগম', 'created_by' => $fwaId]);
             Complaint::factory()->create(['complainant_name' => 'শাপলা বেগম']);
             Assistance::factory()->create(['applicant_name' => 'শাপলা বেগম']);
         });

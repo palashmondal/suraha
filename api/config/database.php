@@ -97,6 +97,14 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Connecting costs ~5ms; PHP has no connection pool, so without this every request
+            // pays it again. A persistent handle is reused by the next request on the same PHP
+            // process. Off by default because it is only safe where connections are not shared
+            // through a pooler in transaction mode — turn it on with DB_PERSISTENT=true in dev and
+            // on a single-server deploy; leave it off behind PgBouncer, which pools already.
+            'options' => array_filter([
+                PDO::ATTR_PERSISTENT => env('DB_PERSISTENT', false),
+            ]),
         ],
 
         'sqlsrv' => [

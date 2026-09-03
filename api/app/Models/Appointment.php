@@ -9,11 +9,14 @@ use Database\Factories\AppointmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Scopes\VisibleTenantScope;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /**
  * সাক্ষাৎকার record (§8.3). Tenant-scoped.
  */
+#[ScopedBy(VisibleTenantScope::class)]
 class Appointment extends Model
 {
     /** @use HasFactory<AppointmentFactory> */

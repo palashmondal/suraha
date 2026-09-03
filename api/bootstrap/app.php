@@ -13,6 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Every request, before anything reads its input: fold Bangla text to one Unicode shape
+        // (see the middleware — য়/ড়/ঢ় each have two encodings) and strip invalid UTF-8, which
+        // Postgres rejects with a 500 rather than an empty result.
+        $middleware->prepend(\App\Http\Middleware\NormalizeUnicode::class);
+
         $middleware->alias([
             // Front door: central host, district host (DC dashboard), or upazila tenant.
             'host' => \App\Http\Middleware\ResolveHost::class,

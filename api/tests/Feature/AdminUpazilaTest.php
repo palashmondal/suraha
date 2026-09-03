@@ -53,11 +53,13 @@ class AdminUpazilaTest extends TestCase
     {
         Sanctum::actingAs($this->seal());
 
+        // Look the district up rather than assuming id 1: Postgres does not roll sequences back
+        // with the surrounding test transaction, so ids differ per test.
         $this->postJson(self::ADMIN.'/api/upazilas', [
             'slug' => 'kalapara',
             'name' => 'Kalapara',
             'name_bn' => 'কলাপাড়া',
-            'district_id' => 1,
+            'district_id' => \App\Models\District::where('name', 'Patuakhali')->value('id'),
         ])->assertCreated()->assertJsonPath('data.id', 'kalapara');
 
         $this->assertDatabaseHas('tenants', ['id' => 'kalapara', 'name_bn' => 'কলাপাড়া']);

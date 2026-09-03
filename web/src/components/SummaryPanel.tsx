@@ -9,7 +9,8 @@ export default function SummaryPanel({
   lines,
   children,
 }: {
-  title: string;
+  // A node, not just a string: a detail view may want an avatar and a subtitle in the heading.
+  title: ReactNode;
   lines?: { label: string; value: ReactNode }[];
   children?: ReactNode;
 }) {
@@ -22,13 +23,17 @@ export default function SummaryPanel({
         bgcolor: 'background.paper',
         border: (t) => `1px solid ${t.palette.divider}`,
         borderRadius: '16px',
-        p: 2.5,
+        p: 3,
         display: 'grid',
-        gap: 2,
+        gap: 2.5,
       }}
     >
       <Box>
-        <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{title}</Typography>
+        {typeof title === 'string' ? (
+          <Typography sx={{ fontSize: 18, fontWeight: 700 }}>{title}</Typography>
+        ) : (
+          title
+        )}
         {lines?.map((l) => (
           <Box key={l.label} sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
             <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{l.label}:</Typography>

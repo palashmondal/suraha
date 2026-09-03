@@ -29,3 +29,8 @@ yarn-error.log*
 
 # Optional eslint cache
 .eslintcache
+
+# Release signing — never commit the keystore or its passwords (see README).
+*.jks
+*.keystore
+android/keystore.properties

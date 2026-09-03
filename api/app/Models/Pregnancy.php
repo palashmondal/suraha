@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\Scopes\RoleVisibilityScope;
+use App\Models\Scopes\VisibleTenantScope;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /**
@@ -28,6 +30,13 @@ class Pregnancy extends Model
     protected $attributes = [
         'delivery_status' => 'not_delivered',
     ];
+
+    protected static function booted(): void
+    {
+        // FWA → only the mothers they entered; সচিব → only their union. See the scope class.
+        static::addGlobalScope(new VisibleTenantScope);
+        static::addGlobalScope(new RoleVisibilityScope('created_by'));
+    }
 
     protected function casts(): array
     {
@@ -53,6 +62,12 @@ class Pregnancy extends Model
     public function union(): BelongsTo
     {
         return $this->belongsTo(Union::class);
+    }
+
+    /** The owning upazila. Only worth loading in the SEAL/DC aggregate list, where rows mix. */
+    public function upazila(): BelongsTo
+    {
+        return $this->belongsTo(Upazila::class, 'tenant_id');
     }
 
     public function creator(): BelongsTo

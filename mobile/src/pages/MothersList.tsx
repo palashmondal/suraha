@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonList, IonItem, IonLabel, IonButtons,
   IonButton, IonIcon, IonFab, IonFabButton, IonSearchbar, IonBadge, IonNote, IonChip,
-  IonRefresher, IonRefresherContent, useIonRouter,
+  IonRefresher, IonRefresherContent, IonSpinner, useIonRouter,
 } from '@ionic/react';
 import {
   addOutline, cloudDoneOutline, cloudOfflineOutline, cloudUploadOutline, warningOutline,
@@ -27,11 +27,19 @@ export default function MothersList() {
   const [q, setQ] = useState('');
   const [pending, setPending] = useState(0);
   const [syncing, setSyncing] = useState(false);
+  // 'loading' until the first read resolves, so an empty list can't flash before the DB opens.
+  // 'error' means the local store or its decryption key is unreadable — not an empty list.
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
 
   const refresh = useCallback(async () => {
-    setRows(await listMothers(q));
-    setPending(await pendingCount());
-    setSyncing(isSyncing());
+    try {
+      setRows(await listMothers(q));
+      setPending(await pendingCount());
+      setSyncing(isSyncing());
+      setState('ready');
+    } catch {
+      setState('error');
+    }
   }, [q]);
 
   useEffect(() => { refresh(); }, [refresh]);
@@ -46,10 +54,10 @@ export default function MothersList() {
         <IonToolbar color="primary">
           <IonTitle>{S.mothers.title}</IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={() => syncNow()} disabled={!online || syncing}>
+            <IonButton onClick={() => syncNow()} disabled={!online || syncing} aria-label={S.mothers.syncNowLabel}>
               <IonIcon slot="icon-only" icon={syncOutline} />
             </IonButton>
-            <IonButton onClick={() => router.push('/settings')}>
+            <IonButton onClick={() => router.push('/settings')} aria-label={S.mothers.settingsLabel}>
               <IonIcon slot="icon-only" icon={settingsOutline} />
             </IonButton>
           </IonButtons>
@@ -76,9 +84,18 @@ export default function MothersList() {
 
         <IonSearchbar value={q} onIonInput={(e) => setQ(e.detail.value ?? '')} placeholder={S.mothers.searchPlaceholder} />
 
-        {rows.length === 0 ? (
+        {state === 'loading' ? (
           <div className="ion-text-center ion-padding" style={{ marginTop: 40 }}>
-            <IonNote>{S.mothers.empty}</IonNote>
+            <IonSpinner aria-label={S.common.loading} />
+          </div>
+        ) : state === 'error' ? (
+          <div className="ion-text-center ion-padding" style={{ marginTop: 40 }}>
+            <IonNote color="danger">{S.mothers.loadError}</IonNote>
+            <IonButton fill="clear" onClick={refresh}>{S.common.retry}</IonButton>
+          </div>
+        ) : rows.length === 0 ? (
+          <div className="ion-text-center ion-padding" style={{ marginTop: 40 }}>
+            <IonNote>{q ? S.mothers.noMatch : S.mothers.empty}</IonNote>
           </div>
         ) : (
           <IonList>
@@ -98,7 +115,7 @@ export default function MothersList() {
         )}
 
         <IonFab slot="fixed" vertical="bottom" horizontal="end">
-          <IonFabButton onClick={() => router.push('/add-mother')}>
+          <IonFabButton onClick={() => router.push('/add-mother')} aria-label={S.mothers.addLabel}>
             <IonIcon icon={addOutline} />
           </IonFabButton>
         </IonFab>

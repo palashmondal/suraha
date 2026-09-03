@@ -7,6 +7,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Scopes\VisibleTenantScope;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /**
@@ -14,6 +16,7 @@ use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
  * (officer's investigation report), hearing_scheduled, reinvestigation, completed. Rendered as the
  * complaint detail timeline. Tenant-scoped.
  */
+#[ScopedBy(VisibleTenantScope::class)]
 class ComplaintEvent extends Model
 {
     use BelongsToTenant;
