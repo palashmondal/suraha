@@ -8,7 +8,9 @@ use App\Enums\AppointmentStatus;
 use App\Enums\Role;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
+use App\Models\Notification;
 use App\Services\Sms\SmsGateway;
+use App\Support\TrackingToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -77,19 +79,29 @@ class AppointmentController extends Controller
             'description' => ['nullable', 'string'],
             'appointment_date' => ['nullable', 'date'],
             'appointment_time' => ['nullable', 'date_format:H:i'],
+            'client_uuid' => ['nullable', 'uuid'],
         ]);
+
+        // Idempotent create for the offline PWA: a retried submit with the same client_uuid returns
+        // the already-created appointment instead of duplicating it.
+        if (! empty($data['client_uuid'])) {
+            $existing = Appointment::where('client_uuid', $data['client_uuid'])->first();
+            if ($existing) {
+                return new AppointmentResource($existing->load('union'));
+            }
+        }
 
         $user = $request->user();
         $data['created_by'] = $user->id;
         if ($user->role === Role::CITIZEN) {
             $data['citizen_id'] = $user->id;
         }
-        $data['tracking_token'] = \App\Support\TrackingToken::generate('SUR-APT', 'appointments');
+        $data['tracking_token'] = TrackingToken::generate('SUR-APT', 'appointments');
 
         $appointment = Appointment::create($data);
 
         // Notify the UNO of a new appointment request (§8.3).
-        \App\Models\Notification::emit(
+        Notification::emit(
             'appointment',
             Role::UNO,
             'নতুন সাক্ষাৎকারের আবেদন',
@@ -186,5 +198,4 @@ class AppointmentController extends Controller
             Mail::raw($message, fn ($mail) => $mail->to($email)->subject('সুরাহা — সাক্ষাৎকারের আবেদন'));
         }
     }
-
 }

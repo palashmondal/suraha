@@ -11,6 +11,7 @@ use App\Models\Complaint;
 use App\Models\ComplaintEvent;
 use App\Models\Notification;
 use App\Models\User;
+use App\Support\TrackingToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -88,7 +89,17 @@ class ComplaintController extends Controller
             'complaint_date' => ['nullable', 'date'],
             'complaint_time' => ['nullable', 'date_format:H:i'],
             'description' => ['nullable', 'string'],
+            'client_uuid' => ['nullable', 'uuid'],
         ]);
+
+        // Idempotent create for the offline PWA: a retried submit with the same client_uuid returns
+        // the already-created complaint instead of duplicating it.
+        if (! empty($data['client_uuid'])) {
+            $existing = Complaint::where('client_uuid', $data['client_uuid'])->first();
+            if ($existing) {
+                return $this->fresh($existing);
+            }
+        }
 
         $user = $request->user();
         $data['created_by'] = $user->id;
@@ -96,7 +107,7 @@ class ComplaintController extends Controller
             $data['citizen_id'] = $user->id;
         }
         $data['status'] = ComplaintStatus::PENDING;
-        $data['tracking_token'] = \App\Support\TrackingToken::generate('SUR-CMP', 'complaints');
+        $data['tracking_token'] = TrackingToken::generate('SUR-CMP', 'complaints');
 
         $complaint = Complaint::create($data);
         $this->recordEvent($complaint, 'filed', null, [], $user);
@@ -324,5 +335,4 @@ class ComplaintController extends Controller
             $complaint->load('union', 'investigatingOfficer', 'citizen', 'events.actor', 'events.attachments'),
         );
     }
-
 }

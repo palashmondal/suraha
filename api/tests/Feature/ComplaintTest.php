@@ -71,6 +71,27 @@ class ComplaintTest extends TestCase
         ])->assertCreated()->assertJsonPath('data.status', 'pending');
     }
 
+    public function test_offline_replay_with_same_client_uuid_is_idempotent(): void
+    {
+        Sanctum::actingAs(User::where('role', 'citizen')->firstOrFail());
+
+        $body = [
+            'title' => 'রাস্তায় ময়লা',
+            'complainant_name' => 'নাগরিক',
+            'ward_no' => 2,
+            'client_uuid' => '11111111-1111-4111-8111-111111111111',
+        ];
+
+        // First send creates the complaint; a retried send (lost response) with the same client_uuid
+        // must resolve to the same row rather than duplicate it (offline outbox replay).
+        $first = $this->postJson(self::GALACHIPA.'/api/complaints', $body)->assertCreated();
+        // The replay finds the existing row (200 found, not 201 created) — and does not duplicate it.
+        $second = $this->postJson(self::GALACHIPA.'/api/complaints', $body)->assertSuccessful();
+
+        $this->assertSame($first->json('data.id'), $second->json('data.id'));
+        $this->assertSame(1, Complaint::where('client_uuid', $body['client_uuid'])->count());
+    }
+
     public function test_uno_runs_the_full_lifecycle(): void
     {
         Storage::fake('public');

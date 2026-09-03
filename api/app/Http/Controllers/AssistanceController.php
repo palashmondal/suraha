@@ -79,7 +79,17 @@ class AssistanceController extends Controller
             'mobile' => ['nullable', 'string', 'regex:/^01[0-9]{9}$/'],
             'nid' => ['nullable', 'string', 'max:30'],
             'amount_requested' => ['nullable', 'integer', 'min:0', 'max:10000000'],
+            'client_uuid' => ['nullable', 'uuid'],
         ]);
+
+        // Idempotent create for the offline PWA: a retried submit with the same client_uuid returns
+        // the already-created request instead of duplicating it.
+        if (! empty($data['client_uuid'])) {
+            $existing = Assistance::where('client_uuid', $data['client_uuid'])->first();
+            if ($existing) {
+                return new AssistanceResource($existing->load('union'));
+            }
+        }
 
         $user = $request->user();
         $data['created_by'] = $user->id;

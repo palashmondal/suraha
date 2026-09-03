@@ -78,7 +78,17 @@ class SuggestionController extends Controller
             'union_id' => ['nullable', 'integer', 'exists:unions,id'],
             'ward_no' => ['nullable', 'integer', 'min:1', 'max:99'],
             'mobile' => ['nullable', 'string', 'regex:/^01[0-9]{9}$/'],
+            'client_uuid' => ['nullable', 'uuid'],
         ]);
+
+        // Idempotent create for the offline PWA: a retried submit with the same client_uuid returns
+        // the already-created suggestion instead of duplicating it.
+        if (! empty($data['client_uuid'])) {
+            $existing = Suggestion::where('client_uuid', $data['client_uuid'])->first();
+            if ($existing) {
+                return new SuggestionResource($existing->load('union'));
+            }
+        }
 
         $user = $request->user();
         $data['created_by'] = $user->id;
