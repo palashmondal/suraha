@@ -7,9 +7,9 @@ import { bnStrings as S } from '../../i18n';
 import VerticalStepper from '../../components/VerticalStepper';
 import FieldCard from '../../components/form/FieldCard';
 import { FormField, SelectField, DateField, RadioGroupField, type Option } from '../../components/form/FormFields';
-import { createPregnancy } from '../../api/pregnancy';
 import { useUnionOptions } from '../../tenant/useUnionOptions';
 import { ApiError } from '../../api/client';
+import { useSync } from '../../offline/SyncProvider';
 
 type Form = Record<string, string>;
 
@@ -34,6 +34,7 @@ export default function PregnancyAdd() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<Form>({});
   const unions = useUnionOptions();
+  const { submit: submitOrQueue } = useSync();
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -61,8 +62,18 @@ export default function PregnancyAdd() {
     setErr(null);
     setBusy(true);
     try {
-      await createPregnancy(toPayload());
-      navigate('/pregnancy');
+      // FWA field capture is offline-tolerant (SURAHA_BUILD_PROMPT §1.1(2), §8.1): submit-or-queue
+      // stores the mother's record in the IndexedDB outbox when there is no connectivity and
+      // background-syncs it on reconnect. The offline/pending banner in the app shell shows status.
+      const payload = toPayload();
+      const res = await submitOrQueue({
+        kind: 'pregnancy.create',
+        endpoint: '/pregnancies',
+        method: 'POST',
+        label: (payload.mother_name_bn as string) ?? undefined,
+        payload,
+      });
+      navigate('/pregnancy', res.queued ? { state: { queued: true } } : undefined);
     } catch (e) {
       if (e instanceof ApiError) setErr(Object.values(e.errors ?? {})[0]?.[0] ?? e.message);
       else setErr(S.auth.genericError);
