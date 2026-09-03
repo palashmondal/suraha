@@ -19,7 +19,10 @@ class SliderController extends Controller
     /** Active slides for the landing page + dashboard (public). */
     public function publicIndex(): JsonResponse
     {
-        $this->requireTenant();
+        // Central host (suraha.net) has no upazila, so no sliders — return empty, don't 400.
+        if (! tenancy()->initialized) {
+            return response()->json(['sliders' => []]);
+        }
 
         return response()->json([
             'sliders' => SliderResource::collection(

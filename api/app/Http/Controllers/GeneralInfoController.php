@@ -18,7 +18,10 @@ class GeneralInfoController extends Controller
     /** Grouped info for the public site (phones + about). */
     public function publicIndex(): JsonResponse
     {
-        $this->requireTenant();
+        // Central host (suraha.net) has no upazila, so no info — return empty, don't 400.
+        if (! tenancy()->initialized) {
+            return response()->json(['phones' => [], 'about' => []]);
+        }
         $all = GeneralInfo::orderBy('sort_order')->orderBy('id')->get();
 
         return response()->json([
