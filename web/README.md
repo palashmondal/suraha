@@ -32,7 +32,7 @@ connectivity are stored locally and sent when the connection returns.
 **How a submission flows**
 
 1. A form calls `submit({ kind, endpoint, method, payload })`.
-2. Online → POSTs immediately (sending `client_id` = the outbox UUID) and returns the server data.
+2. Online → POSTs immediately (sending `client_uuid` = the outbox UUID) and returns the server data.
    A validation/4xx error is re-thrown so the form can show it.
 3. Offline / connection lost → the write is stored in the IndexedDB outbox and the form shows a
    "saved offline, will sync" card.
@@ -44,9 +44,10 @@ and FWA capture (`pages/pregnancy/PregnancyAdd.tsx`). `OfflineBanner` shows offl
 failed state in both the officer shell and the public layout; queued items also appear in
 `pages/public/MySubmissions.tsx`.
 
-> Idempotency: replays send `client_id`; the server currently ignores unknown fields (no dedup), so a
-> reply lost after the server committed could, in the rare case, duplicate. Per-table dedup on
-> `client_id` is a possible backend follow-up (the pregnancies table already carries `client_uuid`).
+> Idempotency: replays send `client_uuid`. The **pregnancies** endpoint dedups on it (unique
+> `(tenant_id, client_uuid)`), so a retried FWA capture whose response was lost will not duplicate.
+> The other submission endpoints ignore the field today; adding the same `client_uuid` dedup to
+> complaints/appointments/assistances/suggestions is a possible backend follow-up.
 
 ## PWA
 
