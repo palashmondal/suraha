@@ -37,11 +37,15 @@ type SyncContextValue = {
   online: boolean;
   pending: OutboxItem[];
   pendingCount: number;
+  /** Items the server rejected (4xx) — parked so they don't block the queue; user can retry. */
+  failedCount: number;
   /** Try the network, fall back to the outbox on connection loss. For citizen/public submits. */
   submit: (input: EnqueueInput) => Promise<SubmitResult>;
   /** Always queue first (offline-first). For FWA field capture. */
   queue: (input: EnqueueInput) => Promise<OutboxItem>;
   syncNow: () => Promise<void>;
+  /** Reset failed items back to pending and attempt to send them again. */
+  retryFailed: () => Promise<void>;
   syncing: boolean;
 };
 
@@ -108,6 +112,17 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     }
   }, [refresh]);
 
+  const retryFailed = useCallback(async () => {
+    const items = await listOutbox();
+    for (const item of items) {
+      if (item.status === 'failed') {
+        await saveItem({ ...item, status: 'pending', lastError: undefined });
+      }
+    }
+    await refresh();
+    await syncNow();
+  }, [refresh, syncNow]);
+
   const queue = useCallback(
     async (input: EnqueueInput) => {
       const item = await enqueue(input);
@@ -153,12 +168,14 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       online,
       pending,
       pendingCount: pending.filter((p) => p.status !== 'failed').length,
+      failedCount: pending.filter((p) => p.status === 'failed').length,
       submit,
       queue,
       syncNow,
+      retryFailed,
       syncing,
     }),
-    [online, pending, submit, queue, syncNow, syncing],
+    [online, pending, submit, queue, syncNow, retryFailed, syncing],
   );
 
   return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;
