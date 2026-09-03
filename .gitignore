@@ -37,3 +37,10 @@ Icon
 .Trashes
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
+.DS_Store
+
+# TS incremental build info
+web/tsconfig.tsbuildinfo
+
+# scripts/dev.sh service logs
+.dev-logs/

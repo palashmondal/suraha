@@ -12,7 +12,7 @@
 You are the engineering agent building **Suraha** (Bangla: **সুরাহা**) for the **SEAL Foundation**.
 Suraha is a centralized, multi-tenant web platform that digitizes field administration and citizen
 services at the **upazila** (sub-district) level of Bangladesh. Each upazila is served on its own
-subdomain (e.g. `golachipa.suraha.com.bd`, `dumuria.suraha.gov.bd`).
+subdomain (e.g. `galachipa.suraha.net`, `dumuria.suraha.gov.bd`).
 
 **Non-negotiable rules:**
 
@@ -46,10 +46,17 @@ These were decided by the product owner — treat them as fixed constraints:
    endpoints are configuration and a self-hosted upazila can supply its own. Do **not** build a
    parallel manual path; do build a swappable adapter so a mock can stand in during development before
    access is granted.
-2. **FWA field client = installable PWA.** The FWA experience is a **Progressive Web App**:
-   installable, **offline-capable** (queue field entries locally and **background-sync** when
-   connectivity returns), with **GPS and camera** access. One codebase with the web app; no native app,
-   no app store.
+2. **Installable PWA with an offline outbox (all roles, mobile + desktop).** One client codebase
+   (`web/`) delivered as an installable **Progressive Web App** — FWA, officers/DC/SEAL, and citizens
+   all use it. **Offline-capable:** writes are stored locally in an **IndexedDB outbox** (client-
+   generated UUIDs) and **background-synced** when connectivity returns, with **GPS and camera**
+   access. No native app, no app store.
+   - *Implemented (`web/src/offline/`):* a dependency-free IndexedDB outbox + `SyncProvider` with
+     **submit-or-queue** (network-first, falling back to the queue on connection loss) and
+     flush-on-reconnect over the shared `api()` client. Wired into the **public/citizen submit forms**
+     (complaint, appointment, assistance, suggestion), which show an "saved offline, will sync" card
+     and replay automatically; an offline/pending-sync banner rides in `PublicLayout`. The FWA
+     capture path uses the same outbox (offline-first `queue()`).
 3. **Authentication = credentials + mobile OTP.** Officers log in with **admin-created username/
    password**; citizens with **mobile number + SMS OTP**. **No** NID verification and **no** government
    SSO in scope. (The SMS gateway is therefore used **for OTP only** — see decision 4.)
@@ -72,7 +79,7 @@ These were decided by the product owner — treat them as fixed constraints:
 
 ## 2. Product Overview
 
-- **Owner / operator:** SEAL Foundation provides the server, the `suraha.com.bd` domain, per-upazila
+- **Owner / operator:** SEAL Foundation provides the server, the `suraha.net` domain, per-upazila
   subdomains, training, and ongoing maintenance.
 - **What it does:** a single site per upazila offering a dashboard of connected govt services —
   pregnant-mother welfare service, birth registration, UNO appointment booking, complaint
@@ -117,7 +124,7 @@ the public gets a citizen-facing area.
 
 ## 4. Multi-Tenancy & Hosting
 
-- **Tenant = upazila**, resolved by **subdomain** (`{upazila}.suraha.com.bd` or
+- **Tenant = upazila**, resolved by **subdomain** (`{upazila}.suraha.net` or
   `{upazila}.suraha.gov.bd`). Middleware resolves the tenant from the host on every request and
   scopes all queries to that upazila.
 - **Data isolation:** one centralized codebase and datastore now, with **upazila_id scoping on every
@@ -505,7 +512,7 @@ Build on this stack — it is a decided constraint, not a menu.
 |---|---|---|
 | **Backend** | **Laravel 11 (PHP 8.3+)** | REST/JSON API. |
 | **API auth** | **Laravel Sanctum** | Officer credential login + citizen mobile-OTP sessions/tokens; role- and tenant-aware. |
-| **Multi-tenancy** | **`stancl/tenancy`**, subdomain-based | Tenant = upazila resolved from `{upazila}.suraha.com.bd`. Start with a **single central PostgreSQL** and **upazila scoping via global scopes**; structure models/migrations so one tenant can be **exported to its own database** for self-host later (stancl supports multi-DB — keep the boundary clean). |
+| **Multi-tenancy** | **`stancl/tenancy`**, subdomain-based | Tenant = upazila resolved from `{upazila}.suraha.net`. Start with a **single central PostgreSQL** and **upazila scoping via global scopes**; structure models/migrations so one tenant can be **exported to its own database** for self-host later (stancl supports multi-DB — keep the boundary clean). |
 | **Frontend** | **React (Vite) + MUI (Material Design 3)** | Reproduce the concept_ui/Figma design with MUI theming. Consumes the Laravel API. *(Alternative if tighter Laravel coupling is wanted: Inertia.js + React.)* |
 | **i18n / theme** | **react-i18next (`bn` only)** + MUI light/dark theme | Bangla-only UI (§1.1(5)), Bangla numerals; English only in specific data fields. |
 | **FWA PWA** | Service worker (**Workbox**) + **IndexedDB** offline queue + **Background Sync** | Installable; offline capture + sync; GPS + camera via web APIs (§1.1(2)). |
@@ -521,7 +528,7 @@ Build on this stack — it is a decided constraint, not a menu.
 
 - **Docker Compose on a single Linux VPS/server.** Services: **app** (PHP-FPM + Nginx), **postgres**,
   **redis**, **queue worker** (Horizon), **scheduler**, and **minio** (optional / self-host).
-- **Reverse proxy** (Nginx, Caddy, or Traefik) terminating **wildcard TLS for `*.suraha.com.bd`**
+- **Reverse proxy** (Nginx, Caddy, or Traefik) terminating **wildcard TLS for `*.suraha.net`**
   (Let's Encrypt **DNS-01** challenge, since the cert is wildcard). Also handle `*.suraha.gov.bd` if used.
 - **Config & secrets via environment** (`.env`); per-tenant integration credentials (BDRIS, SMS, S3)
   are configuration.
@@ -589,7 +596,7 @@ Verify each milestone against the relevant `concept_ui/` frames before proceedin
 - [ ] Architecture supports **exporting a single upazila to self-host** later with configuration only.
 - [ ] Built on the **committed stack (§12):** Laravel 11 API + Sanctum + `stancl/tenancy`, React/MUI
       PWA, PostgreSQL 16, Redis + Horizon, S3-compatible storage, deployed via Docker Compose behind a
-      **wildcard-TLS (`*.suraha.com.bd`)** reverse proxy.
+      **wildcard-TLS (`*.suraha.net`)** reverse proxy.
 
 ---
 

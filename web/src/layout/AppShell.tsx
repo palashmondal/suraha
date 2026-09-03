@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import type { ReactNode } from 'react';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
+import OfflineBanner from '../components/OfflineBanner';
 
 // App shell (concept_ui/Dashboard.png): lavender sidebar + top bar, with the main content
 // in a white panel whose top-left corner is rounded where it meets the top bar/sidebar.
@@ -11,6 +12,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <Sidebar />
       <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <TopBar />
+        <OfflineBanner />
         <Box
           sx={{
             flex: 1,
@@ -18,10 +20,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
             bgcolor: 'background.paper',
             borderTopLeftRadius: '28px',
             overflowY: 'auto',
-            p: { xs: 2, md: 3.5 },
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
-          {children}
+          <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', p: { xs: 2, md: 3.5 } }}>
+            {children}
+          </Box>
         </Box>
       </Box>
     </Box>

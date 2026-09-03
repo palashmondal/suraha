@@ -13,7 +13,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            // Front door: central host, district host (DC dashboard), or upazila tenant.
+            'host' => \App\Http\Middleware\ResolveHost::class,
+            // A deactivated upazila's subdomain serves nothing but the "disabled" notice.
+            'tenant.active' => \App\Http\Middleware\EnsureTenantActive::class,
+            // Cross-tenant roles pick an upazila with the X-Upazila header — SEAL on the
+            // central host, the DC on its district host — without changing the URL.
+            'tenant.selected' => \App\Http\Middleware\ApplySelectedTenant::class,
+            // A token is only good for the upazilas its owner may reach.
+            'tenant.access' => \App\Http\Middleware\EnsureTenantAccess::class,
+            // RBAC (see app/Http/Middleware)
+            'role' => \App\Http\Middleware\EnsureRole::class,
+            'deny.readonly' => \App\Http\Middleware\DenyReadOnlyWrites::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

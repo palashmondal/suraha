@@ -4,7 +4,7 @@
 Bangladesh.
 
 **Prepared for:** SEAL Foundation
-**Domain:** `suraha.com.bd` (per-upazila subdomains, e.g. `golachipa.suraha.com.bd`,
+**Domain:** `suraha.net` (per-upazila subdomains, e.g. `galachipa.suraha.net`,
 `dumuria.suraha.gov.bd`)
 **Design source of truth:** [`concept_ui/`](concept_ui/) screenshots +
 Figma → https://www.figma.com/design/eywg5k7XOILjdYc7Gzarqm/Suraha-app
@@ -235,7 +235,7 @@ supply its own credentials.
 | PDF / Maps | dompdf or wkhtmltopdf; **Leaflet + OpenStreetMap** |
 | Integrations | **BDRIS** (real, mockable adapter); **SMS gateway — OTP only** |
 | Observability | Laravel logging + **Sentry/GlitchTip**; audit via `owen-it/laravel-auditing` |
-| Deploy | **Docker Compose on a single Linux VPS** (app, postgres, redis, worker, scheduler, optional minio) behind a reverse proxy with **wildcard TLS `*.suraha.com.bd`** (Let's Encrypt DNS-01) |
+| Deploy | **Docker Compose on a single Linux VPS** (app, postgres, redis, worker, scheduler, optional minio) behind a reverse proxy with **wildcard TLS `*.suraha.net`** (Let's Encrypt DNS-01) |
 
 *Recommended engineering practices:* monorepo (`api/` + `web/`), CI/CD (GitHub Actions, staging +
 prod), and automated tests focused on RBAC, tenant scoping, the BDRIS adapter, and the

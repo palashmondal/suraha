@@ -1,32 +1,27 @@
 import { Avatar, Box, Button, Divider, Menu, Typography, useTheme } from '@mui/material';
-import type { Theme } from '@mui/material/styles';
-import PregnantWomanRoundedIcon from '@mui/icons-material/PregnantWomanRounded';
-import ChildFriendlyRoundedIcon from '@mui/icons-material/ChildFriendlyRounded';
-import CampaignRoundedIcon from '@mui/icons-material/CampaignRounded';
-import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
-import type { ReactNode } from 'react';
 import { bnStrings as S } from '../i18n';
 import { bn } from '../utils/bnNum';
-import { notifications, unreadCount, type NotifModule } from '../data/notifications';
-
-// Per-module icon + accent color for the leading avatar, consistent with the dashboard
-// module accents and status-pill palette.
-function moduleStyle(theme: Theme, m: NotifModule): { color: string; icon: ReactNode } {
-  const map: Record<NotifModule, { color: string; icon: ReactNode }> = {
-    pregnancy: { color: theme.palette.primary.main, icon: <PregnantWomanRoundedIcon fontSize="small" /> },
-    birth: { color: theme.suraha.module.birth, icon: <ChildFriendlyRoundedIcon fontSize="small" /> },
-    complaint: { color: theme.suraha.countBadge, icon: <CampaignRoundedIcon fontSize="small" /> },
-    appointment: { color: theme.suraha.status.info.fg, icon: <EventAvailableRoundedIcon fontSize="small" /> },
-  };
-  return map[m];
-}
+import { timeAgo } from '../utils/timeAgo';
+import { moduleStyle } from './notificationStyle';
+import type { AppNotification } from '../api/notifications';
 
 export default function NotificationMenu({
   anchorEl,
   onClose,
+  notifications,
+  unreadCount,
+  onMarkAll,
+  onViewAll,
+  onOpen,
 }: {
   anchorEl: HTMLElement | null;
   onClose: () => void;
+  notifications: AppNotification[];
+  unreadCount: number;
+  onMarkAll: () => void;
+  onViewAll: () => void;
+  /** Opening a notification marks it read and, when it points somewhere, goes there. */
+  onOpen: (n: AppNotification) => void;
 }) {
   const theme = useTheme();
 
@@ -63,7 +58,7 @@ export default function NotificationMenu({
             </Box>
           ) : null}
         </Box>
-        <Button size="small" sx={{ minWidth: 0, px: 1, fontSize: 12.5 }}>
+        <Button size="small" onClick={onMarkAll} disabled={unreadCount === 0} sx={{ minWidth: 0, px: 1, fontSize: 12.5 }}>
           {S.notifications.markAll}
         </Button>
       </Box>
@@ -71,18 +66,25 @@ export default function NotificationMenu({
 
       {/* List */}
       <Box sx={{ maxHeight: 420, overflowY: 'auto' }}>
+        {notifications.length === 0 && (
+          <Typography sx={{ p: 3, textAlign: 'center', color: 'text.secondary', fontSize: 14 }}>
+            {S.notifications.empty}
+          </Typography>
+        )}
         {notifications.map((n, i) => {
           const { color, icon } = moduleStyle(theme, n.module);
           return (
             <Box key={n.id}>
               <Box
-                onClick={onClose}
+                onClick={() => onOpen(n)}
                 sx={{
                   px: 2,
                   py: 1.5,
                   display: 'flex',
                   gap: 1.5,
                   alignItems: 'flex-start',
+                  // A notification with no record behind it can still be marked read, so every
+                  // row stays clickable.
                   cursor: 'pointer',
                   bgcolor: n.unread
                     ? theme.palette.mode === 'light'
@@ -105,7 +107,7 @@ export default function NotificationMenu({
                     {n.detail}
                   </Typography>
                   <Typography sx={{ fontSize: 12, color: 'text.secondary', mt: 0.5 }}>
-                    {n.time}
+                    {timeAgo(n.created_at)}
                   </Typography>
                 </Box>
                 {n.unread ? (
@@ -123,7 +125,7 @@ export default function NotificationMenu({
       {/* Footer */}
       <Divider />
       <Box sx={{ p: 1 }}>
-        <Button fullWidth onClick={onClose} sx={{ borderRadius: '8px', fontSize: 13.5 }}>
+        <Button fullWidth onClick={onViewAll} sx={{ borderRadius: '8px', fontSize: 13.5 }}>
           {S.notifications.viewAll}
         </Button>
       </Box>
