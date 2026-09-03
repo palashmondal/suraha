@@ -9,6 +9,7 @@ pipeline at its core.
 
 - **What & why:** [SURAHA_OVERVIEW.md](SURAHA_OVERVIEW.md) — business model, roles, features, flows.
 - **Full build spec:** [SURAHA_BUILD_PROMPT.md](SURAHA_BUILD_PROMPT.md) — the authoritative spec.
+- **Status & remaining work:** [TODO.md](TODO.md) — milestone audit and the ordered work list.
 - **Design source of truth:** [`concept_ui/`](concept_ui/) + Figma
   (https://www.figma.com/design/eywg5k7XOILjdYc7Gzarqm/Suraha-app).
 
@@ -18,9 +19,11 @@ pipeline at its core.
 suraha/
 ├── web/          React + Vite + MUI (Material 3) PWA — the frontend (Bangla-only, light + dark)
 ├── api/          Laravel REST API — Sanctum (Bearer), stancl/tenancy, role-based access
-├── infra/        Docker Compose + Caddy reverse proxy (wildcard TLS *.suraha.net)
+├── mobile/       Ionic React + Capacitor Android app — offline-first FWA field capture
+├── infra/        Docker Compose + Caddy reverse proxy (on-demand TLS per subdomain)
+├── scripts/      dev.sh — runs api + web + Caddy and syncs /etc/hosts from the domains table
 ├── concept_ui/   Design reference screenshots
-└── SURAHA_*.md   Overview + build prompt
+└── SURAHA_*.md   Overview, build prompt, FWA mobile plan, TODO
 ```
 
 ## Architecture
@@ -57,7 +60,7 @@ suraha/
 | **Notifications** | In-app, role/tenant-scoped bell + full **সকল নোটিফিকেশন** page (mark-read) |
 | **Cross-cutting** | Pagination (10/page, shown only when a list overflows), loading/empty states, instance enable/disable |
 
-Verified by 102 Laravel feature tests across `api/tests/Feature/` (auth/tenancy, admin, dashboards,
+Verified by 123 Laravel feature tests across `api/tests/Feature/` (auth/tenancy, admin, dashboards,
 pregnancy, birth, complaints, appointments, public content, tracking, reporting, notifications).
 
 ---
@@ -71,9 +74,11 @@ Source of truth is the **Bangladesh National Portal**, not a community dataset:
 | বিভাগ (divisions) | [bangladesh.gov.bd](https://bangladesh.gov.bd/views/upazila-list) | 8 |
 | জেলা (districts) | [bangladesh.gov.bd/views/upazila-list](https://bangladesh.gov.bd/views/upazila-list) | 64 |
 | উপজেলা (upazilas) | [bangladesh.gov.bd/views/upazila-list](https://bangladesh.gov.bd/views/upazila-list) | 499 |
-| ইউনিয়ন (unions) | [bangladesh.gov.bd/views/union-list](https://bangladesh.gov.bd/views/union-list) | 4567 *(not yet imported)* |
+| ইউনিয়ন (unions) | [bangladesh.gov.bd/views/union-list](https://bangladesh.gov.bd/views/union-list) | 4567 |
 
-Divisions and districts live in `DivisionSeeder` / `DistrictSeeder`; the 499 upazilas are in
+Divisions and districts live in `DivisionSeeder` / `DistrictSeeder`; the 4,567 unions are in
+[`api/database/data/bd-unions.json`](api/database/data/bd-unions.json), loaded by `UnionRefSeeder`;
+the 499 upazilas are in
 [`api/database/data/bd-upazilas.json`](api/database/data/bd-upazilas.json), loaded by
 `UpazilaRefSeeder`. Bangla spellings follow the portal exactly (নেত্রকোণা, মুন্সীগঞ্জ,
 রাঙ্গামাটি পার্বত্য).
@@ -91,7 +96,8 @@ from the catalogue, with already-provisioned upazilas shown as unavailable.
 To refresh after a boundary change, re-run the seeders — they are idempotent:
 
 ```bash
-cd api && php artisan db:seed --class=DivisionSeeder && php artisan db:seed --class=DistrictSeeder && php artisan db:seed --class=UpazilaRefSeeder
+cd api && php artisan db:seed --class=DivisionSeeder && php artisan db:seed --class=DistrictSeeder \
+  && php artisan db:seed --class=UpazilaRefSeeder && php artisan db:seed --class=UnionRefSeeder
 ```
 
 ---
@@ -122,7 +128,18 @@ php artisan test                   # run the feature suite
 Officer logins (all password `password`): `admin`, `uno_galachipa`, `fwa_galachipa`,
 `tdonto_galachipa`, `dc_patuakhali`, `dc_khulna`. Citizen: mobile + OTP (dev code returned by the API).
 
-### 3. Tenant subdomains
+### 3. FWA mobile app (optional)
+
+```bash
+cd mobile
+npm install
+npm run dev      # http://localhost:5175 — needs the API up
+```
+
+Offline-first Android app for field capture of প্রসূতি records. See
+[`mobile/README.md`](mobile/README.md) and [`FWA_MOBILE_APP_PLAN.md`](FWA_MOBILE_APP_PLAN.md).
+
+### 4. Tenant subdomains
 
 The SPA calls the API on the **same host, port 8000**, so the upazila subdomain flows through
 automatically. Three ways to resolve subdomains locally:

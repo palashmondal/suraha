@@ -44,10 +44,10 @@ and FWA capture (`pages/pregnancy/PregnancyAdd.tsx`). `OfflineBanner` shows offl
 failed state in both the officer shell and the public layout; queued items also appear in
 `pages/public/MySubmissions.tsx`.
 
-> Idempotency: replays send `client_uuid`. The **pregnancies** endpoint dedups on it (unique
-> `(tenant_id, client_uuid)`), so a retried FWA capture whose response was lost will not duplicate.
-> The other submission endpoints ignore the field today; adding the same `client_uuid` dedup to
-> complaints/appointments/assistances/suggestions is a possible backend follow-up.
+> Idempotency: replays send `client_uuid`, and every submission endpoint dedups on it — pregnancies,
+> complaints, appointments, assistances and suggestions each carry a unique `(tenant_id,
+> client_uuid)` and return the existing record on a replay. So a submission whose response was lost
+> cannot duplicate, whichever form produced it.
 
 ## PWA
 

@@ -96,6 +96,10 @@ export default function Reports() {
           </TextField>
         )}
 
+        {/* ponytail: PDF/Excel export is a stub — both buttons only raise an "coming soon" toast.
+            Wiring it needs a server-side export (the client has only the current page of rows):
+            add GET /api/reports/export?format=pdf|xlsx to ReportController, reusing ScopeResolver
+            so the export honours the same tenant/district/global scope as the charts. */}
         <Tooltip title={S.reports.exportPdf}>
           <IconButton onClick={() => setToast(true)} sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: '10px' }}>
             <PictureAsPdfRoundedIcon />

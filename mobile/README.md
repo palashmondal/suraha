@@ -4,7 +4,23 @@ Offline-first Android app (Ionic React + Capacitor) for the FWA (পরিবা
 প্রসূতি (expecting mother) records in the field and sync them to the Suraha backend. See the full
 design in [`../FWA_MOBILE_APP_PLAN.md`](../FWA_MOBILE_APP_PLAN.md).
 
-## What's built (Phases 0–3 + delivery)
+## Status against the plan's phases
+
+| Phase | State |
+|---|---|
+| 0 — Scaffold | ✅ Ionic React + Capacitor project, theme, dev server |
+| 1 — Connect & auth | ✅ Upazila directory + picker, FWA login, Bearer token in Preferences |
+| 2 — Local data layer | ✅ Dexie (IndexedDB) `mothers` + `outbox`, connectivity service |
+| 3 — Core workflow | ✅ My Mothers list, Add Mother 3-step stepper, GPS |
+| 4 — Sync engine | ✅ Outbox drain, `client_uuid` idempotency, badges, auto + manual sync |
+| 5 — Delivery & edit | ✅ Mother detail, edit, delivery confirmation (queued) |
+| 6 — Harden & ship | ⬜ **Not started** — no `android/` platform yet, no APK, no on-device QA |
+
+> The plan calls for Capacitor SQLite; this is built on **Dexie/IndexedDB** instead, which runs
+> unchanged in both the browser dev build and the Android WebView. That choice defers SQLCipher
+> encryption to Phase 6 — see [`src/lib/db.ts`](src/lib/db.ts).
+
+## What's built
 - First-run **upazila picker** (`GET /api/upazilas/directory` on the central host) → pins the API
   base to `https://{slug}.suraha.net/api`, so backend tenancy resolves as on web.
 - FWA **login** (username/password → Bearer token in Capacitor Preferences).
@@ -34,4 +50,5 @@ Requires Android Studio + SDK. For the pilot, distribute the signed APK directly
 
 ## Not yet (later phases)
 Photo capture, true background sync (app closed), SQLCipher-encrypted storage, birth-reg handoff,
-and the Flutter port.
+and the Flutter port. There are no automated tests in this package yet — `vite.config.ts` has the
+vitest block wired, but nothing uses it.

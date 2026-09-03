@@ -98,7 +98,7 @@ export default function MothersList() {
         )}
 
         <IonFab slot="fixed" vertical="bottom" horizontal="end">
-          <IonFabButton onClick={() => router.push('/mother/new')}>
+          <IonFabButton onClick={() => router.push('/add-mother')}>
             <IonIcon icon={addOutline} />
           </IonFabButton>
         </IonFab>

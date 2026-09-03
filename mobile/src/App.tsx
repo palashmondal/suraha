@@ -61,7 +61,8 @@ function Routes() {
         </Route>
 
         <Route exact path="/mothers"><Guard><MothersList /></Guard></Route>
-        <Route exact path="/mother/new"><Guard><AddMother /></Guard></Route>
+        {/* Distinct path so IonRouterOutlet can't match this against /mother/:id (id="new"). */}
+        <Route exact path="/add-mother"><Guard><AddMother /></Guard></Route>
         <Route exact path="/mother/:id/edit"><Guard><AddMother /></Guard></Route>
         <Route exact path="/mother/:id"><Guard><MotherDetail /></Guard></Route>
         <Route exact path="/settings"><Guard><Settings /></Guard></Route>
