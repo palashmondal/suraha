@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ColorModeProvider } from './theme/ColorModeContext';
 import { AuthProvider } from './auth/AuthContext';
 import { SelectedTenantProvider } from './tenant/SelectedTenantContext';
+import { SyncProvider } from './offline/SyncProvider';
 import App from './App';
 import './i18n';
 import './index.css';
@@ -13,9 +14,11 @@ createRoot(document.getElementById('root')!).render(
     <ColorModeProvider>
       <AuthProvider>
         <SelectedTenantProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
+          <SyncProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </SyncProvider>
         </SelectedTenantProvider>
       </AuthProvider>
     </ColorModeProvider>

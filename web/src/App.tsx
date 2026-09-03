@@ -40,6 +40,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import { useAuth } from './auth/AuthContext';
 import { bnStrings as S } from './i18n';
 import { useHostContext } from './tenant/host';
+import InstallPrompt from './pwa/InstallPrompt';
 
 function Spinner() {
   return (
@@ -100,6 +101,7 @@ export default function App() {
   if (host.kind === 'upazila' && host.is_active === false) return <InactiveSite />;
 
   return (
+    <>
     <Routes>
       {/* Public (per-subdomain) */}
       <Route path="/" element={<Home />} />
@@ -145,5 +147,7 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <InstallPrompt />
+    </>
   );
 }

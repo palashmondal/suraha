@@ -8,9 +8,11 @@ import PublicLayout from './PublicLayout';
 import { FormField, SelectField } from '../../components/form/FormFields';
 import { useUnionOptions } from '../../tenant/useUnionOptions';
 import { api, ApiError } from '../../api/client';
-import { createSuggestion } from '../../api/suggestion';
+import type { Suggestion } from '../../api/suggestion';
 import type { Kind } from '../../api/assistance';
+import { useSync } from '../../offline/SyncProvider';
 import SubmittedCard from './SubmittedCard';
+import QueuedOfflineCard from './QueuedOfflineCard';
 
 /** নাগরিক পরামর্শ — a citizen's proposal to the UNO, optionally confidential. */
 export default function SubmitSuggestion() {
@@ -19,7 +21,9 @@ export default function SubmitSuggestion() {
   const [kinds, setKinds] = useState<Kind[]>([]);
   const [f, setF] = useState<Record<string, string>>({});
   const [confidential, setConfidential] = useState(false);
+  const { submit: submitOrQueue } = useSync();
   const [token, setToken] = useState<string | null>(null);
+  const [queued, setQueued] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }));
@@ -35,17 +39,24 @@ export default function SubmitSuggestion() {
     setErr(null);
     setBusy(true);
     try {
-      const res = await createSuggestion({
-        applicant_name: f.applicant_name,
-        kind: f.kind,
-        title: f.title,
-        description: f.description,
-        is_confidential: confidential,
-        union_id: f.union_id ? Number(f.union_id) : undefined,
-        ward_no: f.ward_no ? Number(f.ward_no) : undefined,
-        mobile: f.mobile || undefined,
+      const res = await submitOrQueue({
+        kind: 'suggestion.create',
+        endpoint: '/suggestions',
+        method: 'POST',
+        label: f.title,
+        payload: {
+          applicant_name: f.applicant_name,
+          kind: f.kind,
+          title: f.title,
+          description: f.description,
+          is_confidential: confidential,
+          union_id: f.union_id ? Number(f.union_id) : undefined,
+          ward_no: f.ward_no ? Number(f.ward_no) : undefined,
+          mobile: f.mobile || undefined,
+        },
       });
-      setToken(res.data.tracking_token);
+      if (res.queued) setQueued(true);
+      else setToken((res.data as { data: Suggestion }).data.tracking_token);
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) navigate('/login');
       else setErr(e instanceof ApiError ? (Object.values(e.errors ?? {})[0]?.[0] ?? e.message) : S.auth.genericError);
@@ -60,7 +71,9 @@ export default function SubmitSuggestion() {
         <Typography sx={{ fontSize: 26, fontWeight: 800 }}>{S.suggestion.submitTitle}</Typography>
         <Typography sx={{ color: 'text.secondary', mb: 3 }}>{S.suggestion.submitLead}</Typography>
 
-        {token ? (
+        {queued ? (
+          <QueuedOfflineCard />
+        ) : token ? (
           <SubmittedCard token={token} />
         ) : (
           <Paper component="form" onSubmit={submit} elevation={0} sx={{ display: 'grid', gap: 2, background: 'transparent' }}>

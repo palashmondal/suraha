@@ -46,10 +46,17 @@ These were decided by the product owner — treat them as fixed constraints:
    endpoints are configuration and a self-hosted upazila can supply its own. Do **not** build a
    parallel manual path; do build a swappable adapter so a mock can stand in during development before
    access is granted.
-2. **FWA field client = installable PWA.** The FWA experience is a **Progressive Web App**:
-   installable, **offline-capable** (queue field entries locally and **background-sync** when
-   connectivity returns), with **GPS and camera** access. One codebase with the web app; no native app,
-   no app store.
+2. **Installable PWA with an offline outbox (all roles, mobile + desktop).** One client codebase
+   (`web/`) delivered as an installable **Progressive Web App** — FWA, officers/DC/SEAL, and citizens
+   all use it. **Offline-capable:** writes are stored locally in an **IndexedDB outbox** (client-
+   generated UUIDs) and **background-synced** when connectivity returns, with **GPS and camera**
+   access. No native app, no app store.
+   - *Implemented (`web/src/offline/`):* a dependency-free IndexedDB outbox + `SyncProvider` with
+     **submit-or-queue** (network-first, falling back to the queue on connection loss) and
+     flush-on-reconnect over the shared `api()` client. Wired into the **public/citizen submit forms**
+     (complaint, appointment, assistance, suggestion), which show an "saved offline, will sync" card
+     and replay automatically; an offline/pending-sync banner rides in `PublicLayout`. The FWA
+     capture path uses the same outbox (offline-first `queue()`).
 3. **Authentication = credentials + mobile OTP.** Officers log in with **admin-created username/
    password**; citizens with **mobile number + SMS OTP**. **No** NID verification and **no** government
    SSO in scope. (The SMS gateway is therefore used **for OTP only** — see decision 4.)
