@@ -3,15 +3,34 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'node:path';
 
-// FWA field client is delivered as an installable PWA (SURAHA_BUILD_PROMPT §1.1(2)).
-// The offline queue + Background Sync land with the pregnancy module (Milestone 4);
-// here we register the manifest + app-shell precache so the install path exists early.
+// Suraha is delivered as an installable PWA (SURAHA_BUILD_PROMPT §1.1(2)). Writes are queued in the
+// IndexedDB outbox (src/offline/) and background-synced; here the service worker precaches the app
+// shell, serves it for navigations while offline (navigateFallback), and runtime-caches uploaded
+// images so the installed app opens and remains usable without connectivity.
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
+      workbox: {
+        // Serve the cached SPA shell for navigation requests when offline. API and uploaded-file
+        // paths must never fall back to index.html — they are data, not navigations.
+        navigateFallback: 'index.html',
+        navigateFallbackDenylist: [/^\/api/, /^\/storage/],
+        runtimeCaching: [
+          {
+            // Uploaded files (report attachments, avatars, certificates) — show last-seen copy offline.
+            urlPattern: ({ url }) => url.pathname.startsWith('/storage'),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'suraha-uploads',
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+      },
       manifest: {
         name: 'সুরাহা',
         short_name: 'সুরাহা',
