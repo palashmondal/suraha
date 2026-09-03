@@ -7,6 +7,7 @@ import { bnStrings as S } from '../../i18n';
 import { useColorMode } from '../../theme/ColorModeContext';
 import { useAuth } from '../../auth/AuthContext';
 import { bn } from '../../utils/bnNum';
+import OfflineBanner from '../../components/OfflineBanner';
 import type { InfoItem } from '../../api/content';
 
 // Public-site chrome (§7): a top menu with the wordmark + nav + theme toggle + auth actions, and
@@ -45,6 +46,8 @@ export default function PublicLayout({ children, phones = [] }: { children: Reac
           )}
         </Container>
       </Box>
+
+      <OfflineBanner />
 
       <Box sx={{ flex: 1 }}>{children}</Box>
 
