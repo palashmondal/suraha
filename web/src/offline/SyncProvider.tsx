@@ -61,7 +61,7 @@ async function flushItem(item: OutboxItem): Promise<'done' | 'retry'> {
   try {
     await api(item.endpoint, {
       method: item.method,
-      body: { ...(item.payload as object), client_id: item.id },
+      body: { ...(item.payload as object), client_uuid: item.id },
     });
     await removeItem(item.id);
     return 'done';
@@ -142,7 +142,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         try {
           const data = await api(input.endpoint, {
             method: input.method,
-            body: { ...(input.payload as object), client_id: id },
+            body: { ...(input.payload as object), client_uuid: id },
           });
           return { ok: true, queued: false, data };
         } catch (err) {
