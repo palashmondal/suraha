@@ -16,7 +16,12 @@ class NotificationController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        abort_unless(tenancy()->initialized, 400, 'উপজেলা নির্ধারণ করা যায়নি।');
+        // Notifications are tenant-scoped, so the aggregate view (SEAL on the central host, DC
+        // on its district host, with no upazila picked) simply has none — an empty bell, not a 400.
+        if (! tenancy()->initialized) {
+            return response()->json(['unread_count' => 0, 'notifications' => []]);
+        }
+
         $role = $request->user()->role->value;
 
         // The bell shows the latest 20; the "সকল নোটিফিকেশন" page requests the full list (?all=1).
@@ -39,25 +44,25 @@ class NotificationController extends Controller
 
     public function markAllRead(Request $request): JsonResponse
     {
-        abort_unless(tenancy()->initialized, 400, 'উপজেলা নির্ধারণ করা যায়নি।');
-
-        Notification::where('target_role', $request->user()->role->value)
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+        if (tenancy()->initialized) {
+            Notification::where('target_role', $request->user()->role->value)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+        }
 
         return response()->json(['message' => 'সব পড়া হয়েছে।']);
     }
 
     public function markRead(Request $request, int $id): JsonResponse
     {
-        abort_unless(tenancy()->initialized, 400, 'উপজেলা নির্ধারণ করা যায়নি।');
-
         // Scoped to the caller's role (and tenant via the global scope) so users can only mark
-        // their own notifications read.
-        Notification::where('target_role', $request->user()->role->value)
-            ->where('id', $id)
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
+        // their own notifications read. Outside a tenant there is nothing to mark.
+        if (tenancy()->initialized) {
+            Notification::where('target_role', $request->user()->role->value)
+                ->where('id', $id)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+        }
 
         return response()->json(['message' => 'পড়া হয়েছে।']);
     }

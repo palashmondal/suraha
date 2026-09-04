@@ -27,6 +27,8 @@ class DashboardTest extends TestCase
         Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
         $res = $this->getJson('http://galachipa.lvh.me/api/dashboard/stats')->assertOk();
 
+        $galachipaComplaints = \App\Models\Upazila::find('galachipa')
+            ->run(fn () => \App\Models\Complaint::count());
         $galachipaAppointments = \App\Models\Upazila::find('galachipa')
             ->run(fn () => \App\Models\Appointment::count());
 
@@ -35,7 +37,7 @@ class DashboardTest extends TestCase
         // 18 pregnancies seeded in Galachipa.
         $this->assertSame(18, $res->json('pregnancy.total'));
         $this->assertSame(6, $res->json('pregnancy.delivered'));
-        $this->assertSame(10, $res->json('complaints.total'));
+        $this->assertSame($galachipaComplaints, $res->json('complaints.total'));
         // Counted from the seeded rows: the সূচি seed grows this number and a hard-coded
         // total goes stale with it.
         $this->assertSame($galachipaAppointments, $res->json('appointments.total'));

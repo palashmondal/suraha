@@ -25,7 +25,7 @@ interface AuthState {
   loading: boolean;
   officerLogin: (username: string, password: string) => Promise<void>;
   requestOtp: (phone: string) => Promise<string | null>;
-  verifyOtp: (phone: string, code: string, name?: string) => Promise<void>;
+  verifyOtp: (phone: string, code: string) => Promise<void>;
   refresh: () => Promise<void>;
   logout: () => Promise<void>;
   setUser: (u: AuthUser) => void;
@@ -78,11 +78,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.dev_code;
   };
 
-  const verifyOtp = async (phone: string, code: string, name?: string) => {
+  // Mobile + OTP is the whole citizen login; a name is never asked for here — the account
+  // starts nameless and the citizen fills it in on their profile if they want to.
+  const verifyOtp = async (phone: string, code: string) => {
     const res = await api<{ token: string; user: AuthUser }>('/auth/citizen/verify-otp', {
       method: 'POST',
       auth: false,
-      body: { phone, code, name },
+      body: { phone, code },
     });
     await applyToken(res);
   };

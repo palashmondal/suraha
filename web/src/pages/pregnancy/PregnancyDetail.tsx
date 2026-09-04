@@ -33,6 +33,7 @@ import { DateField, RadioGroupField, SelectField, FormField } from '../../compon
 import { getPregnancy, updateDeliveryStatus, type Pregnancy, type Vulnerability } from '../../api/pregnancy';
 import { approvePregnancy, birthRegDraft, type CertificateForm } from '../../api/birthReg';
 import LoadingState from '../../components/LoadingState';
+import PhoneLink from '../../components/PhoneLink';
 import { useAuth } from '../../auth/AuthContext';
 
 const yn = (v: boolean | null) => (v == null ? '—' : v ? S.pregnancy.yes : S.pregnancy.no);
@@ -555,7 +556,7 @@ export default function PregnancyDetail() {
                 <Box sx={{ mt: 2.5, display: 'grid', gap: 0.5 }}>
                   <PanelLine icon={<PhoneRoundedIcon fontSize="small" />}>
                     {p.mobile ? (
-                      <Link href={`tel:${p.mobile}`} underline="hover" color="inherit">{bn(p.mobile)}</Link>
+                      <PhoneLink phone={p.mobile} />
                     ) : (
                       S.pregnancy.noContact
                     )}

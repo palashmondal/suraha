@@ -7,12 +7,11 @@ import { bnStrings as S } from '../../i18n';
 import { bn, bnDate, bnTime } from '../../utils/bnNum';
 import PageHeader from '../../components/PageHeader';
 import EmptyState from '../../components/EmptyState';
+import CalendarFeedBox from '../../components/CalendarFeedBox';
 import LoadingState from '../../components/LoadingState';
 import { useSelectedTenant } from '../../tenant/SelectedTenantContext';
 import { listAppointmentSchedule, type ScheduledAppointment } from '../../api/appointment';
 import { ApiError } from '../../api/client';
-import { Button, TextField } from '@mui/material';
-import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
 
 // The UNO's appointment calendar (§8.3) — approved appointments grouped by date.
@@ -21,7 +20,6 @@ export default function AppointmentSchedule() {
   const { selectedUpazilaId } = useSelectedTenant();
   const [rows, setRows] = useState<ScheduledAppointment[]>([]);
   const [feedUrl, setFeedUrl] = useState('');
-  const [copied, setCopied] = useState(false);
   const [needsUpazila, setNeedsUpazila] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -50,27 +48,7 @@ export default function AppointmentSchedule() {
     <Box>
       <PageHeader title={S.appointment.scheduleTitle} />
 
-      {/* Optional: subscribe to the সূচি from Google Calendar. One-way, read-only. */}
-      {feedUrl && (
-        <Paper elevation={0} sx={{ p: 2, mb: 2, borderRadius: '14px', border: (t) => `1px solid ${t.palette.divider}` }}>
-          <Typography sx={{ fontWeight: 800, mb: 0.5 }}>{S.appointment.gcalTitle}</Typography>
-          <Typography sx={{ fontSize: 13, color: 'text.secondary', mb: 1.5 }}>{S.appointment.gcalHint}</Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-            <TextField value={feedUrl} size="small" fullWidth slotProps={{ htmlInput: { readOnly: true } }} />
-            <Button
-              variant="outlined"
-              startIcon={<ContentCopyRoundedIcon />}
-              onClick={() => {
-                void navigator.clipboard.writeText(feedUrl);
-                setCopied(true);
-              }}
-              sx={{ flexShrink: 0 }}
-            >
-              {copied ? S.appointment.gcalCopied : S.appointment.gcalCopy}
-            </Button>
-          </Stack>
-        </Paper>
-      )}
+      <CalendarFeedBox url={feedUrl} />
 
       {loading && <LoadingState />}
       {!loading && needsUpazila && (

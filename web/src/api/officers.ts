@@ -30,3 +30,13 @@ export const updateOfficer = (id: number, body: Record<string, unknown>) =>
 
 export const setOfficerActive = (id: number, is_active: boolean) =>
   api<{ data: Officer }>(`/officers/${id}/status`, { method: 'PATCH', body: { is_active } });
+
+/** Single-holder posts that already have an active officer — keys are "tenant:union[:ward]". */
+export interface FilledPosts {
+  uno: string[];
+  dc: number[];
+  up_sochib: string[];
+  fwa: string[];
+}
+
+export const getFilledPosts = () => api<FilledPosts>('/officer-posts');

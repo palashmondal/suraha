@@ -31,6 +31,17 @@ class OfficerManagementTest extends TestCase
         return User::where('username', 'uno_galachipa')->firstOrFail();
     }
 
+    /** SEAL on সকল উপজেলা (no tenant resolved) must still see every upazila's investigators. */
+    public function test_seal_lists_investigators_across_all_upazilas(): void
+    {
+        Sanctum::actingAs(User::where('role', 'seal_admin')->firstOrFail());
+
+        $tenants = collect($this->getJson('http://lvh.me/api/investigating-officers')
+            ->assertOk()->json('data'))->pluck('upazila')->unique();
+
+        $this->assertGreaterThan(1, $tenants->count());
+    }
+
     public function test_uno_only_sees_own_upazila_officers(): void
     {
         Sanctum::actingAs($this->uno());
@@ -287,5 +298,36 @@ class OfficerManagementTest extends TestCase
         );
         $this->assertNotContains('dumuria', $narrowed->pluck('tenant_id'));
         $this->assertLessThan($rows->count(), $narrowed->count());
+    }
+    /**
+     * UNO, DC, সচিব and FWA are posts, not job titles — one active holder per upazila, district,
+     * union and ward. A second would receive the same notifications and appear twice in every
+     * assignment dropdown.
+     */
+    public function test_a_second_holder_of_a_single_post_is_refused(): void
+    {
+        Sanctum::actingAs(User::where('role', 'seal_admin')->firstOrFail());
+
+        $existing = User::where('role', 'up_sochib')->where('tenant_id', 'galachipa')->firstOrFail();
+
+        $body = [
+            'name' => 'দ্বিতীয় সচিব',
+            'username' => 'sochib_two',
+            'password' => 'password123',
+            'role' => 'up_sochib',
+            'designation' => 'সচিব',
+            'phone' => '01799001122',
+            'email' => 'sochib.two@example.com',
+            'tenant_id' => 'galachipa',
+            'union_id' => $existing->union_id,
+        ];
+
+        $this->postJson('http://lvh.me/api/officers', $body)
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('role');
+
+        // Deactivating the incumbent is what makes a handover possible.
+        $existing->forceFill(['is_active' => false])->save();
+        $this->postJson('http://lvh.me/api/officers', $body)->assertCreated();
     }
 }

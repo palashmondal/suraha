@@ -19,6 +19,7 @@ class NotificationTest extends TestCase
     use RefreshDatabase;
 
     private const GALACHIPA = 'http://galachipa.lvh.me';
+    private const CENTRAL = 'http://lvh.me';
 
     protected function setUp(): void
     {
@@ -83,5 +84,18 @@ class NotificationTest extends TestCase
 
         // Their own upazila still works.
         $this->getJson(self::GALACHIPA.'/api/notifications')->assertOk();
+    }
+
+    /** SEAL on the central host has no upazila selected: an empty bell, not a 400. */
+    public function test_aggregate_view_returns_an_empty_bell(): void
+    {
+        Sanctum::actingAs(User::where('role', 'seal_admin')->firstOrFail());
+
+        $this->getJson(self::CENTRAL.'/api/notifications')
+            ->assertOk()
+            ->assertJson(['unread_count' => 0, 'notifications' => []]);
+
+        $this->postJson(self::CENTRAL.'/api/notifications/read-all')->assertOk();
+        $this->postJson(self::CENTRAL.'/api/notifications/1/read')->assertOk();
     }
 }

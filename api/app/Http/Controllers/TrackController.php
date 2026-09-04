@@ -119,7 +119,7 @@ class TrackController extends Controller
             'status_tone' => $s->status->tone(),
             'timeline' => [
                 $this->node('পরামর্শ দাখিল', $s->created_at, true),
-                $this->node($s->status->value === 'rejected' ? 'নাকচ' : 'গৃহীত', $s->decided_at, (bool) $s->decided_at),
+                $this->node($s->status->value === 'rejected' ? 'নথিজাত' : 'গৃহীত', $s->decided_at, (bool) $s->decided_at),
             ],
         ];
     }

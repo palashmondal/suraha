@@ -13,9 +13,9 @@ use Illuminate\Support\Facades\Log;
  */
 class LogSmsGateway implements SmsGateway
 {
-    public function send(string $phone, string $message): void
+    public function send(string $phone, string $message, string $purpose = 'other'): void
     {
         Log::channel(config('sms.log_channel', 'stack'))
-            ->info("[SMS→{$phone}] {$message}");
+            ->info("[SMS→{$phone}] ({$purpose}) {$message}");
     }
 }

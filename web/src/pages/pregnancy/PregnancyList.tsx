@@ -32,7 +32,13 @@ export default function PregnancyList() {
   const [q, setQ] = useState('');
   const [rows, setRows] = useState<Pregnancy[]>([]);
   const [tabs, setTabs] = useState<TabCount[]>([]);
+  const [page, setPage] = useState(1);
+  const [pageCount, setPageCount] = useState(1);
   const [loading, setLoading] = useState(true);
+
+  // The API returns one page of rows; without this the list showed the first 15 and the tab
+  // counts advertised a total nobody could reach. Any change to the filters starts over at 1.
+  useEffect(() => { setPage(1); }, [status, version, q]);
 
   // Searching hits the server, because the page holds one page of rows and the register is
   // larger than that — filtering what is already loaded would search a slice and call it the
@@ -42,11 +48,12 @@ export default function PregnancyList() {
     let current = true;
     const t = setTimeout(() => {
       setLoading(true);
-      listPregnancies({ status, q: q.trim() || undefined })
+      listPregnancies({ status, q: q.trim() || undefined, page })
         .then((r) => {
           if (!current) return;
           setRows(r.data);
           setTabs(r.tabs);
+          setPageCount(r.meta.last_page);
         })
         .catch(() => {
           if (!current) return;
@@ -60,7 +67,7 @@ export default function PregnancyList() {
       current = false;
       clearTimeout(t);
     };
-  }, [status, version, q]);
+  }, [status, version, q, page]);
 
   const tableTabs: TableTab[] = tabs.map((t) => ({
     key: t.key,
@@ -129,6 +136,7 @@ export default function PregnancyList() {
         columns={columns}
         rows={rows}
         loading={loading}
+        pagination={{ page, pageCount, onPage: setPage }}
         onRowClick={(r) => navigate(`/pregnancy/${r.id}`)}
       />
     </Box>

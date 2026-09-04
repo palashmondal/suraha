@@ -166,8 +166,9 @@ class AppointmentTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.notes.0.body', 'কেন্দ্রীয় নোট');
 
-        $this->assertDatabaseHas('appointment_notes', [
-            'appointment_id' => $id,
+        $this->assertDatabaseHas('notes', [
+            'notable_type' => \App\Models\Appointment::class,
+            'notable_id' => $id,
             'tenant_id' => 'galachipa',
         ]);
     }
@@ -185,11 +186,11 @@ class AppointmentTest extends TestCase
 
         // The note belongs to A, so reaching it through B must not work.
         $this->deleteJson(self::GALACHIPA."/api/appointments/{$idB}/notes/{$noteId}")->assertNotFound();
-        $this->assertDatabaseHas('appointment_notes', ['id' => $noteId]);
+        $this->assertDatabaseHas('notes', ['id' => $noteId]);
 
         $this->deleteJson(self::GALACHIPA."/api/appointments/{$idA}/notes/{$noteId}")
             ->assertOk()->assertJsonCount(0, 'data.notes');
-        $this->assertDatabaseMissing('appointment_notes', ['id' => $noteId]);
+        $this->assertDatabaseMissing('notes', ['id' => $noteId]);
     }
 
     public function test_dc_is_read_only(): void

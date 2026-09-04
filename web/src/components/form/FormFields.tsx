@@ -1,12 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
+  Box,
   FormControlLabel,
+  IconButton,
+  InputAdornment,
   MenuItem,
   Radio,
   RadioGroup,
   TextField,
 } from '@mui/material';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import FieldCard from './FieldCard';
+import BnCalendar from './BnCalendar';
 
 // A standard (underline) MD3 text input rendered inside a FieldCard. `multiline` gives the
 // large description boxes seen on the complaint/appointment forms.
@@ -49,7 +54,8 @@ export function FormField({
 
 export interface Option {
   value: string;
-  label: string;
+  /** ReactNode so an option can carry a muted suffix — e.g. "(ইতোমধ্যে একাউন্ট আছে)". */
+  label: ReactNode;
 }
 
 // Dropdown (concept_ui shows a chevron select, e.g. রক্তের গ্রুপ / ওয়ার্ড নং).
@@ -59,12 +65,15 @@ export function SelectField({
   onChange,
   options,
   placeholder,
+  disabled,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   options: Option[];
   placeholder?: string;
+  /** Shown, but not changeable — a value the page has already decided. */
+  disabled?: boolean;
 }) {
   return (
     <FieldCard label={label}>
@@ -75,6 +84,7 @@ export function SelectField({
         hiddenLabel
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
         SelectProps={{ displayEmpty: true }}
       >
         {placeholder && (
@@ -102,8 +112,18 @@ export function SelectField({
  * the native control gives no way to set it, so this is a plain text field with a mask. The value
  * in and out is still YYYY-MM-DD, so callers and the API are unchanged.
  */
-export function DateField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+export function DateField({ label, value, onChange, dense }: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  /** Toolbar form: an outlined, labelled input instead of a FieldCard — same calendar. */
+  dense?: boolean;
+}) {
   const [text, setText] = useState(() => isoToDmy(value));
+  // Our own month grid rather than the browser's: the native one prints "Sep 2026" in Latin
+  // digits with no way to localise it. Typing দিন/মাস/বছর still works; this is the pointer route.
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const fieldRef = useRef<HTMLDivElement>(null);
 
   // Follow the value when it is set from outside (loading a record into an edit form).
   useEffect(() => {
@@ -121,19 +141,51 @@ export function DateField({ label, value, onChange }: { label: string; value: st
     onChange(dmyToIso(masked));
   };
 
-  return (
-    <FieldCard label={label}>
+  const openPicker = () => setAnchor(fieldRef.current);
+
+  const pick = (iso: string) => {
+    setText(isoToDmy(iso));
+    onChange(iso);
+  };
+
+  const field = (
+    <Box ref={fieldRef} sx={{ position: 'relative' }}>
       <TextField
-        variant="standard"
-        fullWidth
-        hiddenLabel
+        variant={dense ? 'outlined' : 'standard'}
+        size={dense ? 'small' : 'medium'}
+        fullWidth={!dense}
+        label={dense ? label : undefined}
+        hiddenLabel={!dense}
         placeholder="দিন/মাস/বছর"
         value={text}
         onChange={(e) => handle(e.target.value)}
-        inputProps={{ inputMode: 'numeric' }}
+        // Clicking the field opens the calendar; typing দিন/মাস/বছর still works for anyone who
+        // prefers the keyboard.
+        onClick={openPicker}
+        slotProps={{
+          inputLabel: dense ? { shrink: true } : undefined,
+          htmlInput: { inputMode: 'numeric' },
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton size="small" aria-label={label} edge="end" onClick={openPicker}>
+                  <CalendarMonthOutlinedIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
+        }}
       />
-    </FieldCard>
+      <BnCalendar
+        anchorEl={anchor}
+        value={value ?? ''}
+        onPick={pick}
+        onClose={() => setAnchor(null)}
+      />
+    </Box>
   );
+
+  return dense ? field : <FieldCard label={label}>{field}</FieldCard>;
 }
 
 function isoToDmy(iso: string): string {

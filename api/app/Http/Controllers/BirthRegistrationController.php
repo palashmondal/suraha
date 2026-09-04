@@ -42,7 +42,11 @@ class BirthRegistrationController extends Controller
         $list = (clone $base)
             ->when(in_array($status, ['pending_entry', 'entered'], true), fn ($b) => $b->where('status', $status))
             ->with('union', 'upazila')
+            // created_at alone is not a total order — rows seeded or filed in the same second
+            // tie, and a tied row can land on a different page each request, so a listing
+            // could drop a row it had just shown. id breaks the tie deterministically.
             ->latest()
+            ->latest('id')
             ->paginate(15);
 
         return response()->json([

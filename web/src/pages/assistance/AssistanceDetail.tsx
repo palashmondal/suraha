@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Alert, Box, Button, IconButton, Paper, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, IconButton, Paper, Stack, Tooltip, Typography } from '@mui/material';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import StarRoundedIcon from '@mui/icons-material/StarRounded';
+import StarOutlineRoundedIcon from '@mui/icons-material/StarOutlineRounded';
 import { useNavigate, useParams } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
 import { bn, bnDate } from '../../utils/bnNum';
@@ -8,11 +10,18 @@ import DetailRow from '../../components/DetailRow';
 import SectionTitle from '../../components/SectionTitle';
 import StatusPill from '../../components/StatusPill';
 import SummaryPanel from '../../components/SummaryPanel';
+import TrackingCard from '../../components/TrackingCard';
 import AppDialog from '../../components/AppDialog';
+import NotesPanel from '../../components/NotesPanel';
+import AttachmentGallery from '../../components/AttachmentGallery';
 import { FormField } from '../../components/form/FormFields';
+import PhoneLink from '../../components/PhoneLink';
 import { ApiError } from '../../api/client';
 import { useAuth } from '../../auth/AuthContext';
-import { approveAssistance, getAssistance, rejectAssistance, type Assistance } from '../../api/assistance';
+import {
+  approveAssistance, getAssistance, rejectAssistance, addAssistanceNote, deleteAssistanceNote,
+  setAssistanceImportant, type Assistance,
+} from '../../api/assistance';
 
 type Dlg = null | 'approve' | 'reject';
 
@@ -26,10 +35,24 @@ export default function AssistanceDetail() {
 
   const isManager = user?.role === 'uno' || user?.role === 'seal_admin';
 
+  const [marking, setMarking] = useState(false);
+
   const load = () => { if (id) getAssistance(id).then((r) => setA(r.data)).catch(() => setA(null)); };
   useEffect(load, [id]);
 
   if (!a) return null;
+
+  const toggleImportant = async () => {
+    setMarking(true);
+    try {
+      const r = await setAssistanceImportant(a.id, !a.is_important);
+      setA(r.data);
+    } catch {
+      /* the mark is a convenience; a failed toggle leaves the page as it was */
+    } finally {
+      setMarking(false);
+    }
+  };
 
   const taka = (v: number | null) => (v == null ? '—' : `${bn(v)} ${S.assistance.taka}`);
 
@@ -39,6 +62,22 @@ export default function AssistanceDetail() {
         <Paper elevation={0} sx={{ borderRadius: '16px', p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton onClick={() => navigate('/humanitarian')}><ArrowBackRoundedIcon /></IconButton>
           <Typography sx={{ fontSize: 18, fontWeight: 700, flex: 1 }}>{a.title}</Typography>
+          {/* The mark is the UNO's; everyone else sees whether it is set, but only as an icon. */}
+          {(isManager || a.is_important) && (
+            <Tooltip title={a.is_important ? S.assistance.unmarkImportant : S.assistance.markImportant}>
+              <span>
+                <IconButton
+                  aria-label={a.is_important ? S.assistance.unmarkImportant : S.assistance.markImportant}
+                  disabled={!isManager || marking}
+                  onClick={() => void toggleImportant()}
+                >
+                  {a.is_important
+                    ? <StarRoundedIcon sx={{ color: 'warning.main' }} />
+                    : <StarOutlineRoundedIcon />}
+                </IconButton>
+              </span>
+            </Tooltip>
+          )}
           <StatusPill label={a.status_label} tone={a.status_tone} />
         </Paper>
 
@@ -46,12 +85,14 @@ export default function AssistanceDetail() {
 
         <Paper elevation={0} sx={{ borderRadius: '16px', p: 2.5 }}>
           <SectionTitle>{S.assistance.secApplicant}</SectionTitle>
-          <Box sx={{ mt: 1.5 }}>
-            <DetailRow label={S.assistance.fName} value={a.applicant_name} />
-            <DetailRow label={S.assistance.fMobile} value={a.mobile ? bn(a.mobile) : '—'} />
-            <DetailRow label={S.assistance.fNid} value={a.nid ? bn(a.nid) : '—'} />
-            <DetailRow label={S.assistance.fUnion} value={a.union ?? '—'} />
-            <DetailRow label={S.assistance.fWard} value={a.ward_no ? bn(a.ward_no) : '—'} />
+          {/* Paired side by side like the অভিযোগ detail page; dividers off, they would cut
+              across each pair. */}
+          <Box sx={{ mt: 1, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, columnGap: 3 }}>
+            <DetailRow label={S.assistance.fName} value={a.applicant_name} divider={false} />
+            <DetailRow label={S.assistance.fMobile} value={<PhoneLink phone={a.mobile} />} divider={false} />
+            <DetailRow label={S.assistance.fNid} value={a.nid ? bn(a.nid) : '—'} divider={false} />
+            <DetailRow label={S.assistance.fUnion} value={a.union ?? '—'} divider={false} />
+            <DetailRow label={S.assistance.fWard} value={a.ward_no ? bn(a.ward_no) : '—'} divider={false} />
             <DetailRow label={S.assistance.fAddress} value={a.address ?? '—'} divider={false} />
           </Box>
         </Paper>
@@ -62,20 +103,29 @@ export default function AssistanceDetail() {
             <DetailRow label={S.assistance.fKind} value={a.kind_label} />
             <DetailRow label={S.assistance.colDate} value={a.created_at ? bnDate(a.created_at) : '—'} />
             <DetailRow label={S.assistance.amountRequested} value={taka(a.amount_requested)} />
-            <DetailRow label={S.assistance.amountApproved} value={taka(a.amount_approved)} />
             <DetailRow label={S.assistance.decisionNote} value={a.decision_note ?? '—'} />
             <DetailRow label={S.assistance.fDesc} value={a.description ?? '—'} divider={false} />
           </Box>
         </Paper>
+
+        {(a.attachments?.length ?? 0) > 0 && (
+          <Paper elevation={0} sx={{ borderRadius: '16px', p: 2.5 }}>
+            <SectionTitle>{S.attachments.title}</SectionTitle>
+            <Box sx={{ mt: 1.5 }}>
+              <AttachmentGallery attachments={a.attachments!} />
+            </Box>
+          </Paper>
+        )}
       </Box>
 
       <Box sx={{ position: 'sticky', top: 16 }}>
+        <TrackingCard token={a.tracking_token} sx={{ mb: 2 }} />
+
         <SummaryPanel
           title={a.applicant_name}
           lines={[
             { label: S.assistance.colKind, value: a.kind_label },
             { label: S.assistance.amountRequested, value: taka(a.amount_requested) },
-            { label: S.assistance.colToken, value: a.tracking_token ?? '—' },
           ]}
         >
           {isManager && a.status === 'pending' && (
@@ -85,6 +135,16 @@ export default function AssistanceDetail() {
             </Stack>
           )}
         </SummaryPanel>
+
+        <NotesPanel
+          title={S.assistance.notesTitle}
+          placeholder={S.assistance.notePlaceholder}
+          notes={a.notes ?? []}
+          canAdd={isManager}
+          onAdd={(body) => addAssistanceNote(a.id, body)}
+          onDelete={(noteId) => deleteAssistanceNote(a.id, noteId)}
+          onChanged={setA}
+        />
       </Box>
 
       <DecisionDialog

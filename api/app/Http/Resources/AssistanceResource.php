@@ -20,6 +20,7 @@ class AssistanceResource extends JsonResource
             'status_tone' => $this->status->tone(),
             'kind' => $this->kind->value,
             'kind_label' => $this->kind->labelBn(),
+            'is_important' => (bool) $this->is_important,
             'applicant_name' => $this->applicant_name,
             'mobile' => $this->mobile,
             'nid' => $this->nid,
@@ -33,6 +34,13 @@ class AssistanceResource extends JsonResource
             'decision_note' => $this->decision_note,
             'decided_at' => $this->decided_at?->toIso8601String(),
             'created_at' => $this->created_at?->toDateString(),
+            'attachments' => $this->whenLoaded('attachments', fn () => $this->attachments->map(fn ($a) => [
+                'url' => $a->url(),
+                'original_name' => $a->original_name,
+                'kind' => $a->kind,
+            ])->all()),
+
+            'notes' => NoteResource::collection($this->whenLoaded('notes')),
         ];
     }
 }

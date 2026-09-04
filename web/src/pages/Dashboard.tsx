@@ -9,6 +9,7 @@ import EmptyState from '../components/EmptyState';
 import { bnStrings as S } from '../i18n';
 import { bn, bnDate } from '../utils/bnNum';
 import { useAuth } from '../auth/AuthContext';
+import { autoStartTour } from '../tour/tour';
 import { useSelectedTenant } from '../tenant/SelectedTenantContext';
 import { getDashboardStats, type DashboardStats } from '../api/dashboard';
 import { listAppointments, type Appointment } from '../api/appointment';
@@ -62,6 +63,12 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [version, role, reloadKey]);
 
+  // First-run guided intro: fires once the cards are actually on the page, since the tour
+  // anchors to them. autoStartTour() itself is a no-op after the first time.
+  useEffect(() => {
+    if (stats) autoStartTour();
+  }, [stats]);
+
   // A transient stats-fetch failure must never leave the page permanently blank:
   // surface an error with a retry instead of returning null forever.
   if (statsError && !stats) {
@@ -105,7 +112,7 @@ export default function Dashboard() {
       </Box>
 
       {/* Row 1 — module summary cards (role-filtered, real numbers) */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' }, gap: 2.5, mb: 2.5 }}>
+      <Box data-tour="summary" sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' }, gap: 2.5, mb: 2.5 }}>
         {can(['uno', 'dc', 'seal_admin']) && (
           <ModuleSummaryCard
             title={S.dashboard.officer.title}
@@ -147,7 +154,7 @@ export default function Dashboard() {
 
       {/* Row 2 — recent lists + awareness slider (role-filtered) */}
       {(showAppointments || showComplaints || showSliders) && (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(auto-fit, minmax(280px, 1fr))' }, gap: 2.5 }}>
+        <Box data-tour="recent" sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(auto-fit, minmax(280px, 1fr))' }, gap: 2.5 }}>
           {showAppointments && (
             <SectionCard
               title={S.dashboard.appointment.title}

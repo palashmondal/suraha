@@ -48,7 +48,11 @@ class PregnancyController extends Controller
                 fn ($b) => $b->where('delivery_status', $status),
             )
             ->with('union', 'birthRegistration', 'upazila.district')
+            // created_at alone is not a total order — rows seeded or filed in the same second
+            // tie, and a tied row can land on a different page each request, so a listing
+            // could drop a row it had just shown. id breaks the tie deterministically.
             ->latest()
+            ->latest('id')
             ->paginate(15);
 
         return response()->json([

@@ -11,9 +11,11 @@ use App\Models\Complaint;
 use App\Models\ComplaintEvent;
 use App\Models\Notification;
 use App\Models\User;
-use App\Support\TrackingToken;
+use App\Support\IcsFeed;
+use App\Support\UpazilaOffice;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 
@@ -34,18 +36,44 @@ class ComplaintController extends Controller
         $user = $request->user();
 
         $base = Complaint::query()
-            ->when($user->role === Role::INVESTIGATING_OFFICER, fn ($b) => $b->where('investigating_officer_id', $user->id))
+            ->when($user->role->canInvestigate(), fn ($b) => $b->where('investigating_officer_id', $user->id))
+            // One officer's desk (তদন্ত কর্মকর্তা তালিকা → officer page). Applied after the line
+            // above, so an investigator can never widen the list past their own assignments.
+            ->when($request->query('officer'), fn ($b, $id) => $b->where('investigating_officer_id', $id))
+            // Only the columns the তালিকা actually shows, so every hit is visible in its row.
             ->when($request->query('q'), fn ($b, $q) => $b->where(fn ($w) => $w
                 ->where('title', 'ilike', "%{$q}%")
-                ->orWhere('complainant_name', 'ilike', "%{$q}%")));
+                ->orWhere('complainant_name', 'ilike', "%{$q}%")
+                ->orWhere('description', 'ilike', "%{$q}%")));
 
-        $statuses = ['pending', 'assigned', 'completed', 'rejected'];
+        // Lifecycle order, and a partition: every complaint falls in exactly one, so সকল is still
+        // the tabs added up. শুনানি নির্ধারিত is not a status of its own — it is an assigned
+        // complaint that has a hearing date — so নিযুক্ত means "assigned, hearing not set yet".
+        $filters = [
+            'pending' => fn ($b) => $b->where('status', ComplaintStatus::PENDING),
+            'assigned' => fn ($b) => $b->where('status', ComplaintStatus::ASSIGNED)->whereNull('hearing_date'),
+            'hearing_scheduled' => fn ($b) => $b->where('status', ComplaintStatus::ASSIGNED)->whereNotNull('hearing_date'),
+            'completed' => fn ($b) => $b->where('status', ComplaintStatus::COMPLETED),
+            'rejected' => fn ($b) => $b->where('status', ComplaintStatus::REJECTED),
+            // Not a তালিকা tab — the officer page groups its work as চলমান vs সম্পন্ন, and
+            // "under investigation" is simply ASSIGNED, hearing set or not.
+            'in_progress' => fn ($b) => $b->where('status', ComplaintStatus::ASSIGNED),
+        ];
+
+        // The five that partition the register; `in_progress` overlaps them, so it is filterable
+        // but never counted as a tab of its own.
+        $tabKeys = ['pending', 'assigned', 'hearing_scheduled', 'completed', 'rejected'];
+
         $status = $request->query('status', 'all');
 
         $list = (clone $base)
-            ->when(in_array($status, $statuses, true), fn ($b) => $b->where('status', $status))
-            ->with('union', 'investigatingOfficer')
+            ->when(isset($filters[$status]), $filters[$status] ?? null)
+            ->with('union', 'upazila', 'investigatingOfficer')
+            // created_at alone is not a total order — rows seeded or filed in the same second
+            // tie, and a tied row can land on a different page each request, so a listing
+            // could drop a row it had just shown. id breaks the tie deterministically.
             ->latest()
+            ->latest('id')
             ->paginate(15);
 
         return response()->json([
@@ -55,20 +83,29 @@ class ComplaintController extends Controller
                 'last_page' => $list->lastPage(),
                 'total' => $list->total(),
             ],
-            'tabs' => collect(['all', ...$statuses])
+            'tabs' => collect(['all', ...$tabKeys])
                 ->map(fn ($key) => [
                     'key' => $key,
                     'total' => $key === 'all'
                         ? (clone $base)->count()
-                        : (clone $base)->where('status', $key)->count(),
+                        : $filters[$key](clone $base)->count(),
                 ])->all(),
         ]);
     }
 
-    public function show(Complaint $complaint): ComplaintResource
+    public function show(Request $request, Complaint $complaint): ComplaintResource
     {
+        // index() scopes an investigating role to its own assignments; without the same guard
+        // here the detail route handed out any complaint in the upazila by id.
+        abort_if(
+            $request->user()->role->canInvestigate()
+                && $complaint->investigating_officer_id !== $request->user()->id,
+            403,
+            'এই অভিযোগ আপনার দায়িত্বে নেই।',
+        );
+
         return new ComplaintResource(
-            $complaint->load('union', 'investigatingOfficer', 'citizen', 'events.actor', 'events.attachments'),
+            $complaint->load('union', 'investigatingOfficer', 'citizen', 'attachments', 'events.actor', 'events.attachments'),
         );
     }
 
@@ -80,6 +117,7 @@ class ComplaintController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:180'],
             'complainant_name' => ['required', 'string', 'max:120'],
+            'father_name' => ['nullable', 'string', 'max:120'],
             'union_id' => ['nullable', 'integer', 'exists:unions,id'],
             'ward_no' => ['nullable', 'integer', 'min:1', 'max:99'],
             'address' => ['nullable', 'string', 'max:255'],
@@ -107,8 +145,6 @@ class ComplaintController extends Controller
             $data['citizen_id'] = $user->id;
         }
         $data['status'] = ComplaintStatus::PENDING;
-        $data['tracking_token'] = TrackingToken::generate('SUR-CMP', 'complaints');
-
         $complaint = Complaint::create($data);
         $this->recordEvent($complaint, 'filed', null, [], $user);
 
@@ -129,7 +165,7 @@ class ComplaintController extends Controller
         $data = $request->validate([
             'investigating_officer_id' => [
                 'required', 'integer',
-                Rule::exists('users', 'id')->where('role', Role::INVESTIGATING_OFFICER->value),
+                Rule::exists('users', 'id')->whereIn('role', Role::investigatorRoles()),
             ],
             'due_date' => ['required', 'date', 'after_or_equal:today'],
             'comment' => ['nullable', 'string'],
@@ -145,13 +181,16 @@ class ComplaintController extends Controller
             'status' => ComplaintStatus::ASSIGNED,
         ])->save();
 
+        // The timeline sentence is composed from this meta, not stored as prose — so it stays
+        // right if a name or designation is later corrected. `comment` keeps the UNO's own note.
         $this->recordEvent($complaint, 'accepted', $data['comment'] ?? null, [
             'officer_id' => $officer->id,
             'officer_name' => $officer->name,
+            'officer_designation' => $officer->designation,
             'due_date' => $data['due_date'],
         ], $request->user());
 
-        $this->notifyOfficers('তদন্তের জন্য নতুন অভিযোগ', $complaint);
+        $this->notifyOfficers('তদন্তের জন্য নতুন অভিযোগ', $complaint, $officer);
 
         return $this->fresh($complaint);
     }
@@ -186,6 +225,15 @@ class ComplaintController extends Controller
             'document' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
             'images' => ['nullable', 'array', 'max:10'],
             'images.*' => ['image', 'max:10240'],
+        ], [
+            // PHP drops a file larger than upload_max_filesize before the app ever sees it, and
+            // Laravel reports that as `uploaded` — the default message ("failed to upload") names
+            // no cause, which reads as a broken button.
+            'document.uploaded' => 'ফাইলটি আপলোড করা যায়নি। সার্ভারের সর্বোচ্চ আপলোড সীমার (upload_max_filesize) চেয়ে বড় ফাইল গ্রহণ করা যায় না।',
+            'images.*.uploaded' => 'ছবিটি আপলোড করা যায়নি। সার্ভারের সর্বোচ্চ আপলোড সীমার চেয়ে বড় ফাইল গ্রহণ করা যায় না।',
+            'document.max' => 'প্রতিবেদনের ফাইল সর্বোচ্চ ১০ MB হতে পারে।',
+            'document.mimes' => 'প্রতিবেদন PDF ফরম্যাটে জমা দিতে হবে।',
+            'images.*.max' => 'প্রতিটি ছবি সর্বোচ্চ ১০ MB হতে পারে।',
         ]);
 
         $event = $this->recordEvent($complaint, 'report', $request->input('comment'), [], $user);
@@ -214,6 +262,17 @@ class ComplaintController extends Controller
     /** UNO: schedule a hearing after a report — the date lands on the UNO's schedule (§8.4). */
     public function scheduleHearing(Request $request, Complaint $complaint): ComplaintResource
     {
+        // A শুনানি sits on the investigation report — there is nothing to hear before one is in.
+        // The UI already hides the button, but that is not enforcement; after a পুনঃতদন্ত the
+        // latest step is `reinvestigation` again, so a fresh report is required each time.
+        abort_unless(
+            // reorder(), not latest(): the relation already sorts ascending, and a second
+            // orderBy would just be appended — leaving the first event, not the last.
+            $complaint->events()->reorder('id', 'desc')->value('type') === 'report',
+            422,
+            'তদন্ত প্রতিবেদন জমা হওয়ার পর শুনানির তারিখ নির্ধারণ করা যাবে।',
+        );
+
         $data = $request->validate([
             'hearing_date' => ['required', 'date', 'after_or_equal:today'],
             'comment' => ['nullable', 'string'],
@@ -250,19 +309,33 @@ class ComplaintController extends Controller
         $data = $request->validate([
             'comment' => ['required', 'string'],
             'due_date' => ['nullable', 'date', 'after_or_equal:today'],
+            // A পুনঃতদন্ত may go back to the same officer or to a different one — the UNO's call,
+            // so the officer is part of the order rather than carried over silently.
+            'investigating_officer_id' => [
+                'nullable', 'integer',
+                Rule::exists('users', 'id')->whereIn('role', Role::investigatorRoles()),
+            ],
         ]);
+
+        $officer = isset($data['investigating_officer_id'])
+            ? User::find($data['investigating_officer_id'])
+            : $complaint->investigatingOfficer;
 
         $complaint->fill([
             'status' => ComplaintStatus::ASSIGNED,
             'hearing_date' => null,
             'due_date' => $data['due_date'] ?? $complaint->due_date,
+            'investigating_officer_id' => $officer?->id ?? $complaint->investigating_officer_id,
         ])->save();
 
         $this->recordEvent($complaint, 'reinvestigation', $data['comment'], [
             'due_date' => $data['due_date'] ?? null,
+            'officer_id' => $officer?->id,
+            'officer_name' => $officer?->name,
+            'officer_designation' => $officer?->designation,
         ], $request->user());
 
-        $this->notifyOfficers('পুনঃতদন্তের নির্দেশ', $complaint);
+        $this->notifyOfficers('পুনঃতদন্তের নির্দেশ', $complaint, $officer);
 
         return $this->fresh($complaint);
     }
@@ -284,13 +357,53 @@ class ComplaintController extends Controller
                 'hearing_date' => $c->hearing_date?->toDateString(),
             ]);
 
-        return response()->json(['hearings' => $hearings]);
+        return response()->json([
+            'hearings' => $hearings,
+            // Paste into Google Calendar → Other calendars → From URL (§8.4, optional).
+            'feed_url' => IcsFeed::url('/api/complaints/hearings.ics', 'hearing', tenant()->id),
+        ]);
+    }
+
+    /**
+     * The শুনানি ক্যালেন্ডার as an iCalendar feed, so the UNO can subscribe to it from Google
+     * Calendar exactly as with the সাক্ষাৎকার সূচি. Unauthenticated — Google sends no Bearer
+     * token — so the ?t= HMAC in the URL is the secret. Read-only and one-way.
+     */
+    public function hearingsCalendarFeed(Request $request): Response
+    {
+        $tenant = tenant();
+        abort_unless(
+            $tenant && hash_equals(IcsFeed::token('hearing', $tenant->id), (string) $request->query('t')),
+            404,
+        );
+
+        $events = Complaint::query()
+            ->whereNotNull('hearing_date')
+            ->where('status', ComplaintStatus::ASSIGNED)
+            ->with('investigatingOfficer')
+            ->get()
+            ->map(fn (Complaint $c) => [
+                'uid' => 'hearing-'.$c->id.'@'.$tenant->id.'.suraha',
+                'stamp' => $c->updated_at,
+                // A hearing carries a date but no time, so it lands as an all-day event.
+                'date' => $c->hearing_date->toDateString(),
+                'time' => null,
+                'summary' => 'অভিযোগ শুনানি: '.$c->complainant_name.' — '.$c->title,
+                'description' => implode("\n", array_filter([
+                    $c->description,
+                    $c->investigatingOfficer ? 'তদন্তকারী কর্মকর্তা: '.$c->investigatingOfficer->name : null,
+                    $c->mobile ? 'মোবাইল: '.$c->mobile : null,
+                ])),
+                'location' => UpazilaOffice::nameBn(),
+            ])->all();
+
+        return IcsFeed::response('সুরাহা — অভিযোগ শুনানি', 'suraha-hearings.ics', $events);
     }
 
     /** The upazila's investigating officers, for the assign dropdown. */
     public function investigators(): JsonResponse
     {
-        $officers = User::where('role', Role::INVESTIGATING_OFFICER->value)
+        $officers = User::whereIn('role', Role::investigatorRoles())
             ->where('tenant_id', tenant()->getTenantKey())
             ->where('is_active', true)
             ->get(['id', 'name', 'designation'])
@@ -324,15 +437,23 @@ class ComplaintController extends Controller
         ]);
     }
 
-    private function notifyOfficers(string $title, Complaint $complaint): void
+    /**
+     * Notifications are role-targeted, so this addresses the assignee's OWN role — widening the
+     * appointable pool must not ping every সচিব about a তদন্ত কর্মকর্তা's case, or the reverse.
+     */
+    private function notifyOfficers(string $title, Complaint $complaint, ?User $officer): void
     {
-        Notification::emit('complaint', Role::INVESTIGATING_OFFICER, $title, $complaint->title, '/complaint/'.$complaint->id);
+        if (! $officer) {
+            return;
+        }
+
+        Notification::emit('complaint', $officer->role, $title, $complaint->title, '/complaint/'.$complaint->id);
     }
 
     private function fresh(Complaint $complaint): ComplaintResource
     {
         return new ComplaintResource(
-            $complaint->load('union', 'investigatingOfficer', 'citizen', 'events.actor', 'events.attachments'),
+            $complaint->load('union', 'investigatingOfficer', 'citizen', 'attachments', 'events.actor', 'events.attachments'),
         );
     }
 }

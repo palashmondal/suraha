@@ -31,7 +31,13 @@ export default function AppointmentList() {
   const [q, setQ] = useState('');
   const [rows, setRows] = useState<Appointment[]>([]);
   const [tabs, setTabs] = useState<AppointmentTab[]>([]);
+  const [page, setPage] = useState(1);
+  const [pageCount, setPageCount] = useState(1);
   const [loading, setLoading] = useState(true);
+
+  // The API returns one page of rows; without this the list showed the first 15 and the tab
+  // counts advertised a total nobody could reach. Any change to the filters starts over at 1.
+  useEffect(() => { setPage(1); }, [status, version, q]);
 
   // Server-side like the মাতৃ তালিকা: the page holds one page of rows, so filtering what is
   // already loaded would search a slice and call it the answer. Debounced, and a stale response
@@ -40,11 +46,12 @@ export default function AppointmentList() {
     let current = true;
     const t = setTimeout(() => {
       setLoading(true);
-      listAppointments({ status, q: q.trim() || undefined })
+      listAppointments({ status, q: q.trim() || undefined, page })
         .then((r) => {
           if (!current) return;
           setRows(r.data);
           setTabs(r.tabs);
+          setPageCount(r.meta.last_page);
         })
         .catch(() => {
           if (!current) return;
@@ -58,7 +65,7 @@ export default function AppointmentList() {
       current = false;
       clearTimeout(t);
     };
-  }, [status, version, q]);
+  }, [status, version, q, page]);
 
   const tableTabs: TableTab[] = tabs.map((t) => ({
     key: t.key,
@@ -103,6 +110,7 @@ export default function AppointmentList() {
         columns={columns}
         rows={rows}
         loading={loading}
+        pagination={{ page, pageCount, onPage: setPage }}
         onRowClick={(r) => navigate(`/appointment/${r.id}`)}
         rowActions={(r) => [
           { key: 'view', label: S.common.details, icon: <VisibilityOutlinedIcon fontSize="small" />, onClick: () => navigate(`/appointment/${r.id}`) },

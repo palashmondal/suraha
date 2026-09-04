@@ -49,6 +49,14 @@ class DatabaseSeeder extends Seeder
         $this->officer('fwa_galachipa', 'পরিবার কল্যাণ সহকারী', Role::FWA, tenantId: $galachipa->id, unionId: $sadar?->id, wardNo: 3, designation: 'পরিবার কল্যাণ সহকারী');
         $this->officer('tdonto_galachipa', 'তদন্ত কর্মকর্তা', Role::INVESTIGATING_OFFICER, tenantId: $galachipa->id, designation: 'তদন্ত কর্মকর্তা');
 
+        // ---- Dumuria officers ----------------------------------------
+        // The second upazila needs its own staff, or every cross-upazila view (SEAL's সকল উপজেলা
+        // lists, the DC's district rollups) has only one upazila's officers in it. No UNO here on
+        // purpose: an upazila without one is what exercises the "add a UNO" flow.
+        $dumuriaSadar = Union::where('tenant_id', $dumuria->id)->first();
+        $this->officer('sochib_dumuria', 'ইউপি সচিব, ডুমুরিয়া', Role::UP_SOCHIB, tenantId: $dumuria->id, unionId: $dumuriaSadar?->id, designation: 'ইউপি সচিব');
+        $this->officer('tdonto_dumuria', 'তদন্ত কর্মকর্তা, ডুমুরিয়া', Role::INVESTIGATING_OFFICER, tenantId: $dumuria->id, designation: 'তদন্ত কর্মকর্তা');
+
         // ---- Sample citizen in Galachipa -----------------------------
         User::create([
             'name' => 'নাগরিক (নমুনা)',
@@ -64,6 +72,7 @@ class DatabaseSeeder extends Seeder
         $this->call(BirthRegistrationSeeder::class);
         $this->call(ComplaintSeeder::class);
         $this->call(AppointmentSeeder::class);
+        $this->call(AttachmentSeeder::class);
         $this->call(PublicContentSeeder::class);
         $this->call(NotificationSeeder::class);
 

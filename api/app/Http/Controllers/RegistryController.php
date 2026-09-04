@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\ResolveHost;
 use App\Models\District;
 use App\Models\Division;
 use App\Models\Union;
@@ -31,6 +32,7 @@ class RegistryController extends Controller
         if ($district) {
             return response()->json([
                 'kind' => 'district',
+                'is_admin' => false,
                 'slug' => $district->slug,
                 'name_bn' => $district->name_bn,
                 'district_bn' => $district->name_bn,
@@ -40,13 +42,23 @@ class RegistryController extends Controller
         }
 
         if (! tenancy()->initialized) {
-            return response()->json(['kind' => 'central', 'slug' => null, 'name_bn' => null, 'is_active' => true]);
+            // Both central hosts report kind "central" — everything that scopes by host (the
+            // upazila switcher, union options, login copy) treats them identically. `is_admin`
+            // only decides whether "/" serves the product landing page or the console.
+            return response()->json([
+                'kind' => 'central',
+                'is_admin' => ResolveHost::isAdminHost($request->getHost()),
+                'slug' => null,
+                'name_bn' => null,
+                'is_active' => true,
+            ]);
         }
 
         $upazila = tenant()->load('district');
 
         return response()->json([
             'kind' => 'upazila',
+            'is_admin' => false,
             'slug' => $upazila->getTenantKey(),
             'name_bn' => $upazila->name_bn,
             'district_bn' => $upazila->district?->name_bn,
@@ -87,9 +99,11 @@ class RegistryController extends Controller
      */
     public function unions(Request $request)
     {
-        $tenantId = tenancy()->initialized
-            ? tenant()->getTenantKey()
-            : $request->header('X-Upazila');
+        // `?upazila=` names one explicitly — the SEAL console provisions an officer into an
+        // upazila it is not currently switched into, and its union list must follow that choice
+        // rather than the header. Same disclosure either way: these names are public per subdomain.
+        $tenantId = $request->query('upazila')
+            ?: (tenancy()->initialized ? tenant()->getTenantKey() : $request->header('X-Upazila'));
 
         abort_unless($tenantId && Upazila::whereKey($tenantId)->exists(), 400, 'উপজেলা নির্ধারণ করা যায়নি।');
 
@@ -123,6 +137,8 @@ class RegistryController extends Controller
                 'name' => $u->name,
                 'name_bn' => $u->name_bn,
                 'district' => $u->district?->name_bn,
+                // The console groups the picker by district and provisions a DC against the id.
+                'district_id' => $u->district_id,
             ]),
         ]);
     }

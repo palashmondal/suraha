@@ -25,7 +25,7 @@ enum ComplaintStatus: string
         return match ($this) {
             self::PENDING => 'অপেক্ষমাণ',
             self::ASSIGNED => 'তদন্ত কর্মকর্তা নিযুক্ত',
-            self::COMPLETED => 'সম্পন্ন',
+            self::COMPLETED => 'নিষ্পন্ন',
             self::REJECTED => 'বাতিল',
         };
     }

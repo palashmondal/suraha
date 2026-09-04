@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Models\Appointment;
 use App\Models\Assistance;
 use App\Models\BirthRegistration;
+use App\Enums\ComplaintStatus;
 use App\Models\Complaint;
 use App\Models\Suggestion;
 use App\Models\Pregnancy;
@@ -105,6 +106,12 @@ class ActivitySeeder extends Seeder
             // Factories stamp today; move the record and its own dates back to the month it
             // belongs to, or the chart would still show everything landing at once.
             $record->forceFill($this->datesFor($model, $at))->saveQuietly();
+
+            // Every অভিযোগ was filed at some moment — without the event its detail page shows an
+            // empty কার্যক্রম, which is what the seeded rows looked like before.
+            if ($model === Complaint::class) {
+                $this->seedComplaintTimeline($record, $at);
+            }
         }
     }
 
@@ -136,6 +143,34 @@ class ActivitySeeder extends Seeder
             Complaint::class => random_int(1, 10) > 3 ? $factory->completed() : $factory->assigned(),
             default => $factory,
         };
+    }
+
+    /** The lifecycle steps a seeded complaint has already been through, dated with the record. */
+    private function seedComplaintTimeline(Complaint $c, CarbonImmutable $at): void
+    {
+        $step = function (string $type, array $meta = []) use ($c, $at) {
+            $c->events()->create(['type' => $type, 'actor_role' => 'uno', 'meta' => $meta])
+                ->forceFill(['created_at' => $at, 'updated_at' => $at])->saveQuietly();
+        };
+
+        $step('filed');
+
+        if ($c->status === ComplaintStatus::PENDING) {
+            return;
+        }
+
+        $officer = $c->investigatingOfficer;
+        $step('accepted', [
+            'officer_id' => $officer?->id,
+            'officer_name' => $officer?->name,
+            'officer_designation' => $officer?->designation,
+            'due_date' => $c->due_date?->toDateString(),
+        ]);
+
+        if ($c->status === ComplaintStatus::COMPLETED) {
+            $step('report');
+            $step('completed');
+        }
     }
 
     /** A plausible working moment inside the month — never in the future. */

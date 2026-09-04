@@ -17,12 +17,14 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
+import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
 import LockResetRoundedIcon from '@mui/icons-material/LockResetRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import { bnStrings as S } from '../i18n';
 import { useColorMode } from '../theme/ColorModeContext';
+import { startTour } from '../tour/tour';
 import NotificationMenu from '../components/NotificationMenu';
 import UnifiedSearch from '../components/UnifiedSearch';
 import { getNotifications, markAllNotificationsRead, markNotificationRead, type AppNotification } from '../api/notifications';
@@ -30,12 +32,7 @@ import { useAuth } from '../auth/AuthContext';
 import { useSelectedTenant } from '../tenant/SelectedTenantContext';
 import { useHostContext } from '../tenant/host';
 import { api } from '../api/client';
-
-interface SwitchableUpazila {
-  id: string;
-  name_bn: string;
-  district: string | null;
-}
+import type { SwitchableUpazila } from '../api/registry';
 
 export default function TopBar() {
   const theme = useTheme();
@@ -135,11 +132,12 @@ export default function TopBar() {
 
       {/* Middle: the UNO's search, or the upazila switcher for the roles that have one. */}
       <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
-      {canSearch && <UnifiedSearch />}
+      {canSearch && <Box data-tour="search" sx={{ minWidth: 0, flex: 1 }}><UnifiedSearch /></Box>}
 
       {canSwitch && (
         <>
           <Box
+            data-tour="search"
             onClick={(e) => setAnchor(e.currentTarget)}
             sx={{
               display: 'flex',
@@ -183,6 +181,13 @@ export default function TopBar() {
 
       {/* Right column: the controls, pushed to the far edge. */}
       <Box sx={{ minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2 }}>
+      {/* Replay the guided intro (§ tour) — the first-run tour points here as its last step. */}
+      <Tooltip title={S.tour.start}>
+        <IconButton data-tour="help" aria-label={S.tour.start} onClick={() => startTour()}>
+          <HelpOutlineRoundedIcon />
+        </IconButton>
+      </Tooltip>
+
       {/* Theme toggle */}
       <Tooltip title={mode === 'light' ? 'ডার্ক মোড' : 'লাইট মোড'}>
         <IconButton onClick={toggle}>
@@ -191,7 +196,7 @@ export default function TopBar() {
       </Tooltip>
 
       {/* Notification bell (in-app notifications, §9) */}
-      <IconButton onClick={(e) => { setNotifAnchor(e.currentTarget); loadNotifs(); }}>
+      <IconButton data-tour="notifications" onClick={(e) => { setNotifAnchor(e.currentTarget); loadNotifs(); }}>
         <Badge badgeContent={unread} color="error" overlap="circular">
           <NotificationsNoneRoundedIcon />
         </Badge>
@@ -208,6 +213,7 @@ export default function TopBar() {
 
       {/* Profile: name (bigger) + designation on the left, picture rightmost; opens menu */}
       <Box
+        data-tour="profile"
         onClick={(e) => setProfileAnchor(e.currentTarget)}
         sx={{
           display: 'flex',

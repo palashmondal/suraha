@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box, MenuItem, TextField } from '@mui/material';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
 import { bn, bnDate } from '../../utils/bnNum';
@@ -16,34 +17,59 @@ const TAB_LABEL: Record<string, string> = {
   pending: S.assistance.tabPending,
   approved: S.assistance.tabApproved,
   rejected: S.assistance.tabRejected,
+  important: S.assistance.tabImportant,
 };
 const TAB_TONE: Record<string, 'pending' | 'success' | 'info' | 'danger'> = {
   all: 'info',
   pending: 'pending',
   approved: 'success',
   rejected: 'danger',
+  important: 'pending',
 };
 
 export default function AssistanceList() {
   const navigate = useNavigate();
   const { version } = useSelectedTenant();
   const [status, setStatus] = useState('all');
+  const [q, setQ] = useState('');
   const [kind, setKind] = useState('');
   const [rows, setRows] = useState<Assistance[]>([]);
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [kinds, setKinds] = useState<Kind[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Server-side, like the অভিযোগ list: the API returns one page of rows, so filtering what is
+  // already loaded would search a slice and call it the answer. Debounced, and a stale response
+  // is dropped if a newer request has gone out since.
   useEffect(() => {
-    setLoading(true);
-    listAssistances({ status, kind: kind || undefined })
-      .then((r) => { setRows(r.data); setTabs(r.tabs); setKinds(r.kinds); })
-      .catch(() => { setRows([]); setTabs([]); })
-      .finally(() => setLoading(false));
-  }, [status, kind, version]);
+    let current = true;
+    const t = setTimeout(() => {
+      setLoading(true);
+      listAssistances({ status, kind: kind || undefined, q: q.trim() || undefined })
+        .then((r) => {
+          if (!current) return;
+          setRows(r.data);
+          setTabs(r.tabs);
+          setKinds(r.kinds);
+        })
+        .catch(() => { if (current) { setRows([]); setTabs([]); } })
+        .finally(() => { if (current) setLoading(false); });
+    }, 250);
+
+    return () => { current = false; clearTimeout(t); };
+  }, [status, kind, q, version]);
 
   const columns: Column<Assistance>[] = [
-    { key: 'title', header: S.assistance.colTitle, render: (r) => <span style={{ fontWeight: 600 }}>{r.title}</span> },
+    {
+      key: 'title',
+      header: S.assistance.colTitle,
+      render: (r) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontWeight: 600 }}>
+          {r.is_important && <StarRoundedIcon sx={{ fontSize: 18, color: 'warning.main' }} titleAccess={S.assistance.important} />}
+          {r.title}
+        </Box>
+      ),
+    },
     { key: 'applicant_name', header: S.assistance.colApplicant },
     { key: 'kind_label', header: S.assistance.colKind },
     {
@@ -57,7 +83,10 @@ export default function AssistanceList() {
 
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <PageHeader title={S.assistance.listTitle} />
+      <PageHeader
+        title={S.assistance.listTitle}
+        search={{ value: q, onChange: setQ, placeholder: S.assistance.search }}
+      />
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
         <TableTabs tabs={tabs.map((t): TableTab => ({ key: t.key, label: TAB_LABEL[t.key] ?? t.key, total: t.total, tone: TAB_TONE[t.key] }))} active={status} onChange={setStatus} />

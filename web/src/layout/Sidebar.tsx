@@ -32,6 +32,7 @@ import ApartmentRoundedIcon from '@mui/icons-material/ApartmentRounded';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded';
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
+import SmsOutlinedIcon from '@mui/icons-material/SmsOutlined';
 import LocalPhoneOutlinedIcon from '@mui/icons-material/LocalPhoneOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
@@ -104,6 +105,7 @@ const reportsItem: Item = {
 // SEAL-only, so it is added per role rather than declared here.
 const managementSection: Child[] = [
   { key: 'users', icon: <GroupOutlinedIcon fontSize="small" />, label: S.nav.users, route: '/users' },
+  { key: 'sms', icon: <SmsOutlinedIcon fontSize="small" />, label: S.nav.smsSettings, route: '/sms-settings' },
 ];
 const instancesChild: Child = { key: 'instances', icon: <ApartmentRoundedIcon fontSize="small" />, label: S.nav.instances, route: '/instances' };
 const districtsChild: Child = { key: 'districts', icon: <MapOutlinedIcon fontSize="small" />, label: S.nav.districts, route: '/districts' };
@@ -155,9 +157,10 @@ export default function Sidebar() {
   // The DC is read-only (DenyReadOnlyWrites enforces it server-side): dashboard and reports only,
   // so the nav never offers a page whose actions would be refused.
   const isDc = user?.role === 'dc';
-  // An FWA works mothers and nothing else; a UP Sochib works mothers and the birth registrations
-  // that follow a delivery. Both keep only the প্রসূতি কল্যাণ group, with the children they can
-  // actually open — the routes already refuse the rest, so offering it would only 403.
+  // An FWA works mothers and nothing else. A UP Sochib works mothers, the birth registrations
+  // that follow a delivery, and any অভিযোগ the UNO has appointed them to investigate. Both keep
+  // only the groups they can actually open — the routes already refuse the rest, so offering
+  // more would only 403.
   const isFwa = user?.role === 'fwa';
   const isSochib = user?.role === 'up_sochib';
   const fieldOnly = isFwa || isSochib;
@@ -195,8 +198,8 @@ export default function Sidebar() {
   const services: Item[] = (isDc ? [] : serviceItems)
     .filter((it) => ! it.managerOnly || isManager)
     .filter((it) => ! isInvestigator || it.key === 'complaint')
-    .filter((it) => ! fieldOnly || it.key === 'pregnancy')
-    .map((it) => (fieldOnly && it.children
+    .filter((it) => ! fieldOnly || it.key === 'pregnancy' || (isSochib && it.key === 'complaint'))
+    .map((it) => (fieldOnly && it.children && it.key === 'pregnancy'
       ? {
           ...it,
           children: it.children.filter((c) => c.key === 'pregnancy.list' || (isSochib && c.key === 'birth')),
@@ -308,6 +311,7 @@ export default function Sidebar() {
 
   return (
     <Box
+      data-tour="sidebar"
       sx={{
         width: collapsed ? SIDEBAR_RAIL : SIDEBAR_WIDTH,
         transition: 'width 180ms ease',
@@ -392,7 +396,7 @@ export default function Sidebar() {
       {services.length > 0 && (
         <>
           <SectionHeader label={S.nav.sectionServices} collapsed={collapsed} />
-          <List disablePadding>{services.map(renderItem)}</List>
+          <List disablePadding data-tour="services">{services.map(renderItem)}</List>
         </>
       )}
 

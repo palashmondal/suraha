@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Models\ComplaintEvent;
+use App\Support\UpazilaOffice;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,13 +20,18 @@ class ComplaintResource extends JsonResource
             'id' => $this->id,
             'tracking_token' => $this->tracking_token,
             'status' => $this->status->value,
-            'status_label' => $this->status->labelBn(),
-            'status_tone' => $this->status->tone(),
+            // Derived, not stored: a scheduled hearing reads as its own stage. See the model.
+            'status_label' => $this->statusLabelBn(),
+            'status_tone' => $this->statusTone(),
 
             'title' => $this->title,
             'complainant_name' => $this->complainant_name,
+            'father_name' => $this->father_name,
             'union_id' => $this->union_id,
             'union' => $this->whenLoaded('union', fn () => $this->union?->name_bn),
+            'upazila' => $this->whenLoaded('upazila', fn () => $this->upazila?->name_bn),
+            // Where a শুনানি is held — the same venue string the .ics feed and the SMS use.
+            'office' => UpazilaOffice::nameBn(),
             'ward_no' => $this->ward_no,
             'address' => $this->address,
             'latitude' => $this->latitude,
@@ -47,6 +53,13 @@ class ComplaintResource extends JsonResource
             'assigned_at' => $this->assigned_at?->toDateTimeString(),
             'completed_at' => $this->completed_at?->toDateTimeString(),
             'rejected_at' => $this->rejected_at?->toDateTimeString(),
+
+            // What the citizen attached when filing.
+            'attachments' => $this->whenLoaded('attachments', fn () => $this->attachments->map(fn ($a) => [
+                'url' => $a->url(),
+                'original_name' => $a->original_name,
+                'kind' => $a->kind,
+            ])->all()),
 
             // Full step history → detail timeline (oldest → newest).
             'timeline' => $this->whenLoaded('events', fn () => $this->events->map(fn (ComplaintEvent $e) => [

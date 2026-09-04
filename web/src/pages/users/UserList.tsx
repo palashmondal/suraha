@@ -13,6 +13,7 @@ import { usePagination } from '../../components/usePagination';
 import { useSelectedTenant } from '../../tenant/SelectedTenantContext';
 import { useAuth } from '../../auth/AuthContext';
 import PageHeader from '../../components/PageHeader';
+import PhoneLink from '../../components/PhoneLink';
 import CreateOfficerDialog from '../officers/CreateOfficerDialog';
 import EditOfficerDialog from '../officers/EditOfficerDialog';
 import { bn } from '../../utils/bnNum';
@@ -117,8 +118,10 @@ export default function UserList() {
                 <TableCell sx={{ fontWeight: 600 }}>{u.name}</TableCell>
                 {isSeal && <TableCell>{u.upazila?.name_bn ?? '—'}</TableCell>}
                 <TableCell>{u.role_label_bn}</TableCell>
-                <TableCell sx={{ direction: 'ltr', fontFamily: 'monospace', fontSize: 13 }}>
-                  {u.username ?? u.phone ?? '—'}
+                <TableCell sx={{ direction: 'ltr', fontSize: 13 }}>
+                  {/* A citizen signs in with their mobile, so this column IS a phone number for
+                      them — dialable like every other one in the app. */}
+                  {u.username ?? <PhoneLink phone={u.phone} />}
                 </TableCell>
                 <TableCell>
                   <StatusPill

@@ -46,7 +46,7 @@ export async function downloadFile(path: string, filename: string): Promise<void
   if (selected) headers['X-Upazila'] = selected;
 
   const res = await fetch(`${API_BASE}${path}`, { headers });
-  if (!res.ok) throw new ApiError(res.status, 'Download failed');
+  if (!res.ok) throw new ApiError(res.status, 'ফাইলটি ডাউনলোড করা যায়নি। আবার চেষ্টা করুন।');
 
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
@@ -99,7 +99,7 @@ export async function api<T = unknown>(path: string, opts: Options = {}): Promis
   if (!res.ok) {
     throw new ApiError(
       res.status,
-      (data as { message?: string }).message ?? 'Request failed',
+      (data as { message?: string }).message ?? 'একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।',
       (data as { errors?: Record<string, string[]> }).errors,
     );
   }

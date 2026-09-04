@@ -8,6 +8,7 @@ use App\Enums\Role;
 use App\Http\Resources\UserResource;
 use App\Models\Upazila;
 use App\Models\User;
+use App\Support\ScopeResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -26,7 +27,7 @@ use Illuminate\Validation\ValidationException;
 class OfficerController extends Controller
 {
     /** Roles a UNO may assign (upazila-level staff only). */
-    private const UNO_ASSIGNABLE = [Role::FWA, Role::UP_SOCHIB, Role::INVESTIGATING_OFFICER];
+    private const UNO_ASSIGNABLE = [Role::UP_SOCHIB, Role::INVESTIGATING_OFFICER, Role::FWA];
 
     /**
      * Everyone attached to one upazila: its officers, its citizens, and the DC of its district —
@@ -162,21 +163,7 @@ class OfficerController extends Controller
             }
         }
 
-        // One serving UNO per upazila. Every upazila is provisioned with one already, so this
-        // normally blocks a duplicate; a deactivated predecessor is ignored, which is what makes
-        // a handover possible without first deleting the outgoing officer's account.
-        if ($role === Role::UNO) {
-            $taken = User::where('role', Role::UNO->value)
-                ->where('tenant_id', $data['tenant_id'])
-                ->where('is_active', true)
-                ->exists();
-
-            if ($taken) {
-                throw ValidationException::withMessages([
-                    'role' => ['এই উপজেলায় ইতিমধ্যে একজন সক্রিয় ইউএনও রয়েছেন। নতুন ইউএনও যুক্ত করার আগে পূর্বেরজনকে নিষ্ক্রিয় করুন।'],
-                ]);
-            }
-        }
+        $this->refuseDuplicatePost($role, $data);
 
         $data['password'] = Hash::make($data['password']);
         $data['is_active'] = $data['is_active'] ?? true;
@@ -191,13 +178,16 @@ class OfficerController extends Controller
      * assign to complaints. Tenant-scoped: resolved from the subdomain, or from the SEAL's selected
      * upazila (X-Upazila) on the central host.
      */
-    public function investigators()
+    public function investigators(Request $request)
     {
-        $tenantId = $this->currentTenantId();
+        // Whatever the viewer can reach: the resolved upazila, or — for SEAL on সকল উপজেলা —
+        // every upazila at once. Demanding a tenant here left the তালিকা blank on the central
+        // host, where SEAL has no upazila selected.
+        [$tenantIds] = ScopeResolver::resolve($request->user());
 
         $officers = User::query()
             ->where('role', Role::INVESTIGATING_OFFICER->value)
-            ->where('tenant_id', $tenantId)
+            ->whereIn('tenant_id', $tenantIds)
             ->with('upazila')
             ->orderBy('name')
             ->paginate(20);
@@ -210,6 +200,87 @@ class OfficerController extends Controller
      * so a login account is created for it with a one-time temporary password (returned once).
      * Role is fixed to Investigating Officer and the upazila is the current tenant context.
      */
+    /**
+     * Four roles are a post, not a job title: an upazila has one serving UNO, a district one DC,
+     * a union one সচিব, and a ward one FWA. Creating a second silently produced two accounts that
+     * both received the same notifications and both appeared in every assignment dropdown.
+     *
+     * Only *active* holders count, so a handover is deactivate-then-create rather than requiring
+     * the outgoing officer's record to be deleted.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function refuseDuplicatePost(Role $role, array $data): void
+    {
+        // [scope columns => the message when it is already filled]
+        $posts = [
+            Role::UNO->value => [
+                ['tenant_id' => $data['tenant_id'] ?? null],
+                'এই উপজেলায় ইতিমধ্যে একজন সক্রিয় ইউএনও রয়েছেন। নতুন ইউএনও যুক্ত করার আগে পূর্বেরজনকে নিষ্ক্রিয় করুন।',
+            ],
+            Role::DC->value => [
+                ['district_id' => $data['district_id'] ?? null],
+                'এই জেলায় ইতিমধ্যে একজন সক্রিয় জেলা প্রশাসক রয়েছেন। নতুন ডিসি যুক্ত করার আগে পূর্বেরজনকে নিষ্ক্রিয় করুন।',
+            ],
+            Role::UP_SOCHIB->value => [
+                ['tenant_id' => $data['tenant_id'] ?? null, 'union_id' => $data['union_id'] ?? null],
+                'এই ইউনিয়নে ইতিমধ্যে একজন সক্রিয় সচিব রয়েছেন। নতুন সচিব যুক্ত করার আগে পূর্বেরজনকে নিষ্ক্রিয় করুন।',
+            ],
+            Role::FWA->value => [
+                [
+                    'tenant_id' => $data['tenant_id'] ?? null,
+                    'union_id' => $data['union_id'] ?? null,
+                    'ward_no' => $data['ward_no'] ?? null,
+                ],
+                'এই ওয়ার্ডে ইতিমধ্যে একজন সক্রিয় স্বাস্থ্যকর্মী (FWA) রয়েছেন। নতুন জন যুক্ত করার আগে পূর্বেরজনকে নিষ্ক্রিয় করুন।',
+            ],
+        ];
+
+        if (! isset($posts[$role->value])) {
+            return;
+        }
+
+        [$scope, $message] = $posts[$role->value];
+
+        $taken = User::query()
+            ->where('role', $role->value)
+            ->where('is_active', true)
+            ->where(function ($q) use ($scope) {
+                foreach ($scope as $column => $value) {
+                    $q->where($column, $value);
+                }
+            })
+            ->exists();
+
+        if ($taken) {
+            throw ValidationException::withMessages(['role' => [$message]]);
+        }
+    }
+
+    /**
+     * Which single-holder posts are already filled, so the create form can mark them before the
+     * form is submitted rather than refusing it afterwards. Same rule as refuseDuplicatePost():
+     * only active holders count, so a deactivated predecessor leaves the post open.
+     */
+    public function filledPosts(): JsonResponse
+    {
+        $held = User::query()
+            ->whereIn('role', [Role::UNO->value, Role::DC->value, Role::UP_SOCHIB->value, Role::FWA->value])
+            ->where('is_active', true)
+            ->get(['role', 'tenant_id', 'district_id', 'union_id', 'ward_no']);
+
+        return response()->json([
+            'uno' => $held->where('role', Role::UNO)->pluck('tenant_id')->filter()->values(),
+            'dc' => $held->where('role', Role::DC)->pluck('district_id')->filter()->values(),
+            // "tenant:union" and "tenant:union:ward" — one string per filled post, so the client
+            // tests membership with a Set rather than scanning objects.
+            'up_sochib' => $held->where('role', Role::UP_SOCHIB)
+                ->map(fn ($u) => $u->tenant_id.':'.$u->union_id)->values(),
+            'fwa' => $held->where('role', Role::FWA)
+                ->map(fn ($u) => $u->tenant_id.':'.$u->union_id.':'.$u->ward_no)->values(),
+        ]);
+    }
+
     public function storeInvestigator(Request $request): JsonResponse
     {
         $tenantId = $this->currentTenantId();

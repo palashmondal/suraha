@@ -9,3 +9,20 @@ body,
   height: 100%;
   font-family: 'Tiro Bangla', 'Hind Siliguri', 'Noto Sans Bengali', system-ui, sans-serif;
 }
+
+/* Guided intro (driver.js). The library ships its own popover chrome; these rules only match
+   it to the app. The popover stays white in both themes — a light card reads best against
+   the dimmed overlay, dark mode included. */
+.driver-popover.suraha-tour {
+  font-family: inherit;
+  border-radius: 12px;
+  max-width: 320px;
+}
+.driver-popover.suraha-tour .driver-popover-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+.driver-popover.suraha-tour .driver-popover-description {
+  font-size: 14px;
+  line-height: 1.7;
+}

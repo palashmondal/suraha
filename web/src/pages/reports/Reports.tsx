@@ -3,6 +3,7 @@ import { Box, Chip, IconButton, MenuItem, Snackbar, TextField, Tooltip, Typograp
 import PictureAsPdfRoundedIcon from '@mui/icons-material/PictureAsPdfRounded';
 import GridOnRoundedIcon from '@mui/icons-material/GridOnRounded';
 import { bnStrings as S } from '../../i18n';
+import { DateField } from '../../components/form/FormFields';
 import { bn } from '../../utils/bnNum';
 import StatTile from '../../components/StatTile';
 import ChartCard from '../../components/charts/ChartCard';
@@ -64,24 +65,13 @@ export default function Reports() {
 
         <Box sx={{ flex: 1, minWidth: 16 }} />
 
-        <TextField
-          type="date"
-          label={S.reports.from}
-          size="small"
-          InputLabelProps={{ shrink: true }}
-          value={from}
-          onChange={(e) => setFrom(e.target.value)}
-          sx={{ width: 160 }}
-        />
-        <TextField
-          type="date"
-          label={S.reports.to}
-          size="small"
-          InputLabelProps={{ shrink: true }}
-          value={to}
-          onChange={(e) => setTo(e.target.value)}
-          sx={{ width: 160 }}
-        />
+        {/* The shared field, so the date range uses the same Bangla calendar as every form. */}
+        <Box sx={{ width: 170 }}>
+          <DateField dense label={S.reports.from} value={from} onChange={setFrom} />
+        </Box>
+        <Box sx={{ width: 170 }}>
+          <DateField dense label={S.reports.to} value={to} onChange={setTo} />
+        </Box>
         {!isAggregate && (
           <TextField
             select

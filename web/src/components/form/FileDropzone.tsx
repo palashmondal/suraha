@@ -9,18 +9,23 @@ export default function FileDropzone({
   onFile,
   accept = 'image/*,application/pdf',
   helper = S.common.maxFile,
+  multiple = false,
+  label,
 }: {
   onFile: (file: File) => void;
   accept?: string;
   helper?: string;
+  multiple?: boolean;  // picks several at once; onFile fires per file and the parent collects them
+  label?: string;      // overrides the picked-file name, e.g. when the parent lists the files
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
-  const pick = (file?: File | null) => {
-    if (!file) return;
-    setFileName(file.name);
-    onFile(file);
+  const pick = (files?: FileList | null) => {
+    const picked = Array.from(files ?? []);
+    if (picked.length === 0) return;
+    setFileName(picked.length > 1 ? `${picked.length}` : picked[0].name);
+    picked.forEach(onFile);
   };
 
   return (
@@ -29,7 +34,7 @@ export default function FileDropzone({
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
         e.preventDefault();
-        pick(e.dataTransfer.files?.[0]);
+        pick(e.dataTransfer.files);
       }}
       sx={{
         display: 'flex',
@@ -47,14 +52,15 @@ export default function FileDropzone({
       }}
     >
       <FileUploadOutlinedIcon />
-      <Typography sx={{ fontWeight: 700 }}>{fileName ?? S.common.browse}</Typography>
+      <Typography sx={{ fontWeight: 700 }}>{label ?? fileName ?? S.common.browse}</Typography>
       <Typography sx={{ fontSize: 13, color: 'text.secondary' }}>{helper}</Typography>
       <input
         ref={inputRef}
         type="file"
         accept={accept}
+        multiple={multiple}
         hidden
-        onChange={(e) => pick(e.target.files?.[0])}
+        onChange={(e) => pick(e.target.files)}
       />
     </Box>
   );

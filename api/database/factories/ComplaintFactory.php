@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\ComplaintStatus;
+use App\Enums\Role;
 use App\Models\Complaint;
+use App\Models\Union;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -24,6 +27,10 @@ class ComplaintFactory extends Factory
         'শহরের আবর্জনা অপসারণে দেরি',
         'পুলিশের গাড়ির আগুন লাগার ঘটনা',
     ];
+    private const FATHER_NAMES = [
+        'মৃত আব্দুল জলিল', 'হাজী মোঃ ইব্রাহিম', 'মোঃ সিরাজুল ইসলাম', 'মৃত নূর মোহাম্মদ',
+        'আলহাজ্ব আবু বকর সিদ্দিক', 'মোঃ রফিকুল ইসলাম',
+    ];
     private const PLACES = ['আমখোলা বাজার সুইস গেট', 'হরিদেবপুর খেয়াঘাট', 'সকালের বাজারের পাশে', 'শহীদ মিনার এলাকা'];
 
     public function definition(): array
@@ -31,6 +38,10 @@ class ComplaintFactory extends Factory
         return [
             'status' => ComplaintStatus::PENDING->value,
             'complainant_name' => $this->faker->randomElement(self::NAMES),
+            'father_name' => $this->faker->randomElement(self::FATHER_NAMES),
+            // Every অভিযোগ happens somewhere in the upazila; without this the তালিকা's
+            // ইউনিয়ন column was empty for every row this factory made on its own.
+            'union_id' => Union::inRandomOrder()->value('id'),
             'ward_no' => $this->faker->numberBetween(1, 9),
             'address' => $this->faker->randomElement(self::PLACES).' থেকে ১ কি:মি উত্তরে।',
             'latitude' => $this->faker->latitude(22.0, 23.9),
@@ -49,6 +60,20 @@ class ComplaintFactory extends Factory
             'status' => ComplaintStatus::ASSIGNED->value,
             'assigned_at' => now(),
             'due_date' => $this->faker->dateTimeBetween('now', '+1 week')->format('Y-m-d'),
+            // The status literally means "তদন্ত কর্মকর্তা নিযুক্ত", so one has to be. Without this
+            // the state produced rows whose তদন্তকারী কর্মকর্তা column was empty; only the seeders
+            // that happened to pass an officer of their own were coherent.
+            'investigating_officer_id' => User::where('role', Role::INVESTIGATING_OFFICER)
+                ->inRandomOrder()
+                ->value('id'),
+        ]);
+    }
+
+    public function rejected(): static
+    {
+        return $this->state(fn () => [
+            'status' => ComplaintStatus::REJECTED->value,
+            'rejected_at' => now(),
         ]);
     }
 

@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
 import { useColorMode } from '../../theme/ColorModeContext';
 import { useAuth } from '../../auth/AuthContext';
-import { bn } from '../../utils/bnNum';
 import OfflineBanner from '../../components/OfflineBanner';
+import PhoneLink from '../../components/PhoneLink';
 import type { InfoItem } from '../../api/content';
 
 // Public-site chrome (§7): a top menu with the wordmark + nav + theme toggle + auth actions, and
@@ -64,7 +64,7 @@ export default function PublicLayout({ children, phones = [] }: { children: Reac
               <Typography sx={{ fontWeight: 700, mb: 1 }}>{S.public.footerPhones}</Typography>
               {phones.map((p) => (
                 <Typography key={p.id} sx={{ opacity: 0.9, fontSize: 14 }}>
-                  {p.title}: {bn(p.value)}
+                  {p.title}: <PhoneLink phone={p.value} />
                 </Typography>
               ))}
             </Box>

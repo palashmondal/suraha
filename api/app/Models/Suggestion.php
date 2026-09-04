@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Scopes\VisibleTenantScope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use App\Models\Concerns\HasAttachments;
+use App\Models\Concerns\HasNotes;
+use App\Models\Concerns\HasTrackingToken;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /** নাগরিক পরামর্শ. Tenant-scoped. */
@@ -19,7 +22,9 @@ use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 class Suggestion extends Model
 {
     /** @use HasFactory<SuggestionFactory> */
-    use BelongsToTenant, HasFactory;
+    use BelongsToTenant, HasAttachments, HasFactory, HasTrackingToken, HasNotes;
+
+    protected $trackingPrefix = 'SUR-SUG';
 
     protected $guarded = ['id', 'tenant_id'];
 

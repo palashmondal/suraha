@@ -21,3 +21,20 @@ export interface HostContext {
 export function getHostContext(): Promise<HostContext> {
   return api<HostContext>('/registry/host-context', { auth: false });
 }
+
+// An upazila the signed-in user may act on — every provisioned (active) subdomain for SEAL, the
+// DC's own district for a DC. Same list the top-bar switcher offers.
+export interface SwitchableUpazila {
+  id: string;
+  name: string;
+  name_bn: string;
+  district: string | null;
+  district_id: number | null;
+}
+
+export const listSwitchableUpazilas = () =>
+  api<{ upazilas: SwitchableUpazila[] }>('/registry/switchable-upazilas');
+
+// Unions of one named upazila — the console needs them for an upazila it has not switched into.
+export const listUnionsOf = (upazilaId: string) =>
+  api<{ unions: { id: number; name_bn: string }[] }>(`/registry/unions?upazila=${encodeURIComponent(upazilaId)}`);

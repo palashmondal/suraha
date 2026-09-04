@@ -8,9 +8,10 @@ use App\Enums\AssistanceKind;
 use App\Enums\AssistanceStatus;
 use App\Enums\Role;
 use App\Http\Resources\AssistanceResource;
+use App\Http\Controllers\Concerns\ManagesNotes;
 use App\Models\Assistance;
+use App\Models\Note;
 use App\Models\Notification;
-use App\Support\TrackingToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -21,6 +22,8 @@ use Illuminate\Http\Request;
  */
 class AssistanceController extends Controller
 {
+    use ManagesNotes;
+
     /** List with সকল / অপেক্ষমান / অনুমোদিত / নাকচ tabs, counts, search and a kind filter. */
     public function index(Request $request): JsonResponse
     {
@@ -36,10 +39,16 @@ class AssistanceController extends Controller
         $status = $request->query('status', 'all');
         $statuses = ['pending', 'approved', 'rejected'];
 
+        // গুরুত্বপূর্ণ is a flag, not a status — its tab filters on the mark instead.
         $list = (clone $base)
+            ->when($status === 'important', fn ($b) => $b->where('is_important', true))
             ->when(in_array($status, $statuses, true), fn ($b) => $b->where('status', $status))
             ->with('union')
+            // created_at alone is not a total order — rows seeded or filed in the same second
+            // tie, and a tied row can land on a different page each request, so a listing
+            // could drop a row it had just shown. id breaks the tie deterministically.
             ->latest()
+            ->latest('id')
             ->paginate(15);
 
         return response()->json([
@@ -49,10 +58,14 @@ class AssistanceController extends Controller
                 'last_page' => $list->lastPage(),
                 'total' => $list->total(),
             ],
-            'tabs' => collect(['all', ...$statuses])
+            'tabs' => collect(['all', ...$statuses, 'important'])
                 ->map(fn ($key) => [
                     'key' => $key,
-                    'total' => $key === 'all' ? (clone $base)->count() : (clone $base)->where('status', $key)->count(),
+                    'total' => match ($key) {
+                        'all' => (clone $base)->count(),
+                        'important' => (clone $base)->where('is_important', true)->count(),
+                        default => (clone $base)->where('status', $key)->count(),
+                    },
                 ])->all(),
             'kinds' => AssistanceKind::options(),
         ]);
@@ -60,7 +73,27 @@ class AssistanceController extends Controller
 
     public function show(Assistance $assistance): AssistanceResource
     {
-        return new AssistanceResource($assistance->load('union', 'citizen'));
+        return new AssistanceResource($assistance->load('union', 'citizen', 'attachments', 'notes.author'));
+    }
+
+    /**
+     * UNO: keep a dated কার্যক্রম note on this application — an enquiry, a decision, a follow-up
+     * instruction. Notes accumulate; none of them replaces another, and the citizen is not
+     * notified.
+     */
+    public function addNote(Request $request, Assistance $assistance): AssistanceResource
+    {
+        $this->storeNote($request, $assistance);
+
+        return new AssistanceResource($assistance->load('union', 'citizen', 'attachments', 'notes.author'));
+    }
+
+    /** UNO: drop a note written in error. Bound to its own application. */
+    public function deleteNote(Assistance $assistance, Note $note): AssistanceResource
+    {
+        $this->destroyNote($assistance, $note);
+
+        return new AssistanceResource($assistance->load('union', 'citizen', 'attachments', 'notes.author'));
     }
 
     /** File an application (citizen, or an officer on their behalf). */
@@ -98,8 +131,6 @@ class AssistanceController extends Controller
             $data['citizen_id'] = $user->id;
         }
 
-        $data['tracking_token'] = TrackingToken::generate('SUR-AID', 'assistances');
-
         $assistance = Assistance::create($data);
 
         Notification::emit(
@@ -111,6 +142,16 @@ class AssistanceController extends Controller
         );
 
         return new AssistanceResource($assistance->load('union'));
+    }
+
+    /** UNO: mark an আবেদন as গুরুত্বপূর্ণ, or take the mark off. Independent of its status. */
+    public function important(Request $request, Assistance $assistance): AssistanceResource
+    {
+        $data = $request->validate(['is_important' => ['required', 'boolean']]);
+
+        $assistance->update(['is_important' => $data['is_important']]);
+
+        return new AssistanceResource($assistance->load('union', 'attachments', 'notes.author'));
     }
 
     /** UNO: approve, optionally granting an amount other than the one asked for. */
@@ -128,7 +169,7 @@ class AssistanceController extends Controller
             'decision_note' => $data['decision_note'] ?? null,
         ]);
 
-        return new AssistanceResource($assistance->load('union'));
+        return new AssistanceResource($assistance->load('union', 'attachments', 'notes.author'));
     }
 
     public function reject(Request $request, Assistance $assistance): AssistanceResource
@@ -141,6 +182,6 @@ class AssistanceController extends Controller
             'decision_note' => $data['decision_note'] ?? null,
         ]);
 
-        return new AssistanceResource($assistance->load('union'));
+        return new AssistanceResource($assistance->load('union', 'attachments', 'notes.author'));
     }
 }

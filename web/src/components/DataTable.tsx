@@ -32,7 +32,9 @@ export default function DataTable<T extends { id: string | number }>({
   onRowClick,
   emptyTitle,
   emptyHelper,
+  emptyIcon,
   loading = false,
+  pagination,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -40,9 +42,19 @@ export default function DataTable<T extends { id: string | number }>({
   onRowClick?: (row: T) => void;
   emptyTitle?: string;
   emptyHelper?: string;
+  emptyIcon?: React.ReactNode;
   loading?: boolean;
+  /**
+   * Server-driven paging: `rows` is already one page, so the table renders them all and the pager
+   * reports the API's totals. Without this the table pages `rows` itself, which silently capped
+   * every server-paginated list at the rows of its first request.
+   */
+  pagination?: { page: number; pageCount: number; onPage: (p: number) => void };
 }) {
-  const { pageRows, page, setPage, pageCount } = usePagination(rows);
+  const client = usePagination(rows);
+  const { pageRows, page, setPage, pageCount } = pagination
+    ? { pageRows: rows, page: pagination.page, setPage: pagination.onPage, pageCount: pagination.pageCount }
+    : client;
 
   // While fetching, show a loading state instead of flashing the empty state before data arrives.
   if (loading && rows.length === 0) {
@@ -55,7 +67,7 @@ export default function DataTable<T extends { id: string | number }>({
   if (rows.length === 0) {
     return (
       <Paper elevation={0} sx={{ borderRadius: '16px' }}>
-        <EmptyState title={emptyTitle} helper={emptyHelper} />
+        <EmptyState title={emptyTitle} helper={emptyHelper} icon={emptyIcon} />
       </Paper>
     );
   }

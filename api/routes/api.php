@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\UpazilaController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AssistanceController;
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\BirthRegistrationController;
 use App\Http\Controllers\ComplaintController;
@@ -52,9 +53,12 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
     Route::get('track/{token}', [\App\Http\Controllers\TrackController::class, 'show'])
         ->middleware('throttle:20,1');
 
-    // The UNO's সাক্ষাৎকার সূচি as an iCalendar feed, for subscribing from Google Calendar (§8.3).
-    // No auth — Google sends no Bearer token; the ?t= HMAC in the URL is the secret.
+    // The UNO's সাক্ষাৎকার সূচি and অভিযোগ শুনানি ক্যালেন্ডার as iCalendar feeds, for subscribing
+    // from Google Calendar (§8.3 / §8.4). No auth — Google sends no Bearer token; the ?t= HMAC in
+    // each URL is the secret.
     Route::get('appointments/calendar.ics', [AppointmentController::class, 'calendarFeed'])
+        ->middleware('throttle:60,1');
+    Route::get('complaints/hearings.ics', [ComplaintController::class, 'hearingsCalendarFeed'])
         ->middleware('throttle:60,1');
 
     // Public awareness content (§8.5 / §8.6) — landing page + dashboard.
@@ -122,13 +126,14 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
         });
 
         // ---- অভিযোগ (§8.4) ---------------------------------------------
-        // File: citizen (or officer on behalf). View: UNO/investigator/DC/SEAL (investigators are
-        // auto-scoped to their own assignments). Manage (accept/appoint, reject, schedule hearing,
-        // order): UNO. Report: the assigned investigator.
+        // File: citizen (or officer on behalf). View: UNO/investigating roles/DC/SEAL (an
+        // investigating role — তদন্ত কর্মকর্তা or ইউপি সচিব — is auto-scoped to its own
+        // assignments, on the list and the detail alike). Manage (accept/appoint, reject,
+        // schedule hearing, order): UNO. Report: the assigned officer.
         Route::middleware('deny.readonly', 'role:citizen,uno,seal_admin')
             ->post('complaints', [ComplaintController::class, 'store']);
 
-        Route::middleware('role:uno,investigating_officer,dc,seal_admin')->group(function () {
+        Route::middleware('role:uno,investigating_officer,up_sochib,dc,seal_admin')->group(function () {
             Route::get('complaints', [ComplaintController::class, 'index']);
             Route::get('complaints/{complaint}', [ComplaintController::class, 'show']);
 
@@ -142,7 +147,7 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
                 Route::post('complaints/{complaint}/reinvestigate', [ComplaintController::class, 'reinvestigate']);
             });
 
-            Route::middleware('deny.readonly', 'role:investigating_officer,seal_admin')
+            Route::middleware('deny.readonly', 'role:investigating_officer,up_sochib,seal_admin')
                 ->post('complaints/{complaint}/report', [ComplaintController::class, 'report']);
         });
 
@@ -174,8 +179,17 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
             Route::middleware('deny.readonly', 'role:uno,seal_admin')->group(function () {
                 Route::post('assistances/{assistance}/approve', [AssistanceController::class, 'approve']);
                 Route::post('assistances/{assistance}/reject', [AssistanceController::class, 'reject']);
+                Route::patch('assistances/{assistance}/important', [AssistanceController::class, 'important']);
+                Route::post('assistances/{assistance}/notes', [AssistanceController::class, 'addNote']);
+                Route::delete('assistances/{assistance}/notes/{note}', [AssistanceController::class, 'deleteNote']);
             });
         });
+
+        // ---- সংযুক্তি (§7) — the citizen's own photos/PDFs on any of the three submissions ----
+        Route::middleware('deny.readonly', 'role:citizen,uno,seal_admin')
+            ->post('{resource}/{id}/attachments', [AttachmentController::class, 'store'])
+            ->whereIn('resource', ['complaints', 'assistances', 'suggestions'])
+            ->whereNumber('id');
 
         // ---- নাগরিক পরামর্শ (§8) — citizen suggests; UNO decides; DC/SEAL view ----
         Route::middleware('deny.readonly', 'role:citizen,uno,seal_admin')
@@ -188,6 +202,9 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
             Route::middleware('deny.readonly', 'role:uno,seal_admin')->group(function () {
                 Route::post('suggestions/{suggestion}/accept', [SuggestionController::class, 'accept']);
                 Route::post('suggestions/{suggestion}/reject', [SuggestionController::class, 'reject']);
+                Route::patch('suggestions/{suggestion}/important', [SuggestionController::class, 'important']);
+                Route::post('suggestions/{suggestion}/notes', [SuggestionController::class, 'addNote']);
+                Route::delete('suggestions/{suggestion}/notes/{note}', [SuggestionController::class, 'deleteNote']);
             });
         });
 
@@ -201,12 +218,24 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
         // cross-tenant roles on the admin host, from the switched X-Upazila (via tenant.selected).
         Route::get('registry/active-upazila', [RegistryController::class, 'currentUpazila']);
 
+        // ---- SMS সেটিংস (§10) — one provider account serves the whole platform, so UNO and
+        // SEAL can both read the balance and usage, but only SEAL may replace the credential.
+        Route::middleware('role:seal_admin,uno')
+            ->get('sms-settings', [\App\Http\Controllers\SmsSettingsController::class, 'show']);
+        Route::middleware('deny.readonly', 'role:seal_admin')->group(function () {
+            Route::put('sms-settings', [\App\Http\Controllers\SmsSettingsController::class, 'update']);
+            // Sends a real message and spends real credit — hence SEAL, and hence throttled.
+            Route::post('sms-settings/test', [\App\Http\Controllers\SmsSettingsController::class, 'test'])
+                ->middleware('throttle:5,1');
+        });
+
         // ---- Officer management (§8.6) — SEAL (any) + UNO (own upazila staff) ----
         Route::middleware('deny.readonly', 'role:seal_admin,uno')->group(function () {
             Route::get('officers', [OfficerController::class, 'index']);
             // Full user directory for one upazila (officers + citizens + the district's DC).
             Route::get('users', [OfficerController::class, 'directory']);
             Route::get('officer-roles', [OfficerController::class, 'assignableRoles']);
+            Route::get('officer-posts', [OfficerController::class, 'filledPosts']);
             Route::post('officers', [OfficerController::class, 'store']);
             Route::put('officers/{officer}', [OfficerController::class, 'update']);
             Route::patch('officers/{officer}/status', [OfficerController::class, 'updateStatus']);

@@ -74,6 +74,27 @@ export function buildTheme(mode: 'light' | 'dark'): Theme {
       MuiButton: {
         styleOverrides: { root: { borderRadius: radius.pill } },
       },
+      // The Bangla faces ('Tiro Bangla' first) carry a much taller ascent than MUI's default
+      // stack, so a floated label overflowed the notch and sat above the border instead of on
+      // it. Pinning the line box to the font size and re-centring the shrink transform on the
+      // 1px stroke puts every outlined label back in its notch, app-wide.
+      MuiInputLabel: {
+        styleOverrides: {
+          outlined: {
+            lineHeight: 1,
+            '&.MuiInputLabel-shrink': {
+              transform: 'translate(14px, -6px) scale(0.75)',
+            },
+          },
+        },
+      },
+      MuiOutlinedInput: {
+        styleOverrides: {
+          // The legend is the gap the label sits in; it must be as tall as the label's line box
+          // or the border re-draws through the text.
+          notchedOutline: { '& legend': { lineHeight: 1, height: 11 } },
+        },
+      },
     },
   });
 }

@@ -1,9 +1,17 @@
 <?php
 
+use Dotenv\Dotenv;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+
+// Every third-party credential lives in the repo-root .env, shared with the web app (whose Vite
+// envDir points at the same file) so a key is set or rotated in one place. Loaded before the
+// framework reads api/.env, which keeps only this app's own plumbing (APP_KEY, DB_*, mail).
+Dotenv::createImmutable(dirname(__DIR__, 2))->safeLoad();
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -37,4 +45,43 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        // Everything the app aborts with is already Bangla (see the middleware/controllers);
+        // what leaks English is the framework's own defaults — "Unauthenticated.",
+        // "This action is unauthorized.", an empty 404. Swap those for plain Bangla here so
+        // no caller has to pass a message, and leave any non-ASCII (i.e. Bangla) message alone.
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            $message = $e->getMessage();
+
+            if ($message === '' || ! preg_match('/[^\x00-\x7F]/', $message)) {
+                $message = match ($e->getStatusCode()) {
+                    401 => 'সেশনের মেয়াদ শেষ হয়েছে। আবার লগইন করুন।',
+                    403 => 'এই কাজের অনুমতি নেই।',
+                    404 => 'তথ্যটি খুঁজে পাওয়া যায়নি।',
+                    405 => 'এই অনুরোধটি সমর্থিত নয়।',
+                    413 => 'ফাইলটি অনেক বড়।',
+                    419 => 'সেশনের মেয়াদ শেষ হয়েছে। আবার লগইন করুন।',
+                    429 => 'অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।',
+                    503 => 'সেবাটি এখন সাময়িকভাবে বন্ধ আছে।',
+                    default => 'একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।',
+                };
+            }
+
+            return response()->json(['message' => $message], $e->getStatusCode());
+        });
+
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json(
+                ['message' => 'সেশনের মেয়াদ শেষ হয়েছে। আবার লগইন করুন।'],
+                401,
+            );
+        });
     })->create();

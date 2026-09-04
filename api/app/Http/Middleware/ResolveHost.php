@@ -13,7 +13,10 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Front door for every API request. Three kinds of host share one subdomain namespace:
  *
- *   suraha.net              → central: the public site and the SEAL console (no tenant).
+ *   suraha.net              → central: the product's landing page (SEAL logs in at /login).
+ *   admin.suraha.net        → central too, but the admin console — see isAdminHost(). Listed in
+ *                             central_domains, which is what keeps it from being read as an
+ *                             upazila named "admin".
  *   patuakhali.suraha.net   → district: the DC's read-only dashboard (no tenant either — the DC
  *                             aggregates over the district and narrows via X-Upazila).
  *   galachipa.suraha.net    → upazila: a tenant, resolved by stancl as before.
@@ -48,12 +51,24 @@ class ResolveHost
         return $this->tenancy->handle($request, $next);
     }
 
+    /** Is this host the admin console rather than the product's landing page? */
+    public static function isAdminHost(string $host): bool
+    {
+        return in_array($host, config('tenancy.admin_domains', []), true);
+    }
+
     /**
      * The single label in front of a central domain, or null when the host is central itself,
      * is deeper than one label, or is not ours at all.
      */
     public static function subdomainLabel(string $host): ?string
     {
+        // A host that is itself central has no tenant label to read — admin.suraha.net ends with
+        // ".suraha.net" but is the admin console, not an upazila called "admin".
+        if (in_array($host, config('tenancy.central_domains', []), true)) {
+            return null;
+        }
+
         foreach (config('tenancy.central_domains', []) as $central) {
             $suffix = '.'.$central;
 

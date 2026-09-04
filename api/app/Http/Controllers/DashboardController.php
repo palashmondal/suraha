@@ -27,9 +27,10 @@ class DashboardController extends Controller
         [$tenantIds, $scope] = ScopeResolver::resolve($user);
 
         $in = fn ($query) => $query->withoutTenancy()->whereIn('tenant_id', $tenantIds);
-        // Complaints for an investigating officer are scoped to their own assignments.
+        // Complaints for an investigating role (তদন্ত কর্মকর্তা or ইউপি সচিব) are scoped to
+        // their own assignments — the same rule the listing applies.
         $complaints = fn () => $in(Complaint::query())
-            ->when($user->role === Role::INVESTIGATING_OFFICER, fn ($q) => $q->where('investigating_officer_id', $user->id));
+            ->when($user->role->canInvestigate(), fn ($q) => $q->where('investigating_officer_id', $user->id));
         $today = today();
 
         return response()->json([

@@ -1,12 +1,11 @@
 import { api } from './client';
+import type { Attachment } from './attachments';
+import { googleCalendarUrl as buildGoogleCalendarUrl } from '../utils/googleCalendar';
 
 export type ComplaintStatus = 'pending' | 'assigned' | 'completed' | 'rejected';
-
-export interface TimelineAttachment {
-  url: string;
-  original_name: string | null;
-  kind: 'pdf' | 'image';
-}
+// শুনানি নির্ধারিত is a তালিকা tab, not a stored status: an assigned complaint with a
+// hearing date. Keep it out of ComplaintStatus so no record can claim to be one.
+export type ComplaintTabKey = 'all' | ComplaintStatus | 'hearing_scheduled';
 
 export interface TimelineEntry {
   id: number;
@@ -17,7 +16,7 @@ export interface TimelineEntry {
   comment: string | null;
   meta: Record<string, unknown> | null;
   at: string | null;
-  attachments: TimelineAttachment[];
+  attachments: Attachment[];
 }
 
 export interface Complaint {
@@ -28,7 +27,10 @@ export interface Complaint {
   status_tone: 'pending' | 'success' | 'danger' | 'info';
   title: string;
   complainant_name: string;
+  father_name: string | null;
   union: string | null;
+  upazila: string | null;
+  office: string;
   ward_no: number | null;
   address: string | null;
   latitude: number | null;
@@ -45,11 +47,12 @@ export interface Complaint {
   assigned_at: string | null;
   completed_at: string | null;
   rejected_at: string | null;
+  attachments?: Attachment[];
   timeline?: TimelineEntry[];
 }
 
 export interface ComplaintTab {
-  key: 'all' | ComplaintStatus;
+  key: ComplaintTabKey;
   total: number;
 }
 
@@ -72,10 +75,12 @@ export interface Hearing {
   hearing_date: string | null;
 }
 
-export function listComplaints(params: { status?: string; q?: string } = {}) {
+export function listComplaints(params: { status?: string; q?: string; officer?: number; page?: number } = {}) {
   const qs = new URLSearchParams();
   if (params.status && params.status !== 'all') qs.set('status', params.status);
   if (params.q) qs.set('q', params.q);
+  if (params.officer) qs.set('officer', String(params.officer));
+  if (params.page && params.page > 1) qs.set('page', String(params.page));
   const suffix = qs.toString() ? `?${qs}` : '';
   return api<ComplaintList>(`/complaints${suffix}`);
 }
@@ -88,7 +93,17 @@ export const createComplaint = (body: Record<string, unknown>) =>
 export const listInvestigators = () =>
   api<{ investigators: Investigator[] }>('/complaint-investigators');
 
-export const listHearings = () => api<{ hearings: Hearing[] }>('/complaint-hearings');
+// A শুনানি has a date but no time, so it lands as an all-day event at the UNO office.
+export const hearingCalendarUrl = (c: Complaint) =>
+  buildGoogleCalendarUrl({
+    title: `অভিযোগ শুনানি: ${c.complainant_name} — ${c.title}`,
+    date: c.hearing_date,
+    details: [c.description, c.investigating_officer && `তদন্তকারী কর্মকর্তা: ${c.investigating_officer}`],
+    location: c.office,
+  });
+
+export const listHearings = () =>
+  api<{ hearings: Hearing[]; feed_url: string }>('/complaint-hearings');
 
 const action = (id: number, verb: string, body: Record<string, unknown>) =>
   api<{ data: Complaint }>(`/complaints/${id}/${verb}`, { method: 'POST', body });
@@ -105,8 +120,11 @@ export const scheduleHearing = (id: number, body: { hearing_date: string; commen
 
 export const completeComplaint = (id: number, comment: string) => action(id, 'complete', { comment });
 
-export const reinvestigate = (id: number, body: { comment: string; due_date?: string }) =>
-  action(id, 'reinvestigate', body);
+// The officer is optional: omitted, the case stays with whoever already has it.
+export const reinvestigate = (
+  id: number,
+  body: { comment: string; due_date?: string; investigating_officer_id?: number },
+) => action(id, 'reinvestigate', body);
 
 // The report carries files, so it goes as multipart/form-data (the api client handles FormData).
 export const submitReport = (id: number, form: FormData) =>

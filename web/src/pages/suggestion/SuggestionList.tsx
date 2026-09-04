@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box, Chip, MenuItem, TextField } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
@@ -18,34 +19,59 @@ const TAB_LABEL: Record<string, string> = {
   pending: S.suggestion.tabPending,
   accepted: S.suggestion.tabAccepted,
   rejected: S.suggestion.tabRejected,
+  important: S.suggestion.tabImportant,
 };
 const TAB_TONE: Record<string, 'pending' | 'success' | 'info' | 'danger'> = {
   all: 'info',
   pending: 'pending',
   accepted: 'success',
   rejected: 'danger',
+  important: 'pending',
 };
 
 export default function SuggestionList() {
   const navigate = useNavigate();
   const { version } = useSelectedTenant();
   const [status, setStatus] = useState('all');
+  const [q, setQ] = useState('');
   const [kind, setKind] = useState('');
   const [rows, setRows] = useState<Suggestion[]>([]);
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [kinds, setKinds] = useState<Kind[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Server-side, like the অভিযোগ list: the API returns one page of rows, so filtering what is
+  // already loaded would search a slice and call it the answer. Debounced, and a stale response
+  // is dropped if a newer request has gone out since.
   useEffect(() => {
-    setLoading(true);
-    listSuggestions({ status, kind: kind || undefined })
-      .then((r) => { setRows(r.data); setTabs(r.tabs); setKinds(r.kinds); })
-      .catch(() => { setRows([]); setTabs([]); })
-      .finally(() => setLoading(false));
-  }, [status, kind, version]);
+    let current = true;
+    const t = setTimeout(() => {
+      setLoading(true);
+      listSuggestions({ status, kind: kind || undefined, q: q.trim() || undefined })
+        .then((r) => {
+          if (!current) return;
+          setRows(r.data);
+          setTabs(r.tabs);
+          setKinds(r.kinds);
+        })
+        .catch(() => { if (current) { setRows([]); setTabs([]); } })
+        .finally(() => { if (current) setLoading(false); });
+    }, 250);
+
+    return () => { current = false; clearTimeout(t); };
+  }, [status, kind, q, version]);
 
   const columns: Column<Suggestion>[] = [
-    { key: 'title', header: S.suggestion.colTitle, render: (r) => <span style={{ fontWeight: 600 }}>{r.title}</span> },
+    {
+      key: 'title',
+      header: S.suggestion.colTitle,
+      render: (r) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontWeight: 600 }}>
+          {r.is_important && <StarRoundedIcon sx={{ fontSize: 18, color: 'warning.main' }} titleAccess={S.suggestion.important} />}
+          {r.title}
+        </Box>
+      ),
+    },
     {
       key: 'applicant_name',
       header: S.suggestion.colApplicant,
@@ -62,7 +88,10 @@ export default function SuggestionList() {
 
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <PageHeader title={S.suggestion.listTitle} />
+      <PageHeader
+        title={S.suggestion.listTitle}
+        search={{ value: q, onChange: setQ, placeholder: S.suggestion.search }}
+      />
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
         <TableTabs tabs={tabs.map((t): TableTab => ({ key: t.key, label: TAB_LABEL[t.key] ?? t.key, total: t.total, tone: TAB_TONE[t.key] }))} active={status} onChange={setStatus} />

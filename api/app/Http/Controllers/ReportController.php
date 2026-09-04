@@ -147,7 +147,7 @@ class ReportController extends Controller
             'complaint' => [
                 ['name' => 'অপেক্ষমাণ', 'value' => $countBy(Complaint::class, 'status', 'pending'), 'tone' => 'pending'],
                 ['name' => 'তদন্ত কর্মকর্তা নিযুক্ত', 'value' => $countBy(Complaint::class, 'status', 'assigned'), 'tone' => 'info'],
-                ['name' => 'সম্পন্ন', 'value' => $countBy(Complaint::class, 'status', 'completed'), 'tone' => 'success'],
+                ['name' => 'নিষ্পন্ন', 'value' => $countBy(Complaint::class, 'status', 'completed'), 'tone' => 'success'],
                 ['name' => 'বাতিল', 'value' => $countBy(Complaint::class, 'status', 'rejected'), 'tone' => 'danger'],
             ],
             'appointment' => [
@@ -175,7 +175,7 @@ class ReportController extends Controller
         return [
             ['stage' => 'দাখিল', 'count' => $this->dated(Complaint::class)->count()],
             ['stage' => 'তদন্ত কর্মকর্তা নিযুক্ত', 'count' => $this->dated(Complaint::class)->whereNotNull('assigned_at')->count()],
-            ['stage' => 'সম্পন্ন', 'count' => $this->dated(Complaint::class)->whereNotNull('completed_at')->count()],
+            ['stage' => 'নিষ্পন্ন', 'count' => $this->dated(Complaint::class)->whereNotNull('completed_at')->count()],
         ];
     }
 

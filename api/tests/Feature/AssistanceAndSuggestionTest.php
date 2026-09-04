@@ -43,6 +43,166 @@ class AssistanceAndSuggestionTest extends TestCase
         return User::where('username', 'uno_galachipa')->firstOrFail();
     }
 
+    /** সংযুক্তি: the citizen's own photos/PDFs, uploaded right after the record is created. */
+    public function test_citizen_attaches_files_to_own_submission_only(): void
+    {
+        Sanctum::actingAs($this->citizen());
+
+        $id = $this->postJson(self::GALACHIPA.'/api/assistances', [
+            'applicant_name' => 'রহিমা বেগম',
+            'kind' => 'medical',
+            'title' => 'চিকিৎসা সহায়তা',
+        ])->assertCreated()->json('data.id');
+
+        $this->postJson(self::GALACHIPA."/api/assistances/{$id}/attachments", [
+            'files' => [
+                \Illuminate\Http\UploadedFile::fake()->image('ghatana.jpg'),
+                \Illuminate\Http\UploadedFile::fake()->create('kagoj.pdf', 40, 'application/pdf'),
+            ],
+        ])->assertCreated()->assertJsonCount(2, 'attachments')
+            ->assertJsonPath('attachments.1.kind', 'pdf');
+
+        // The officer detail page is what renders them.
+        Sanctum::actingAs($this->uno());
+        $this->getJson(self::GALACHIPA."/api/assistances/{$id}")
+            ->assertOk()->assertJsonCount(2, 'data.attachments');
+        Sanctum::actingAs($this->citizen());
+
+        // A .exe is not a photo, and one citizen may not attach to another's application.
+        $this->postJson(self::GALACHIPA."/api/assistances/{$id}/attachments", [
+            'files' => [\Illuminate\Http\UploadedFile::fake()->create('x.exe', 10)],
+        ])->assertStatus(422);
+
+        $other = Upazila::find('galachipa')->run(fn () => Assistance::factory()->create()->id);
+        $this->postJson(self::GALACHIPA."/api/assistances/{$other}/attachments", [
+            'files' => [\Illuminate\Http\UploadedFile::fake()->image('a.jpg')],
+        ])->assertStatus(403);
+    }
+
+    /** Filing a পরামর্শ sends the citizen a thank-you SMS carrying the tracking token. */
+    public function test_citizen_gets_a_thank_you_sms_on_submitting_a_suggestion(): void
+    {
+        Sanctum::actingAs($this->citizen());
+
+        // The dev gateway only logs; capture the sends instead of grepping a log file.
+        $sent = [];
+        $this->app->instance(\App\Services\Sms\SmsGateway::class, new class($sent) implements \App\Services\Sms\SmsGateway
+        {
+            public function __construct(private array &$sent) {}
+
+            public function send(string $phone, string $message, string $purpose = 'other'): void
+            {
+                $this->sent[] = [$phone, $message, $purpose];
+            }
+        });
+
+        $token = $this->postJson(self::GALACHIPA.'/api/suggestions', [
+            'applicant_name' => 'রোকসানা পারভীন',
+            'kind' => 'health',
+            'title' => 'কমিউনিটি ক্লিনিকে চিকিৎসক নিয়োগ',
+            'description' => 'নিয়মিত চিকিৎসক না থাকায় সেবা মিলছে না।',
+            'mobile' => '01712345678',
+        ])->assertCreated()->json('data.tracking_token');
+
+        $this->assertNotEmpty($sent);
+        [$phone, $message, $purpose] = $sent[0];
+        $this->assertSame('01712345678', $phone);
+        $this->assertSame('suggestion', $purpose);
+        $this->assertStringContainsString($token, $message);
+    }
+
+    /** The same গুরুত্বপূর্ণ mark on an aid application, with its own tab. */
+    public function test_uno_marks_an_assistance_important_and_the_tab_filters_on_it(): void
+    {
+        $id = Upazila::find('galachipa')->run(fn () => Assistance::factory()->create(['is_important' => false])->id);
+        Sanctum::actingAs($this->uno());
+
+        $this->patchJson(self::GALACHIPA."/api/assistances/{$id}/important", ['is_important' => true])
+            ->assertOk()->assertJsonPath('data.is_important', true);
+
+        $important = $this->getJson(self::GALACHIPA.'/api/assistances?status=important')->assertOk();
+        $this->assertContains($id, collect($important->json('data'))->pluck('id')->all());
+
+        // Marked while অপেক্ষমান, still marked after the decision.
+        $this->postJson(self::GALACHIPA."/api/assistances/{$id}/approve", ['amount_approved' => 5000])
+            ->assertOk()->assertJsonPath('data.is_important', true);
+
+        Sanctum::actingAs($this->citizen());
+        $this->patchJson(self::GALACHIPA."/api/assistances/{$id}/important", ['is_important' => false])
+            ->assertStatus(403);
+    }
+
+    /** গুরুত্বপূর্ণ is the UNO's mark, not a status: it survives a decision and has its own tab. */
+    public function test_uno_marks_a_suggestion_important_and_the_tab_filters_on_it(): void
+    {
+        $id = Upazila::find('galachipa')->run(fn () => Suggestion::factory()->create(['is_important' => false])->id);
+        Sanctum::actingAs($this->uno());
+
+        $this->patchJson(self::GALACHIPA."/api/suggestions/{$id}/important", ['is_important' => true])
+            ->assertOk()->assertJsonPath('data.is_important', true);
+
+        $important = $this->getJson(self::GALACHIPA.'/api/suggestions?status=important')->assertOk();
+        $this->assertContains($id, collect($important->json('data'))->pluck('id')->all());
+        foreach ($important->json('data') as $row) {
+            $this->assertTrue($row['is_important']);
+        }
+
+        // The mark stays on after the UNO decides, and comes back off on request.
+        $this->postJson(self::GALACHIPA."/api/suggestions/{$id}/accept")
+            ->assertOk()->assertJsonPath('data.is_important', true);
+
+        $this->patchJson(self::GALACHIPA."/api/suggestions/{$id}/important", ['is_important' => false])
+            ->assertOk()->assertJsonPath('data.is_important', false);
+
+        // A citizen cannot mark their own suggestion important.
+        Sanctum::actingAs($this->citizen());
+        $this->patchJson(self::GALACHIPA."/api/suggestions/{$id}/important", ['is_important' => true])
+            ->assertStatus(403);
+    }
+
+    /** কার্যক্রম notes: the UNO's running record on one application; a citizen may not write them. */
+    /** পরামর্শ notes ride the same shared table and trait as সাক্ষাৎকার and সহায়তা. */
+    public function test_uno_keeps_suggestion_notes_and_a_citizen_cannot(): void
+    {
+        $id = Upazila::find('galachipa')->run(fn () => Suggestion::factory()->create()->id);
+        Sanctum::actingAs($this->uno());
+
+        $noteId = $this->postJson(self::GALACHIPA."/api/suggestions/{$id}/notes", ['body' => 'ইউএনও মহোদয়ের নোট'])
+            ->assertOk()->assertJsonPath('data.notes.0.body', 'ইউএনও মহোদয়ের নোট')
+            ->json('data.notes.0.id');
+
+        $this->postJson(self::GALACHIPA."/api/suggestions/{$id}/notes", [])->assertStatus(422);
+
+        $this->deleteJson(self::GALACHIPA."/api/suggestions/{$id}/notes/{$noteId}")
+            ->assertOk()->assertJsonCount(0, 'data.notes');
+
+        Sanctum::actingAs(User::where('role', 'citizen')->firstOrFail());
+        $this->postJson(self::GALACHIPA."/api/suggestions/{$id}/notes", ['body' => 'যাই হোক'])
+            ->assertStatus(403);
+    }
+
+    public function test_uno_keeps_assistance_notes_and_a_citizen_cannot(): void
+    {
+        $id = Upazila::find('galachipa')->run(fn () => Assistance::factory()->create()->id);
+        Sanctum::actingAs($this->uno());
+
+        $this->postJson(self::GALACHIPA."/api/assistances/{$id}/notes", ['body' => 'তদন্ত শুরু হয়েছে।'])
+            ->assertOk()->assertJsonPath('data.notes.0.body', 'তদন্ত শুরু হয়েছে।');
+
+        $noteId = $this->postJson(self::GALACHIPA."/api/assistances/{$id}/notes", ['body' => 'চেক ইস্যু করা হলো।'])
+            ->assertOk()->assertJsonCount(2, 'data.notes')
+            ->json('data.notes.1.id');
+
+        $this->deleteJson(self::GALACHIPA."/api/assistances/{$id}/notes/{$noteId}")
+            ->assertOk()->assertJsonCount(1, 'data.notes');
+
+        $this->postJson(self::GALACHIPA."/api/assistances/{$id}/notes", [])->assertStatus(422);
+
+        Sanctum::actingAs($this->citizen());
+        $this->postJson(self::GALACHIPA."/api/assistances/{$id}/notes", ['body' => 'যাই হোক'])
+            ->assertStatus(403);
+    }
+
     public function test_citizen_applies_for_assistance_and_uno_approves_an_amount(): void
     {
         Sanctum::actingAs($this->citizen());

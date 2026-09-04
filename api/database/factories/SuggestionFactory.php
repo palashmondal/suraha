@@ -23,6 +23,8 @@ class SuggestionFactory extends Factory
         ['উপজেলা পরিষদ চত্বরে পাঠাগার', 'তরুণদের জন্য পড়াশোনার কোনো উন্মুক্ত জায়গা নেই।'],
     ];
 
+    private const ADDRESSES = ['গ্রাম: চরকাজল, ডাকঘর: গলাচিপা', 'গ্রাম: পানপট্টি বাজার সংলগ্ন', 'গ্রাম: রতনদী তালতলী', 'গ্রাম: বকুলবাড়িয়া, ডাকঘর: সদর'];
+
     private const NAMES = ['মো. শাহীন আলম', 'রোকসানা পারভীন', 'আনোয়ার হোসেন', 'তাসলিমা বেগম', 'মিজানুর রহমান'];
 
     public function definition(): array
@@ -33,12 +35,14 @@ class SuggestionFactory extends Factory
             'status' => SuggestionStatus::PENDING,
             'kind' => fake()->randomElement(SuggestionKind::cases()),
             'is_confidential' => fake()->boolean(20),
+            // Some already carry the UNO's গুরুত্বপূর্ণ mark, so that tab is not empty in dev.
+            'is_important' => fake()->boolean(15),
             'applicant_name' => fake()->randomElement(self::NAMES),
             'title' => $title,
             'description' => $description,
             'ward_no' => fake()->numberBetween(1, 9),
+            'address' => fake()->randomElement(self::ADDRESSES),
             'mobile' => '01'.fake()->numerify('#########'),
-            'tracking_token' => 'SUR-SUG-'.strtoupper(fake()->unique()->bothify('??####')),
         ];
     }
 

@@ -1,4 +1,6 @@
 import { api } from './client';
+import type { CaseNote } from './notes';
+import type { Attachment } from './attachments';
 
 export interface Assistance {
   id: number;
@@ -9,6 +11,7 @@ export interface Assistance {
   kind: string;
   kind_label: string;
   applicant_name: string;
+  is_important: boolean;
   mobile: string | null;
   nid: string | null;
   address: string | null;
@@ -21,6 +24,8 @@ export interface Assistance {
   decision_note: string | null;
   decided_at: string | null;
   created_at: string | null;
+  attachments?: Attachment[];
+  notes?: CaseNote[]; // only on the detail response
 }
 
 export interface Kind { value: string; label: string }
@@ -52,3 +57,14 @@ export const approveAssistance = (id: number, body: Record<string, unknown>) =>
 
 export const rejectAssistance = (id: number, decision_note?: string) =>
   api<{ data: Assistance }>(`/assistances/${id}/reject`, { method: 'POST', body: { decision_note } });
+
+// UNO's running কার্যক্রম notes — both return the application with the note list as it now stands.
+export const addAssistanceNote = (id: number, body: string) =>
+  api<{ data: Assistance }>(`/assistances/${id}/notes`, { method: 'POST', body: { body } });
+
+export const deleteAssistanceNote = (id: number, noteId: number) =>
+  api<{ data: Assistance }>(`/assistances/${id}/notes/${noteId}`, { method: 'DELETE' });
+
+// The UNO's গুরুত্বপূর্ণ mark — set and unset from the detail page, filtered by its own tab.
+export const setAssistanceImportant = (id: number, is_important: boolean) =>
+  api<{ data: Assistance }>(`/assistances/${id}/important`, { method: 'PATCH', body: { is_important } });

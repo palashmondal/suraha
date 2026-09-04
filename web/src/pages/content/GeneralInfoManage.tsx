@@ -4,11 +4,11 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
 import { bnStrings as S } from '../../i18n';
-import { bn } from '../../utils/bnNum';
 import SectionTitle from '../../components/SectionTitle';
 import AppDialog from '../../components/AppDialog';
 import { ApiError } from '../../api/client';
 import { FormField } from '../../components/form/FormFields';
+import PhoneLink from '../../components/PhoneLink';
 import { useSelectedTenant } from '../../tenant/SelectedTenantContext';
 import { listGeneralInfo, createInfo, deleteInfo, type InfoItem } from '../../api/content';
 
@@ -40,7 +40,7 @@ export default function GeneralInfoManage() {
             <Stack key={p.id} direction="row" alignItems="center" spacing={1.5} sx={{ px: 2, py: 1.5, borderTop: i ? (t) => `1px solid ${t.palette.divider}` : 'none' }}>
               <PhoneRoundedIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
               <Typography sx={{ flex: 1 }}>{p.title}</Typography>
-              <Typography sx={{ fontFamily: 'monospace' }}>{bn(p.value)}</Typography>
+              <Typography><PhoneLink phone={p.value} /></Typography>
               <IconButton size="small" color="error" onClick={() => remove(p.id)}><DeleteOutlineRoundedIcon fontSize="small" /></IconButton>
             </Stack>
           ))}

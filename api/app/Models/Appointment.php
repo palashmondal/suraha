@@ -9,9 +9,11 @@ use Database\Factories\AppointmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Scopes\VisibleTenantScope;
+use App\Support\UpazilaOffice;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use App\Models\Concerns\HasTrackingToken;
+use App\Models\Concerns\HasNotes;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /**
@@ -21,7 +23,9 @@ use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 class Appointment extends Model
 {
     /** @use HasFactory<AppointmentFactory> */
-    use BelongsToTenant, HasFactory;
+    use BelongsToTenant, HasFactory, HasTrackingToken, HasNotes;
+
+    protected $trackingPrefix = 'SUR-APT';
 
     protected $guarded = ['id', 'tenant_id'];
 
@@ -46,25 +50,13 @@ class Appointment extends Model
      */
     public function officeBn(): string
     {
-        $tenant = tenant();
-
-        return implode(', ', array_filter([
-            'উপজেলা নির্বাহী অফিসারের কার্যালয়',
-            $tenant?->name_bn,
-            $tenant?->district?->name_bn,
-        ]));
+        return UpazilaOffice::nameBn();
     }
 
     /** Calendar event title: সাক্ষাতকার: মোশারফ — ভূমি সংক্রান্ত সমস্যা */
     public function calendarTitleBn(): string
     {
         return 'সাক্ষাতকার: '.$this->applicant_name.' — '.$this->purpose;
-    }
-
-    /** The UNO's running notes, oldest first — the detail page reads them as a timeline. */
-    public function notes(): HasMany
-    {
-        return $this->hasMany(AppointmentNote::class)->oldest();
     }
 
     public function union(): BelongsTo

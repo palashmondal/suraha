@@ -27,6 +27,10 @@
         <env name="DB_DATABASE" value="suraha_test"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
+        <!-- Never the real gateway: the suite approves সাক্ষাৎকার and issues OTPs, and the root
+             .env sets SMS_GATEWAY=alpha, so without this every run would send real messages and
+             spend real credit. -->
+        <env name="SMS_GATEWAY" value="log"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>

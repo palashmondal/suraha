@@ -9,8 +9,10 @@ use App\Enums\SuggestionKind;
 use App\Enums\SuggestionStatus;
 use App\Http\Resources\SuggestionResource;
 use App\Models\Notification;
+use App\Http\Controllers\Concerns\ManagesNotes;
+use App\Models\Note;
 use App\Models\Suggestion;
-use App\Support\TrackingToken;
+use App\Services\Sms\SmsGateway;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -24,6 +26,10 @@ use Illuminate\Http\Request;
  */
 class SuggestionController extends Controller
 {
+    use ManagesNotes;
+
+    public function __construct(private SmsGateway $sms) {}
+
     public function index(Request $request): JsonResponse
     {
         $this->requireTenantForListing($request->user());
@@ -38,10 +44,16 @@ class SuggestionController extends Controller
         $status = $request->query('status', 'all');
         $statuses = ['pending', 'accepted', 'rejected'];
 
+        // গুরুত্বপূর্ণ is a flag, not a status — its tab filters on the mark instead.
         $list = (clone $base)
+            ->when($status === 'important', fn ($b) => $b->where('is_important', true))
             ->when(in_array($status, $statuses, true), fn ($b) => $b->where('status', $status))
             ->with('union')
+            // created_at alone is not a total order — rows seeded or filed in the same second
+            // tie, and a tied row can land on a different page each request, so a listing
+            // could drop a row it had just shown. id breaks the tie deterministically.
             ->latest()
+            ->latest('id')
             ->paginate(15);
 
         return response()->json([
@@ -51,10 +63,14 @@ class SuggestionController extends Controller
                 'last_page' => $list->lastPage(),
                 'total' => $list->total(),
             ],
-            'tabs' => collect(['all', ...$statuses])
+            'tabs' => collect(['all', ...$statuses, 'important'])
                 ->map(fn ($key) => [
                     'key' => $key,
-                    'total' => $key === 'all' ? (clone $base)->count() : (clone $base)->where('status', $key)->count(),
+                    'total' => match ($key) {
+                        'all' => (clone $base)->count(),
+                        'important' => (clone $base)->where('is_important', true)->count(),
+                        default => (clone $base)->where('status', $key)->count(),
+                    },
                 ])->all(),
             'kinds' => SuggestionKind::options(),
         ]);
@@ -62,7 +78,24 @@ class SuggestionController extends Controller
 
     public function show(Suggestion $suggestion): SuggestionResource
     {
-        return new SuggestionResource($suggestion->load('union', 'citizen'));
+        return new SuggestionResource($suggestion->load('union', 'citizen', 'attachments', 'notes.author'));
+    }
+
+    /** UNO/SEAL: keep a dated note on this পরামর্শ — what was decided, who was told, what follows.
+     *  Notes accumulate; the citizen is not notified. */
+    public function addNote(Request $request, Suggestion $suggestion): SuggestionResource
+    {
+        $this->storeNote($request, $suggestion);
+
+        return new SuggestionResource($suggestion->load('union', 'citizen', 'attachments', 'notes.author'));
+    }
+
+    /** UNO/SEAL: drop a note written in error. */
+    public function deleteNote(Suggestion $suggestion, Note $note): SuggestionResource
+    {
+        $this->destroyNote($suggestion, $note);
+
+        return new SuggestionResource($suggestion->load('union', 'citizen', 'attachments', 'notes.author'));
     }
 
     public function store(Request $request): SuggestionResource
@@ -77,6 +110,7 @@ class SuggestionController extends Controller
             'is_confidential' => ['nullable', 'boolean'],
             'union_id' => ['nullable', 'integer', 'exists:unions,id'],
             'ward_no' => ['nullable', 'integer', 'min:1', 'max:99'],
+            'address' => ['nullable', 'string', 'max:255'],
             'mobile' => ['nullable', 'string', 'regex:/^01[0-9]{9}$/'],
             'client_uuid' => ['nullable', 'uuid'],
         ]);
@@ -97,8 +131,6 @@ class SuggestionController extends Controller
             $data['citizen_id'] = $user->id;
         }
 
-        $data['tracking_token'] = TrackingToken::generate('SUR-SUG', 'suggestions');
-
         $suggestion = Suggestion::create($data);
 
         Notification::emit(
@@ -109,7 +141,29 @@ class SuggestionController extends Controller
             '/advice/'.$suggestion->id,
         );
 
-        return new SuggestionResource($suggestion->load('union'));
+        // A thank-you the citizen can keep: it carries the tracking token, which is the only way
+        // back to a suggestion filed without an account. Confidential ones are thanked too — the
+        // message goes to the number they gave, and says nothing about who they are.
+        $phone = $suggestion->mobile ?: $user->phone;
+        if ($phone) {
+            $this->sms->send(
+                $phone,
+                'সুরাহা: আপনার পরামর্শের জন্য ধন্যবাদ। ট্র্যাকিং নম্বর: '.$suggestion->tracking_token,
+                'suggestion',
+            );
+        }
+
+        return new SuggestionResource($suggestion->load('union', 'attachments'));
+    }
+
+    /** UNO: mark a পরামর্শ as গুরুত্বপূর্ণ, or take the mark off. Independent of its status. */
+    public function important(Request $request, Suggestion $suggestion): SuggestionResource
+    {
+        $data = $request->validate(['is_important' => ['required', 'boolean']]);
+
+        $suggestion->update(['is_important' => $data['is_important']]);
+
+        return new SuggestionResource($suggestion->load('union', 'attachments'));
     }
 
     public function accept(Request $request, Suggestion $suggestion): SuggestionResource
@@ -132,6 +186,6 @@ class SuggestionController extends Controller
             'decision_note' => $data['decision_note'] ?? null,
         ]);
 
-        return new SuggestionResource($suggestion->load('union'));
+        return new SuggestionResource($suggestion->load('union', 'attachments'));
     }
 }

@@ -24,14 +24,26 @@ return [
     'central_domains' => [
         '127.0.0.1',
         'localhost',
-        // The national public site AND the SEAL admin host: suraha.net. SEAL logs in here
-        // (suraha.net/login) and switches upazila in-app via the X-Upazila header — the base
-        // domain is central, so it is NOT read as a tenant subdomain. Upazila subdomains
-        // ({upazila}.suraha.net) resolve as tenants. (The old admin.* host is retired.)
+        // suraha.net is the product's own landing page, and SEAL logs in at suraha.net/login.
+        // admin.suraha.net is the dedicated admin host and serves the console directly. Both are
+        // central — no tenant — so SEAL switches upazila in-app via the X-Upazila header, and
+        // neither is read as a tenant subdomain. Only {upazila}.suraha.net resolves as a tenant.
+        // Listing admin.* here is what stops stancl reading `admin` as an unknown upazila (404).
         'suraha.net',
+        'admin.suraha.net',
         // Local dev: {upazila}.lvh.me resolves to 127.0.0.1 with no /etc/hosts edits; bare lvh.me
-        // is the central (SEAL) host.
+        // is the central host and admin.lvh.me mirrors the admin one.
         'lvh.me',
+        'admin.lvh.me',
+    ],
+
+    /**
+     * The central domains that ARE the admin console, as opposed to the product landing page.
+     * Both kinds are central (tenant-less); this only decides what `/` serves.
+     */
+    'admin_domains' => [
+        'admin.suraha.net',
+        'admin.lvh.me',
     ],
 
     /**

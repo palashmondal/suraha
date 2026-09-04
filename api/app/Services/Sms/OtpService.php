@@ -27,7 +27,7 @@ class OtpService
             'attempts' => 0,
         ], now()->addSeconds((int) config('sms.otp_ttl', 300)));
 
-        $this->sms->send($phone, "আপনার সুরাহা লগইন কোড: {$code}");
+        $this->sms->send($phone, "আপনার সুরাহা লগইন কোড: {$code}", 'otp');
 
         return app()->environment('production') ? null : $code;
     }

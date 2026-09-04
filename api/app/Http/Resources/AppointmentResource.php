@@ -36,12 +36,7 @@ class AppointmentResource extends JsonResource
             'office' => $this->officeBn(),
             'created_at' => $this->created_at?->toDateString(),
 
-            'notes' => $this->whenLoaded('notes', fn () => $this->notes->map(fn ($n) => [
-                'id' => $n->id,
-                'body' => $n->body,
-                'author' => $n->author?->name,
-                'created_at' => $n->created_at?->toDateString(),
-            ])),
+            'notes' => NoteResource::collection($this->whenLoaded('notes')),
         ];
     }
 }

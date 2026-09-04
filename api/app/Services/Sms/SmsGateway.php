@@ -12,5 +12,6 @@ namespace App\Services\Sms;
  */
 interface SmsGateway
 {
-    public function send(string $phone, string $message): void;
+    /** `$purpose` is recorded for the usage figures on the SMS সেটিংস page. */
+    public function send(string $phone, string $message, string $purpose = 'other'): void;
 }

@@ -70,12 +70,32 @@ enum Role: string
         return $this->isOfficer();
     }
 
+    /**
+     * Roles a UNO may appoint to investigate an অভিযোগ. A ইউপি সচিব carries out investigations
+     * alongside their union work, so they appear in the appointment list and see their own
+     * caseload exactly as a তদন্ত কর্মকর্তা does.
+     */
+    public function canInvestigate(): bool
+    {
+        return $this === self::INVESTIGATING_OFFICER || $this === self::UP_SOCHIB;
+    }
+
+    /** @return list<string> The `users.role` values {@see canInvestigate} accepts. */
+    public static function investigatorRoles(): array
+    {
+        return array_values(array_map(
+            fn (self $r) => $r->value,
+            array_filter(self::cases(), fn (self $r) => $r->canInvestigate()),
+        ));
+    }
+
     /** Roles an admin may assign when provisioning officer accounts. */
     public static function assignableOfficerRoles(): array
     {
+        // Listed by administrative seniority — the order the dropdowns show them in.
         return [
-            self::FWA, self::UP_SOCHIB, self::UNO,
-            self::INVESTIGATING_OFFICER, self::DC, self::SEAL_ADMIN,
+            self::DC, self::UNO, self::UP_SOCHIB,
+            self::INVESTIGATING_OFFICER, self::FWA, self::SEAL_ADMIN,
         ];
     }
 }

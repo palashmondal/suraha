@@ -12,14 +12,14 @@ enum SuggestionStatus: string
 {
     case PENDING = 'pending';    // নতুন
     case ACCEPTED = 'accepted';  // গৃহীত
-    case REJECTED = 'rejected';  // নাকচ
+    case REJECTED = 'rejected';  // নথিজাত
 
     public function labelBn(): string
     {
         return match ($this) {
             self::PENDING => 'নতুন',
             self::ACCEPTED => 'গৃহীত',
-            self::REJECTED => 'নাকচ',
+            self::REJECTED => 'নথিজাত',
         };
     }
 

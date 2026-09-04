@@ -32,6 +32,8 @@ class AssistanceFactory extends Factory
         return [
             'status' => AssistanceStatus::PENDING,
             'kind' => fake()->randomElement(AssistanceKind::cases()),
+            // Some already carry the UNO's গুরুত্বপূর্ণ mark, so that tab is not empty in dev.
+            'is_important' => fake()->boolean(15),
             'applicant_name' => fake()->randomElement(self::NAMES),
             'title' => $title,
             'description' => $description,
@@ -39,7 +41,6 @@ class AssistanceFactory extends Factory
             'mobile' => '01'.fake()->numerify('#########'),
             'address' => 'গ্রাম: '.fake()->randomElement(['চরকাজল', 'পানপট্টি', 'ডাকুয়া', 'গোলখালী']),
             'amount_requested' => fake()->randomElement([5000, 10000, 15000, 20000, 25000, 50000]),
-            'tracking_token' => 'SUR-AID-'.strtoupper(fake()->unique()->bothify('??####')),
         ];
     }
 

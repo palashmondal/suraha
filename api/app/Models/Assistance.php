@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\Scopes\VisibleTenantScope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
+use App\Models\Concerns\HasAttachments;
+use App\Models\Concerns\HasTrackingToken;
+use App\Models\Concerns\HasNotes;
 use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /** মানবিক সহায়তা application. Tenant-scoped. */
@@ -19,7 +22,9 @@ use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 class Assistance extends Model
 {
     /** @use HasFactory<AssistanceFactory> */
-    use BelongsToTenant, HasFactory;
+    use BelongsToTenant, HasAttachments, HasFactory, HasTrackingToken, HasNotes;
+
+    protected $trackingPrefix = 'SUR-AID';
 
     protected $guarded = ['id', 'tenant_id'];
 

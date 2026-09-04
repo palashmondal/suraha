@@ -18,6 +18,7 @@ import BirthRegDetail from './pages/birth/BirthRegDetail';
 import ComplaintList from './pages/complaint/ComplaintList';
 import ComplaintDetail from './pages/complaint/ComplaintDetail';
 import InvestigatingOfficers from './pages/complaint/InvestigatingOfficers';
+import InvestigatorCases from './pages/complaint/InvestigatorCases';
 import HearingSchedule from './pages/complaint/HearingSchedule';
 import AppointmentList from './pages/appointment/AppointmentList';
 import AppointmentDetail from './pages/appointment/AppointmentDetail';
@@ -28,6 +29,7 @@ import FileComplaint from './pages/public/FileComplaint';
 import BookAppointment from './pages/public/BookAppointment';
 import MySubmissions from './pages/public/MySubmissions';
 import UserList from './pages/users/UserList';
+import SmsSettings from './pages/settings/SmsSettings';
 import AssistanceList from './pages/assistance/AssistanceList';
 import AssistanceDetail from './pages/assistance/AssistanceDetail';
 import SuggestionList from './pages/suggestion/SuggestionList';
@@ -93,6 +95,18 @@ function InactiveSite() {
   );
 }
 
+// An investigating officer's অভিযোগ list is their own desk, so they get the same page the UNO
+// sees for them rather than the register view, which for them would only ever show their own
+// rows anyway — with the wrong tabs and no caseload summary.
+function ComplaintIndex() {
+  const { user } = useAuth();
+
+  // Both investigating roles land on their own desk; everyone else gets the full register.
+  const ownDesk = user?.role === 'investigating_officer' || user?.role === 'up_sochib';
+
+  return ownDesk ? <InvestigatorCases /> : <ComplaintList />;
+}
+
 export default function App() {
   // Resolves the host once for the whole app, which is also what sets the tab title
   // (see tenant/host.ts). Routes that never render TopBar still get the right title.
@@ -128,8 +142,9 @@ export default function App() {
       <Route path="/pregnancy/:id" element={<RequireAuth><PregnancyDetail /></RequireAuth>} />
       <Route path="/birth" element={<RequireAuth><BirthRegList /></RequireAuth>} />
       <Route path="/birth/:id" element={<RequireAuth><BirthRegDetail /></RequireAuth>} />
-      <Route path="/complaint" element={<RequireAuth><ComplaintList /></RequireAuth>} />
+      <Route path="/complaint" element={<RequireAuth><ComplaintIndex /></RequireAuth>} />
       <Route path="/investigators" element={<RequireAuth roles={['uno', 'seal_admin']}><InvestigatingOfficers /></RequireAuth>} />
+      <Route path="/investigators/:id" element={<RequireAuth roles={['uno', 'seal_admin']}><InvestigatorCases /></RequireAuth>} />
       <Route path="/hearings" element={<RequireAuth roles={['uno', 'seal_admin']}><HearingSchedule /></RequireAuth>} />
       <Route path="/complaint/:id" element={<RequireAuth><ComplaintDetail /></RequireAuth>} />
       <Route path="/appointment" element={<RequireAuth><AppointmentList /></RequireAuth>} />
@@ -137,6 +152,7 @@ export default function App() {
       <Route path="/appointment/:id" element={<RequireAuth><AppointmentDetail /></RequireAuth>} />
       <Route path="/reports" element={<RequireAuth><Reports /></RequireAuth>} />
       <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
+      <Route path="/sms-settings" element={<RequireAuth roles={['uno', 'seal_admin']}><SmsSettings /></RequireAuth>} />
       <Route path="/users" element={<RequireAuth roles={['uno', 'seal_admin']}><UserList /></RequireAuth>} />
 
       {/* মানবিক সহায়তা + নাগরিক পরামর্শ — officer views */}

@@ -8,6 +8,8 @@ import { useUnionOptions } from '../../tenant/useUnionOptions';
 import { api, ApiError } from '../../api/client';
 import { type Assistance, type Kind } from '../../api/assistance';
 import { useSync } from '../../offline/SyncProvider';
+import { uploadAttachments } from '../../api/attachments';
+import AttachmentPicker from '../../components/form/AttachmentPicker';
 import SubmittedCard from './SubmittedCard';
 import QueuedOfflineCard from './QueuedOfflineCard';
 
@@ -22,6 +24,8 @@ export default function ApplyAssistance() {
   const [queued, setQueued] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
+  const [warn, setWarn] = useState<string | null>(null);
   const set = (k: string) => (v: string) => setF((s) => ({ ...s, [k]: v }));
 
   // The category list comes from the API so the form cannot drift from what the server accepts.
@@ -30,6 +34,17 @@ export default function ApplyAssistance() {
       .then((r) => setKinds(r.kinds))
       .catch(() => setKinds([]));
   }, []);
+
+  // Files go up after the record exists, so the offline outbox stays plain JSON. A failed upload
+  // must not read as a failed application — the submission is already filed and tracked.
+  const sendFiles = async (resource: 'complaints' | 'assistances' | 'suggestions', id: number) => {
+    if (files.length === 0) return;
+    try {
+      await uploadAttachments(resource, id, files);
+    } catch {
+      setWarn(S.attachments.uploadFailed);
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,8 +69,13 @@ export default function ApplyAssistance() {
           amount_requested: f.amount_requested ? Number(f.amount_requested) : undefined,
         },
       });
-      if (res.queued) setQueued(true);
-      else setToken((res.data as { data: Assistance }).data.tracking_token);
+      if (res.queued) {
+        setQueued(true);
+      } else {
+        const created = (res.data as { data: Assistance }).data;
+        await sendFiles('assistances', created.id);
+        setToken(created.tracking_token);
+      }
     } catch (e) {
       if (e instanceof ApiError && e.status === 401) navigate('/login');
       else setErr(e instanceof ApiError ? (Object.values(e.errors ?? {})[0]?.[0] ?? e.message) : S.auth.genericError);
@@ -73,7 +93,10 @@ export default function ApplyAssistance() {
         {queued ? (
           <QueuedOfflineCard />
         ) : token ? (
-          <SubmittedCard token={token} />
+          <>
+            {warn && <Alert severity="warning" sx={{ mb: 2 }}>{warn}</Alert>}
+            <SubmittedCard token={token} />
+          </>
         ) : (
           <Paper component="form" onSubmit={submit} elevation={0} sx={{ display: 'grid', gap: 2, background: 'transparent' }}>
             {err && <Alert severity="error">{err}</Alert>}
@@ -95,6 +118,7 @@ export default function ApplyAssistance() {
             <FormField label={S.assistance.fAddress} value={f.address ?? ''} onChange={set('address')} />
             <FormField label={S.assistance.fMobile} value={f.mobile ?? ''} onChange={set('mobile')} placeholder="01XXXXXXXXX" />
             <FormField label={S.assistance.fNid} value={f.nid ?? ''} onChange={set('nid')} />
+            <AttachmentPicker files={files} onChange={setFiles} />
             <Box>
               <Button type="submit" variant="contained" disabled={busy}>{S.assistance.submit}</Button>
             </Box>
