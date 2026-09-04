@@ -5,14 +5,20 @@
 #   ./scripts/dev.sh
 #
 # It:
-#   1. ensures suraha.net + every upazila and district subdomain resolve to 127.0.0.1
-#      (adds any missing /etc/hosts entries — needs sudo),
+#   1. ensures suraha.net + admin.suraha.net + every upazila and district subdomain resolve to
+#      127.0.0.1 (adds any missing /etc/hosts entries — needs sudo),
 #   2. applies pending DB migrations (safe/idempotent) — needs Postgres running:
 #      `brew services start postgresql@17`,
 #   3. starts the Laravel API (:8000) and the Vite web app (:5173) in the background,
 #   4. starts the Caddy reverse proxy on :80/:443 (trusted HTTPS via Caddy's internal CA).
 #
-# Then open  https://suraha.net  (Ctrl+C stops everything).
+# Then open one of:
+#   https://suraha.net              the product's landing page (SEAL logs in at /login)
+#   https://admin.suraha.net        the SEAL admin console
+#   https://galachipa.suraha.net    an upazila's citizen site + officer app
+#   https://patuakhali.suraha.net   a district's DC dashboard
+#
+# (Ctrl+C stops everything.)
 #
 set -euo pipefail
 
@@ -28,12 +34,13 @@ ok()  { printf '  \033[32m✓\033[0m %s\n' "$*"; }
 
 say "Suraha local dev"
 
-# --- 1. DNS: /etc/hosts must map the central host + each upazila subdomain to 127.0.0.1 -------
+# --- 1. DNS: /etc/hosts must map every Suraha host to 127.0.0.1 -------------------------------
 hosts_needed=("$BASE_DOMAIN")
-# Every Suraha host: one per provisioned upazila (UNO dashboards) plus one per district that has
-# at least one upazila (the DC dashboards). Hosts files have no wildcards, so each needs its own
-# line — which is why this list is rebuilt on every run. Asked of the app rather than the database
-# directly, so it keeps working now that the DB is Postgres.
+# Every Suraha host: the admin console, one per provisioned upazila (UNO dashboards), plus one per
+# district that has at least one upazila (the DC dashboards). Hosts files have no wildcards, so
+# each needs its own line — which is why this list is rebuilt on every run. Asked of the app
+# rather than the database directly, so it keeps working now that the DB is Postgres, and so the
+# admin host comes from tenancy config instead of being spelled out again here.
 while IFS= read -r d; do
   [[ -n "$d" ]] && hosts_needed+=("$d.$BASE_DOMAIN")
 done < <(cd "$API" && php artisan suraha:hosts 2>/dev/null || true)
@@ -105,6 +112,9 @@ say "Starting Caddy on :80/:443 (sudo)"
 echo
 echo "    Open →  https://$BASE_DOMAIN"
 for h in "${hosts_needed[@]:1}"; do echo "            https://$h"; done
+echo
+echo "    suraha.net = product landing (login at /login) · admin.suraha.net = SEAL console"
+echo "    {upazila}.suraha.net = citizen site · {district}.suraha.net = DC dashboard"
 echo "    (Ctrl+C stops the API, web, and proxy.)"
 echo
 sudo caddy run --config "$ROOT/infra/Caddyfile.dev" --adapter caddyfile

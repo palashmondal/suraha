@@ -11,9 +11,15 @@ let inflight: Promise<HostContext> | null = null;
 // resolves once per page load, so setting it here covers the whole app with no per-route wiring.
 // index.html carries the plain সুরাহা as the pre-hydration default.
 function applyDocumentTitle(ctx: HostContext): void {
-  document.title = ctx.kind === 'upazila' && ctx.name_bn
-    ? `সুরাহা - ${ctx.name_bn} উপজেলা`
-    : 'সুরাহা - এডমিন';
+  if (ctx.kind === 'upazila' && ctx.name_bn) {
+    document.title = `সুরাহা - ${ctx.name_bn} উপজেলা`;
+
+    return;
+  }
+
+  // The bare central host is the product's own site, so it carries the plain product name;
+  // only the admin console calls itself এডমিন.
+  document.title = ctx.kind === 'central' && ! ctx.is_admin ? 'সুরাহা' : 'সুরাহা - এডমিন';
 }
 
 function load(): Promise<HostContext> {
@@ -27,7 +33,7 @@ function load(): Promise<HostContext> {
       })
       .catch(() => {
         // Fall back to central so the UI stays usable if the lookup fails.
-        cached = { kind: 'central', slug: null, name_bn: null, is_active: true };
+        cached = { kind: 'central', is_admin: false, slug: null, name_bn: null, is_active: true };
         applyDocumentTitle(cached);
         return cached;
       })

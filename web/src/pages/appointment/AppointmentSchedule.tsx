@@ -73,7 +73,7 @@ export default function AppointmentSchedule() {
                 <Paper
                   key={a.id}
                   elevation={0}
-                  onClick={() => navigate(`/appointment/${a.id}`)}
+                  onClick={() => navigate(`/app/appointment/${a.id}`)}
                   sx={{ p: 2, borderRadius: '14px', cursor: 'pointer', border: (t) => `1px solid ${t.palette.divider}`, '&:hover': { borderColor: 'primary.main' } }}
                 >
                   <Stack direction="row" alignItems="center" spacing={1}>

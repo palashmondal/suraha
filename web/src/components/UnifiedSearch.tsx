@@ -4,6 +4,7 @@ import {
 } from '@mui/material';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import { useNavigate } from 'react-router-dom';
+import { appPath } from '../appPath';
 import { bnStrings as S } from '../i18n';
 import { bn } from '../utils/bnNum';
 import { searchAll, type SearchHit } from '../api/search';
@@ -57,7 +58,7 @@ export default function UnifiedSearch() {
       noOptionsText={term.trim().length < 2 ? S.search.hint : S.search.empty}
       onChange={(_, value) => {
         if (value && typeof value !== 'string') {
-          navigate(value.link);
+          navigate(appPath(value.link));
           setTerm('');
         }
       }}

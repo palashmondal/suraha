@@ -54,7 +54,7 @@ type Item = {
   managerOnly?: boolean; // only UNO / SEAL (officer & content management)
 };
 
-const dashboardItem: Item = { key: 'dashboard', label: S.nav.dashboard, icon: <GridViewRoundedIcon />, route: '/' };
+const dashboardItem: Item = { key: 'dashboard', label: S.nav.dashboard, icon: <GridViewRoundedIcon />, route: '/app' };
 
 // নাগরিক সেবা — the modules a citizen's case actually moves through, in the order an upazila
 // office works them.
@@ -64,9 +64,9 @@ const serviceItems: Item[] = [
     label: S.nav.pregnancy,
     icon: <PregnantWomanRoundedIcon />,
     children: [
-      { key: 'pregnancy.list', icon: <FormatListBulletedRoundedIcon fontSize="small" />, label: S.nav.list, route: '/pregnancy' },
-      { key: 'birth', icon: <ChildFriendlyOutlinedIcon fontSize="small" />, label: S.nav.birth, route: '/birth' },
-      { key: 'pregnancy.report', icon: <InsertChartOutlinedRoundedIcon fontSize="small" />, label: S.nav.report, route: '/reports' },
+      { key: 'pregnancy.list', icon: <FormatListBulletedRoundedIcon fontSize="small" />, label: S.nav.list, route: '/app/pregnancy' },
+      { key: 'birth', icon: <ChildFriendlyOutlinedIcon fontSize="small" />, label: S.nav.birth, route: '/app/birth' },
+      { key: 'pregnancy.report', icon: <InsertChartOutlinedRoundedIcon fontSize="small" />, label: S.nav.report, route: '/app/reports' },
     ],
   },
   {
@@ -74,8 +74,8 @@ const serviceItems: Item[] = [
     label: S.nav.appointment,
     icon: <EventNoteOutlinedIcon />,
     children: [
-      { key: 'appointment.all', icon: <FormatListBulletedRoundedIcon fontSize="small" />, label: S.nav.appointmentList, route: '/appointment' },
-      { key: 'appointment.schedule', icon: <CalendarMonthOutlinedIcon fontSize="small" />, label: S.nav.appointmentSchedule, route: '/appointment-schedule', managerOnly: true },
+      { key: 'appointment.all', icon: <FormatListBulletedRoundedIcon fontSize="small" />, label: S.nav.appointmentList, route: '/app/appointment' },
+      { key: 'appointment.schedule', icon: <CalendarMonthOutlinedIcon fontSize="small" />, label: S.nav.appointmentSchedule, route: '/app/appointment-schedule', managerOnly: true },
     ],
   },
   {
@@ -83,13 +83,13 @@ const serviceItems: Item[] = [
     label: S.nav.complaint,
     icon: <ReportProblemOutlinedIcon />,
     children: [
-      { key: 'complaint.all', icon: <FormatListBulletedRoundedIcon fontSize="small" />, label: S.nav.allList, route: '/complaint' },
-      { key: 'complaint.hearings', icon: <GavelRoundedIcon fontSize="small" />, label: S.nav.hearingSchedule, route: '/hearings', managerOnly: true },
-      { key: 'complaint.officers', icon: <BadgeOutlinedIcon fontSize="small" />, label: S.nav.officerList, route: '/investigators', managerOnly: true },
+      { key: 'complaint.all', icon: <FormatListBulletedRoundedIcon fontSize="small" />, label: S.nav.allList, route: '/app/complaint' },
+      { key: 'complaint.hearings', icon: <GavelRoundedIcon fontSize="small" />, label: S.nav.hearingSchedule, route: '/app/hearings', managerOnly: true },
+      { key: 'complaint.officers', icon: <BadgeOutlinedIcon fontSize="small" />, label: S.nav.officerList, route: '/app/investigators', managerOnly: true },
     ],
   },
-  { key: 'humanitarian', label: S.nav.humanitarian, icon: <VolunteerActivismOutlinedIcon />, route: '/humanitarian' },
-  { key: 'advice', label: S.nav.advice, icon: <ForumOutlinedIcon />, route: '/advice' },
+  { key: 'humanitarian', label: S.nav.humanitarian, icon: <VolunteerActivismOutlinedIcon />, route: '/app/humanitarian' },
+  { key: 'advice', label: S.nav.advice, icon: <ForumOutlinedIcon />, route: '/app/advice' },
 ];
 
 // DC-only: reports live under প্রসূতি for everyone else, but a DC's whole job here is figures,
@@ -98,23 +98,23 @@ const reportsItem: Item = {
   key: 'report',
   label: S.nav.report,
   icon: <InsertChartOutlinedRoundedIcon />,
-  route: '/reports',
+  route: '/app/reports',
 };
 
 // ড্যাশবোর্ড পরিচালনা — who and what the dashboards are made of. The instance roster is
 // SEAL-only, so it is added per role rather than declared here.
 const managementSection: Child[] = [
-  { key: 'users', icon: <GroupOutlinedIcon fontSize="small" />, label: S.nav.users, route: '/users' },
-  { key: 'sms', icon: <SmsOutlinedIcon fontSize="small" />, label: S.nav.smsSettings, route: '/sms-settings' },
+  { key: 'users', icon: <GroupOutlinedIcon fontSize="small" />, label: S.nav.users, route: '/app/users' },
+  { key: 'sms', icon: <SmsOutlinedIcon fontSize="small" />, label: S.nav.smsSettings, route: '/app/sms-settings' },
 ];
-const instancesChild: Child = { key: 'instances', icon: <ApartmentRoundedIcon fontSize="small" />, label: S.nav.instances, route: '/instances' };
-const districtsChild: Child = { key: 'districts', icon: <MapOutlinedIcon fontSize="small" />, label: S.nav.districts, route: '/districts' };
+const instancesChild: Child = { key: 'instances', icon: <ApartmentRoundedIcon fontSize="small" />, label: S.nav.instances, route: '/app/instances' };
+const districtsChild: Child = { key: 'districts', icon: <MapOutlinedIcon fontSize="small" />, label: S.nav.districts, route: '/app/districts' };
 // সাধারণ তথ্য is the content area: the awareness slider belongs here with the phone list and the
 // about text, not among the case-handling modules above.
 const generalSection: Child[] = [
-  { key: 'phones', icon: <LocalPhoneOutlinedIcon fontSize="small" />, label: S.nav.phones, route: '/general-info' },
-  { key: 'about', icon: <InfoOutlinedIcon fontSize="small" />, label: S.nav.aboutUpazila, route: '/general-info' },
-  { key: 'slider', icon: <CampaignOutlinedIcon fontSize="small" />, label: S.nav.slider, route: '/sliders' },
+  { key: 'phones', icon: <LocalPhoneOutlinedIcon fontSize="small" />, label: S.nav.phones, route: '/app/general-info' },
+  { key: 'about', icon: <InfoOutlinedIcon fontSize="small" />, label: S.nav.aboutUpazila, route: '/app/general-info' },
+  { key: 'slider', icon: <CampaignOutlinedIcon fontSize="small" />, label: S.nav.slider, route: '/app/sliders' },
 ];
 
 function SectionHeader({ label, action, collapsed }: { label: string; action?: React.ReactNode; collapsed?: boolean }) {
@@ -213,8 +213,8 @@ export default function Sidebar() {
   // Segment-exact: /appointment must not light up while on /appointment-schedule, but
   // /appointment/12 must.
   const isRouteActive = (route: string) =>
-    route === '/'
-      ? location.pathname === '/'
+    route === '/app'
+      ? location.pathname === '/app'
       : location.pathname === route || location.pathname.startsWith(route + '/');
 
   const itemActive = (item: Item) =>
@@ -326,7 +326,7 @@ export default function Sidebar() {
       <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
       {/* Brand — logo and wordmark both stay when folded, stacked so they fit the rail. */}
       <Box
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/app')}
         sx={{
           display: 'flex',
           flexDirection: collapsed ? 'column' : 'row',

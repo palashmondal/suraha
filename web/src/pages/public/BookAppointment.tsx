@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Alert, Box, Button, Container, Paper, Typography } from '@mui/material';
+import { Alert, Box, Button, Container, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
 import PublicLayout from './PublicLayout';
+import PageHero from './PageHero';
+import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
 import { FormField, SelectField, DateField, TimeField } from '../../components/form/FormFields';
 import { useUnionOptions } from '../../tenant/useUnionOptions';
 import { ApiError } from '../../api/client';
@@ -56,8 +58,8 @@ export default function BookAppointment() {
 
   return (
     <PublicLayout>
+      <PageHero title={S.public.bookAppointmentTitle} subtitle={S.public.sAppointmentD} icon={<EventAvailableRoundedIcon />} />
       <Container maxWidth="sm" sx={{ py: { xs: 4, md: 6 } }}>
-        <Typography sx={{ fontSize: 26, fontWeight: 800, mb: 3 }}>{S.public.bookAppointmentTitle}</Typography>
         {queued ? (
           <QueuedOfflineCard />
         ) : token ? (

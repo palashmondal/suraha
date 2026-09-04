@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { appPath } from '../appPath';
 import { Avatar, Box, Button, Chip, Paper, Typography, useTheme } from '@mui/material';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import { bnStrings as S } from '../i18n';
@@ -35,7 +36,7 @@ export default function NotificationsPage() {
   // A notification is about a record; opening it goes there and marks it read on the way.
   const open = (n: AppNotification) => {
     if (n.unread) markNotificationRead(n.id).then(load).catch(() => {});
-    if (n.link) navigate(n.link);
+    if (n.link) navigate(appPath(n.link));
   };
 
   const markOne = async (id: number) => {

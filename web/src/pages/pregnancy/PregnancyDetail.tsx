@@ -404,7 +404,7 @@ export default function PregnancyDetail() {
        instead of the panel floating a header's height above the content it summarises. */
     <Box sx={{ display: 'grid', gap: 2 }}>
       <Paper elevation={0} sx={{ borderRadius: '16px', p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <IconButton onClick={() => navigate('/pregnancy')}>
+        <IconButton onClick={() => navigate('/app/pregnancy')}>
           <ArrowBackRoundedIcon />
         </IconButton>
         <Typography sx={{ fontSize: 19, fontWeight: 700 }}>
@@ -415,7 +415,7 @@ export default function PregnancyDetail() {
             sx={{ ml: 'auto' }}
             variant="outlined"
             startIcon={<EditRoundedIcon />}
-            onClick={() => navigate(`/pregnancy/${p.id}/edit`)}
+            onClick={() => navigate(`/app/pregnancy/${p.id}/edit`)}
           >
             {S.pregnancy.edit}
           </Button>
@@ -752,7 +752,7 @@ function ApproveDialog({
     try {
       await approvePregnancy(pregnancyId, f);
       onDone();
-      navigate('/birth');
+      navigate('/app/birth');
     } catch (e) {
       // A rejected submission used to reject into nothing: the dialog stayed open, unchanged and
       // unexplained, which reads as a button that does not work.

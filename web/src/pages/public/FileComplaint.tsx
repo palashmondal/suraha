@@ -4,6 +4,8 @@ import MyLocationRoundedIcon from '@mui/icons-material/MyLocationRounded';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
 import PublicLayout from './PublicLayout';
+import PageHero from './PageHero';
+import GavelRoundedIcon from '@mui/icons-material/GavelRounded';
 import FieldCard from '../../components/form/FieldCard';
 import { FormField, SelectField } from '../../components/form/FormFields';
 import { useUnionOptions } from '../../tenant/useUnionOptions';
@@ -84,8 +86,8 @@ export default function FileComplaint() {
 
   return (
     <PublicLayout>
+      <PageHero title={S.public.fileComplaintTitle} subtitle={S.public.sComplaintD} icon={<GavelRoundedIcon />} />
       <Container maxWidth="sm" sx={{ py: { xs: 4, md: 6 } }}>
-        <Typography sx={{ fontSize: 26, fontWeight: 800, mb: 3 }}>{S.public.fileComplaintTitle}</Typography>
         {queued ? (
           <QueuedOfflineCard />
         ) : token ? (

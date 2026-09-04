@@ -101,9 +101,9 @@ export default function AssistanceList() {
         columns={columns}
         rows={rows}
         loading={loading}
-        onRowClick={(r) => navigate(`/humanitarian/${r.id}`)}
+        onRowClick={(r) => navigate(`/app/humanitarian/${r.id}`)}
         rowActions={(r) => [
-          { key: 'view', label: S.common.details, icon: <VisibilityOutlinedIcon fontSize="small" />, onClick: () => navigate(`/humanitarian/${r.id}`) },
+          { key: 'view', label: S.common.details, icon: <VisibilityOutlinedIcon fontSize="small" />, onClick: () => navigate(`/app/humanitarian/${r.id}`) },
         ]}
       />
     </Box>

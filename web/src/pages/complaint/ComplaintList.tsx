@@ -116,9 +116,9 @@ export default function ComplaintList() {
         rows={rows}
         loading={loading}
         pagination={{ page, pageCount, onPage: setPage }}
-        onRowClick={(r) => navigate(`/complaint/${r.id}`)}
+        onRowClick={(r) => navigate(`/app/complaint/${r.id}`)}
         rowActions={(r) => [
-          { key: 'view', label: S.common.details, icon: <VisibilityOutlinedIcon fontSize="small" />, onClick: () => navigate(`/complaint/${r.id}`) },
+          { key: 'view', label: S.common.details, icon: <VisibilityOutlinedIcon fontSize="small" />, onClick: () => navigate(`/app/complaint/${r.id}`) },
         ]}
       />
     </Box>

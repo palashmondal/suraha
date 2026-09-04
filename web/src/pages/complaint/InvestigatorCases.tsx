@@ -106,7 +106,7 @@ export default function InvestigatorCases() {
           component="button"
           type="button"
           underline="hover"
-          onClick={(e) => { e.stopPropagation(); navigate(`/complaint/${r.id}`); }}
+          onClick={(e) => { e.stopPropagation(); navigate(`/app/complaint/${r.id}`); }}
           sx={{ fontSize: 13.5, fontWeight: 600 }}
         >
           {S.common.details}
@@ -124,7 +124,7 @@ export default function InvestigatorCases() {
         <Stack direction="row" spacing={2} alignItems="center">
           {/* Back to the roster only when you came from it. */}
           {!isSelf && (
-            <IconButton onClick={() => navigate('/investigators')} aria-label={S.investigators.title}>
+            <IconButton onClick={() => navigate('/app/investigators')} aria-label={S.investigators.title}>
               <ArrowBackRoundedIcon />
             </IconButton>
           )}
@@ -170,7 +170,7 @@ export default function InvestigatorCases() {
         emptyHelper={S.investigators.emptyHelper}
         emptyIcon={<GavelRoundedIcon />}
         pagination={{ page, pageCount, onPage: setPage }}
-        onRowClick={(r) => navigate(`/complaint/${r.id}`)}
+        onRowClick={(r) => navigate(`/app/complaint/${r.id}`)}
       />
     </Box>
   );

@@ -9,6 +9,13 @@ export type HostKind = 'central' | 'district' | 'upazila';
 
 export interface HostContext {
   kind: HostKind;
+  /**
+   * Central hosts only: true on admin.suraha.net, false on the bare suraha.net. Both are
+   * `kind: 'central'` — everything that scopes by host (upazila switcher, union options, login
+   * copy) treats them the same. This decides one thing: whether "/" serves the console or the
+   * product's landing page.
+   */
+  is_admin?: boolean;
   slug: string | null;
   name_bn: string | null;
   district_bn?: string | null;

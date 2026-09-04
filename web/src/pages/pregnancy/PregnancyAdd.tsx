@@ -103,7 +103,7 @@ export default function PregnancyAdd() {
       });
       // A queued edit has not landed yet, so go to the list (with its pending banner) rather than
       // to a detail page still showing the old values.
-      if (res.queued) navigate('/pregnancy', { state: { queued: true } });
+      if (res.queued) navigate('/app/pregnancy', { state: { queued: true } });
       else navigate(id ? `/pregnancy/${id}` : '/pregnancy');
     } catch (e) {
       if (e instanceof ApiError) setErr(Object.values(e.errors ?? {})[0]?.[0] ?? e.message);

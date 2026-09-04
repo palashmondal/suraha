@@ -4,6 +4,8 @@ import CloudQueueRoundedIcon from '@mui/icons-material/CloudQueueRounded';
 import { bnStrings as S } from '../../i18n';
 import { bnDate } from '../../utils/bnNum';
 import PublicLayout from './PublicLayout';
+import PageHero from './PageHero';
+import FolderSharedRoundedIcon from '@mui/icons-material/FolderSharedRounded';
 import StatusPill from '../../components/StatusPill';
 import EmptyState from '../../components/EmptyState';
 import LoadingState from '../../components/LoadingState';
@@ -36,8 +38,8 @@ export default function MySubmissions() {
 
   return (
     <PublicLayout>
+      <PageHero title={S.public.mySubmissions} icon={<FolderSharedRoundedIcon />} />
       <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-        <Typography sx={{ fontSize: 26, fontWeight: 800, mb: 3 }}>{S.public.mySubmissions}</Typography>
         {items === null && (
           <Paper elevation={0} sx={{ borderRadius: '16px' }}><LoadingState /></Paper>
         )}

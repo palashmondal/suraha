@@ -75,7 +75,7 @@ export default function BirthRegList() {
       header: S.birthReg.colMother,
       render: (r) =>
         r.pregnancy_id ? (
-          <Link component="button" underline="hover" onClick={() => navigate(`/pregnancy/${r.pregnancy_id}`)}>
+          <Link component="button" underline="hover" onClick={() => navigate(`/app/pregnancy/${r.pregnancy_id}`)}>
             {r.mother_name}
           </Link>
         ) : (
@@ -93,7 +93,7 @@ export default function BirthRegList() {
       header: S.common.details,
       align: 'right',
       render: (r) => (
-        <Button size="small" onClick={(e: React.MouseEvent) => { e.stopPropagation(); navigate(`/birth/${r.id}`); }}>
+        <Button size="small" onClick={(e: React.MouseEvent) => { e.stopPropagation(); navigate(`/app/birth/${r.id}`); }}>
           {S.common.details}
         </Button>
       ),
@@ -113,7 +113,7 @@ export default function BirthRegList() {
         columns={columns}
         rows={rows}
         loading={loading}
-        onRowClick={(r) => navigate(`/birth/${r.id}`)}
+        onRowClick={(r) => navigate(`/app/birth/${r.id}`)}
         rowActions={(r) =>
           r.has_certificate
             ? [

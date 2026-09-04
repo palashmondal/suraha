@@ -23,7 +23,8 @@ import HearingSchedule from './pages/complaint/HearingSchedule';
 import AppointmentList from './pages/appointment/AppointmentList';
 import AppointmentDetail from './pages/appointment/AppointmentDetail';
 import AppointmentSchedule from './pages/appointment/AppointmentSchedule';
-import Landing from './pages/public/Landing';
+import ProductLanding from './pages/public/ProductLanding';
+import UpazilaLanding from './pages/public/UpazilaLanding';
 import Track from './pages/public/Track';
 import FileComplaint from './pages/public/FileComplaint';
 import BookAppointment from './pages/public/BookAppointment';
@@ -60,7 +61,9 @@ function RequireAuth({ children, roles }: { children: ReactNode; roles?: string[
   if (loading) return <Spinner />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'citizen') return <Navigate to="/" replace />;
-  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
+  // A real officer on a page their role may not open belongs back in the app, not on the
+  // citizen site — /app is the one page every officer role can render.
+  if (roles && !roles.includes(user.role)) return <Navigate to="/app" replace />;
   return <AppShell>{children}</AppShell>;
 }
 
@@ -72,12 +75,23 @@ function RequireLogin({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-// Root: officers get the internal dashboard; everyone else (public + citizens) gets the landing.
+/**
+ * "/" is the public site and nothing else — the officer app lives under /app on every host, so a
+ * URL means one thing wherever it is opened. What differs per host is only which public site:
+ *   suraha.net            → the product's own landing page
+ *   {upazila}.suraha.net  → that upazila's citizen site
+ *   admin.suraha.net      → none (SEAL's console), so "/" hands straight over to /app
+ *   {district}.suraha.net → none either (the DC's dashboard; there is no tenant behind it)
+ * /app itself sends a signed-out visitor to the login, so both of those land there when nobody
+ * is signed in.
+ */
 function Home() {
-  const { user, loading } = useAuth();
-  if (loading) return <Spinner />;
-  if (user && user.role !== 'citizen') return <AppShell><Dashboard /></AppShell>;
-  return <Landing />;
+  const host = useHostContext();
+
+  if (!host) return <Spinner />;
+  if (host.kind === 'district' || host.is_admin) return <Navigate to="/app" replace />;
+
+  return host.kind === 'central' ? <ProductLanding /> : <UpazilaLanding />;
 }
 
 // A deactivated upazila serves this and nothing else. The API refuses every other endpoint on
@@ -130,41 +144,42 @@ export default function App() {
       <Route path="/submit-suggestion" element={<RequireLogin><SubmitSuggestion /></RequireLogin>} />
       <Route path="/my-submissions" element={<RequireLogin><MySubmissions /></RequireLogin>} />
 
-      {/* Internal app (officers) */}
-      <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
-      <Route path="/change-password" element={<RequireAuth><ChangePassword /></RequireAuth>} />
-      <Route path="/ui" element={<RequireAuth><Showcase /></RequireAuth>} />
-      <Route path="/pregnancy" element={<RequireAuth><PregnancyList /></RequireAuth>} />
+      {/* Internal app (officers) — everything an officer does hangs off /app */}
+      <Route path="/app" element={<RequireAuth><Dashboard /></RequireAuth>} />
+      <Route path="/app/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+      <Route path="/app/change-password" element={<RequireAuth><ChangePassword /></RequireAuth>} />
+      <Route path="/app/ui" element={<RequireAuth><Showcase /></RequireAuth>} />
+      <Route path="/app/pregnancy" element={<RequireAuth><PregnancyList /></RequireAuth>} />
       {/* Entering a mother is the FWA's job — the সচিব/UNO/DC only read the register (the API
           gates this too; this keeps the UI from offering a form that would 403 on save). */}
-      <Route path="/pregnancy/new" element={<RequireAuth roles={['fwa', 'seal_admin']}><PregnancyAdd /></RequireAuth>} />
-      <Route path="/pregnancy/:id/edit" element={<RequireAuth roles={['fwa', 'seal_admin']}><PregnancyAdd /></RequireAuth>} />
-      <Route path="/pregnancy/:id" element={<RequireAuth><PregnancyDetail /></RequireAuth>} />
-      <Route path="/birth" element={<RequireAuth><BirthRegList /></RequireAuth>} />
-      <Route path="/birth/:id" element={<RequireAuth><BirthRegDetail /></RequireAuth>} />
-      <Route path="/complaint" element={<RequireAuth><ComplaintIndex /></RequireAuth>} />
-      <Route path="/investigators" element={<RequireAuth roles={['uno', 'seal_admin']}><InvestigatingOfficers /></RequireAuth>} />
-      <Route path="/investigators/:id" element={<RequireAuth roles={['uno', 'seal_admin']}><InvestigatorCases /></RequireAuth>} />
-      <Route path="/hearings" element={<RequireAuth roles={['uno', 'seal_admin']}><HearingSchedule /></RequireAuth>} />
-      <Route path="/complaint/:id" element={<RequireAuth><ComplaintDetail /></RequireAuth>} />
-      <Route path="/appointment" element={<RequireAuth><AppointmentList /></RequireAuth>} />
-      <Route path="/appointment-schedule" element={<RequireAuth roles={['uno', 'seal_admin']}><AppointmentSchedule /></RequireAuth>} />
-      <Route path="/appointment/:id" element={<RequireAuth><AppointmentDetail /></RequireAuth>} />
-      <Route path="/reports" element={<RequireAuth><Reports /></RequireAuth>} />
-      <Route path="/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
-      <Route path="/sms-settings" element={<RequireAuth roles={['uno', 'seal_admin']}><SmsSettings /></RequireAuth>} />
-      <Route path="/users" element={<RequireAuth roles={['uno', 'seal_admin']}><UserList /></RequireAuth>} />
+      <Route path="/app/pregnancy/new" element={<RequireAuth roles={['fwa', 'seal_admin']}><PregnancyAdd /></RequireAuth>} />
+      <Route path="/app/pregnancy/:id/edit" element={<RequireAuth roles={['fwa', 'seal_admin']}><PregnancyAdd /></RequireAuth>} />
+      <Route path="/app/pregnancy/:id" element={<RequireAuth><PregnancyDetail /></RequireAuth>} />
+      <Route path="/app/birth" element={<RequireAuth><BirthRegList /></RequireAuth>} />
+      <Route path="/app/birth/:id" element={<RequireAuth><BirthRegDetail /></RequireAuth>} />
+      <Route path="/app/complaint" element={<RequireAuth><ComplaintIndex /></RequireAuth>} />
+      <Route path="/app/investigators" element={<RequireAuth roles={['uno', 'seal_admin']}><InvestigatingOfficers /></RequireAuth>} />
+      <Route path="/app/investigators/:id" element={<RequireAuth roles={['uno', 'seal_admin']}><InvestigatorCases /></RequireAuth>} />
+      <Route path="/app/hearings" element={<RequireAuth roles={['uno', 'seal_admin']}><HearingSchedule /></RequireAuth>} />
+      <Route path="/app/complaint/:id" element={<RequireAuth><ComplaintDetail /></RequireAuth>} />
+      <Route path="/app/appointment" element={<RequireAuth><AppointmentList /></RequireAuth>} />
+      <Route path="/app/appointment-schedule" element={<RequireAuth roles={['uno', 'seal_admin']}><AppointmentSchedule /></RequireAuth>} />
+      <Route path="/app/appointment/:id" element={<RequireAuth><AppointmentDetail /></RequireAuth>} />
+      <Route path="/app/reports" element={<RequireAuth><Reports /></RequireAuth>} />
+      <Route path="/app/notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
+      <Route path="/app/sms-settings" element={<RequireAuth roles={['uno', 'seal_admin']}><SmsSettings /></RequireAuth>} />
+      <Route path="/app/users" element={<RequireAuth roles={['uno', 'seal_admin']}><UserList /></RequireAuth>} />
 
       {/* মানবিক সহায়তা + নাগরিক পরামর্শ — officer views */}
-      <Route path="/humanitarian" element={<RequireAuth><AssistanceList /></RequireAuth>} />
-      <Route path="/humanitarian/:id" element={<RequireAuth><AssistanceDetail /></RequireAuth>} />
-      <Route path="/advice" element={<RequireAuth><SuggestionList /></RequireAuth>} />
-      <Route path="/advice/:id" element={<RequireAuth><SuggestionDetail /></RequireAuth>} />
-      <Route path="/sliders" element={<RequireAuth roles={['uno', 'seal_admin']}><SliderManage /></RequireAuth>} />
-      <Route path="/general-info" element={<RequireAuth roles={['uno', 'seal_admin']}><GeneralInfoManage /></RequireAuth>} />
-      <Route path="/instances" element={<RequireAuth roles={['seal_admin']}><Instances /></RequireAuth>} />
-      <Route path="/districts" element={<RequireAuth roles={['seal_admin']}><Districts /></RequireAuth>} />
-      <Route path="/instances/:id" element={<RequireAuth roles={['seal_admin']}><InstanceDetail /></RequireAuth>} />
+      <Route path="/app/humanitarian" element={<RequireAuth><AssistanceList /></RequireAuth>} />
+      <Route path="/app/humanitarian/:id" element={<RequireAuth><AssistanceDetail /></RequireAuth>} />
+      <Route path="/app/advice" element={<RequireAuth><SuggestionList /></RequireAuth>} />
+      <Route path="/app/advice/:id" element={<RequireAuth><SuggestionDetail /></RequireAuth>} />
+      <Route path="/app/sliders" element={<RequireAuth roles={['uno', 'seal_admin']}><SliderManage /></RequireAuth>} />
+      <Route path="/app/general-info" element={<RequireAuth roles={['uno', 'seal_admin']}><GeneralInfoManage /></RequireAuth>} />
+      <Route path="/app/instances" element={<RequireAuth roles={['seal_admin']}><Instances /></RequireAuth>} />
+      <Route path="/app/districts" element={<RequireAuth roles={['seal_admin']}><Districts /></RequireAuth>} />
+      <Route path="/app/instances/:id" element={<RequireAuth roles={['seal_admin']}><InstanceDetail /></RequireAuth>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

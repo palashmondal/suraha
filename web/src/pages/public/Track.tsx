@@ -3,6 +3,8 @@ import { Alert, Box, Button, Container, Paper, Stack, TextField, Typography } fr
 import { bnStrings as S } from '../../i18n';
 import { bn, bnDate } from '../../utils/bnNum';
 import PublicLayout from './PublicLayout';
+import PageHero from './PageHero';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import StatusPill from '../../components/StatusPill';
 import StatusTimeline, { type TimelineNode } from '../../components/StatusTimeline';
 import { trackByToken, type TrackResult } from '../../api/track';
@@ -37,10 +39,8 @@ export default function Track() {
 
   return (
     <PublicLayout>
-      <Container maxWidth="sm" sx={{ py: { xs: 5, md: 8 } }}>
-        <Typography sx={{ fontSize: 28, fontWeight: 800, textAlign: 'center' }}>{S.public.trackTitle}</Typography>
-        <Typography sx={{ color: 'text.secondary', textAlign: 'center', mt: 1, mb: 3 }}>{S.public.trackHelp}</Typography>
-
+      <PageHero title={S.public.trackTitle} subtitle={S.public.trackHelp} icon={<ReceiptLongRoundedIcon />} />
+      <Container maxWidth="sm" sx={{ py: { xs: 4, md: 6 } }}>
         <Paper component="form" onSubmit={search} elevation={0} sx={{ p: 2, borderRadius: '16px', border: (t) => `1px solid ${t.palette.divider}`, display: 'flex', gap: 1 }}>
           <TextField
             fullWidth
@@ -49,7 +49,14 @@ export default function Track() {
             placeholder="SUR-CMP-XXXXXX"
             inputProps={{ style: { fontFamily: 'monospace' } }}
           />
-          <Button type="submit" variant="contained" disabled={busy || !token.trim()}>{S.public.trackBtn}</Button>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={busy || !token.trim()}
+            sx={{ flexShrink: 0, whiteSpace: 'nowrap', px: 3 }}
+          >
+            {S.public.trackBtn}
+          </Button>
         </Paper>
 
         {err && <Alert severity="error" sx={{ mt: 2 }}>{err}</Alert>}

@@ -73,7 +73,7 @@ export default function HearingSchedule() {
                 <Paper
                   key={h.id}
                   elevation={0}
-                  onClick={() => navigate(`/complaint/${h.id}`)}
+                  onClick={() => navigate(`/app/complaint/${h.id}`)}
                   sx={{ p: 2, borderRadius: '14px', cursor: 'pointer', border: (t) => `1px solid ${t.palette.divider}`, '&:hover': { borderColor: 'primary.main' } }}
                 >
                   <Typography sx={{ fontWeight: 700 }}>{h.title}</Typography>

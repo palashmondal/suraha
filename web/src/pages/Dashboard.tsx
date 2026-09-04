@@ -159,7 +159,7 @@ export default function Dashboard() {
             <SectionCard
               title={S.dashboard.appointment.title}
               count={stats.appointments.total}
-              action={<Button size="small" variant="outlined" color="inherit" onClick={() => navigate('/appointment')} sx={{ borderRadius: '8px', borderColor: 'divider', color: 'text.secondary', px: 2 }}>{S.common.all}</Button>}
+              action={<Button size="small" variant="outlined" color="inherit" onClick={() => navigate('/app/appointment')} sx={{ borderRadius: '8px', borderColor: 'divider', color: 'text.secondary', px: 2 }}>{S.common.all}</Button>}
             >
               {appointments.length === 0 ? <EmptyState /> : appointments.map((a, i) => (
                 <ListRow key={a.id} title={a.purpose} who={a.applicant_name} date={a.appointment_date ? bnDate(a.appointment_date) : ''} last={i === appointments.length - 1} />
@@ -170,7 +170,7 @@ export default function Dashboard() {
             <SectionCard
               title={S.dashboard.complaint.title}
               count={stats.complaints.total}
-              action={<Button size="small" variant="outlined" color="inherit" onClick={() => navigate('/complaint')} sx={{ borderRadius: '8px', borderColor: 'divider', color: 'text.secondary', px: 2 }}>{S.common.all}</Button>}
+              action={<Button size="small" variant="outlined" color="inherit" onClick={() => navigate('/app/complaint')} sx={{ borderRadius: '8px', borderColor: 'divider', color: 'text.secondary', px: 2 }}>{S.common.all}</Button>}
             >
               {complaints.length === 0 ? <EmptyState /> : complaints.map((c, i) => (
                 <ListRow key={c.id} title={c.title} who={c.complainant_name} date={c.complaint_date ? bnDate(c.complaint_date) : ''} last={i === complaints.length - 1} />
@@ -180,7 +180,7 @@ export default function Dashboard() {
           {showSliders && (
             <SectionCard
               title={S.dashboard.slider.title}
-              action={<Button size="small" variant="outlined" color="inherit" onClick={() => navigate('/sliders')} sx={{ borderRadius: '8px', borderColor: 'divider', color: 'text.secondary', px: 2 }}>{S.common.addNew}</Button>}
+              action={<Button size="small" variant="outlined" color="inherit" onClick={() => navigate('/app/sliders')} sx={{ borderRadius: '8px', borderColor: 'divider', color: 'text.secondary', px: 2 }}>{S.common.addNew}</Button>}
             >
               {slides.length === 0 ? <EmptyState /> : <SliderCarousel slides={slides} height={200} />}
             </SectionCard>

@@ -45,7 +45,7 @@ export default function AppointmentDetail() {
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 320px' }, gap: 3, alignItems: 'start' }}>
       <Box sx={{ display: 'grid', gap: 2 }}>
         <Paper elevation={0} sx={{ borderRadius: '16px', p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton onClick={() => navigate('/appointment')}><ArrowBackRoundedIcon /></IconButton>
+          <IconButton onClick={() => navigate('/app/appointment')}><ArrowBackRoundedIcon /></IconButton>
           <Typography sx={{ fontSize: 18, fontWeight: 700, flex: 1 }}>{S.appointment.detailTitle} — {a.applicant_name}</Typography>
           <StatusPill label={a.status_label} tone={a.status_tone} />
         </Paper>

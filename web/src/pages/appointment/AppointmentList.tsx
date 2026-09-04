@@ -111,9 +111,9 @@ export default function AppointmentList() {
         rows={rows}
         loading={loading}
         pagination={{ page, pageCount, onPage: setPage }}
-        onRowClick={(r) => navigate(`/appointment/${r.id}`)}
+        onRowClick={(r) => navigate(`/app/appointment/${r.id}`)}
         rowActions={(r) => [
-          { key: 'view', label: S.common.details, icon: <VisibilityOutlinedIcon fontSize="small" />, onClick: () => navigate(`/appointment/${r.id}`) },
+          { key: 'view', label: S.common.details, icon: <VisibilityOutlinedIcon fontSize="small" />, onClick: () => navigate(`/app/appointment/${r.id}`) },
         ]}
       />
     </Box>

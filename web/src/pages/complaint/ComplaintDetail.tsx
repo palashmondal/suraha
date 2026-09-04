@@ -93,7 +93,7 @@ export default function ComplaintDetail() {
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 420px' }, gap: 3, alignItems: 'start' }}>
       <Box sx={{ display: 'grid', gap: 2 }}>
         <Paper elevation={0} sx={{ borderRadius: '16px', p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton onClick={() => navigate('/complaint')}><ArrowBackRoundedIcon /></IconButton>
+          <IconButton onClick={() => navigate('/app/complaint')}><ArrowBackRoundedIcon /></IconButton>
           <Typography sx={{ fontSize: 18, fontWeight: 700, flex: 1 }}>{S.complaint.detailTitle} — {c.title}</Typography>
           {/* The pill alone read as a bare label; naming it says what the word is telling you. */}
           <Typography sx={{ fontSize: 13.5, color: 'text.secondary' }}>{S.complaint.colStatus}:</Typography>

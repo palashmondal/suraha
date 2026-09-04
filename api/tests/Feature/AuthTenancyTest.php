@@ -22,6 +22,7 @@ class AuthTenancyTest extends TestCase
     private const DUMURIA = 'http://dumuria.lvh.me';
     private const CENTRAL = 'http://localhost';
     private const PATUAKHALI = 'http://patuakhali.lvh.me';
+    private const ADMIN_HOST = 'http://admin.lvh.me';
 
     protected function setUp(): void
     {
@@ -248,11 +249,13 @@ class AuthTenancyTest extends TestCase
      * rate limits. Called over the internal network with the hostname in ?domain=, hence the
      * odd-looking central-host request URL.
      */
-    public function test_tls_gate_allows_only_the_central_host_and_real_upazilas(): void
+    public function test_tls_gate_allows_only_the_central_hosts_and_real_upazilas(): void
     {
         $base = config('tenancy.base_domain');
 
-        foreach ([$base, 'www.'.$base, 'galachipa.'.$base, 'dumuria.'.$base] as $allowed) {
+        // admin.* is a central host, not an upazila — without it in the allow-list Caddy would
+        // never get a certificate for the console and https://admin.{base} would be dead.
+        foreach ([$base, 'www.'.$base, 'admin.'.$base, 'galachipa.'.$base, 'dumuria.'.$base] as $allowed) {
             $this->getJson(self::CENTRAL.'/api/tls/allowed?domain='.$allowed)
                 ->assertNoContent();
         }
@@ -288,5 +291,34 @@ class AuthTenancyTest extends TestCase
 
         // With no upazila named there is nothing to list, and the console must not ask.
         $this->getJson(self::CENTRAL.'/api/registry/unions')->assertStatus(400);
+    }
+
+    /**
+     * admin.suraha.net is the console host. It must resolve as central — not as an upazila named
+     * "admin", which is what stancl did with it before it was listed in central_domains (404).
+     */
+    public function test_admin_host_is_central_and_flagged_as_admin(): void
+    {
+        $this->getJson(self::ADMIN_HOST.'/api/registry/host-context')
+            ->assertOk()
+            ->assertJson(['kind' => 'central', 'is_admin' => true, 'slug' => null]);
+
+        // The bare domain is central too, but it serves the product landing page.
+        $this->getJson('http://lvh.me/api/registry/host-context')
+            ->assertOk()
+            ->assertJson(['kind' => 'central', 'is_admin' => false]);
+
+        // An upazila subdomain is unaffected and still resolves as a tenant.
+        $this->getJson(self::DUMURIA.'/api/registry/host-context')
+            ->assertOk()
+            ->assertJson(['kind' => 'upazila', 'is_admin' => false, 'slug' => 'dumuria']);
+    }
+
+    /** SEAL logs in on the admin host exactly as it does on the bare central domain. */
+    public function test_seal_can_log_in_on_the_admin_host(): void
+    {
+        $this->postJson(self::ADMIN_HOST.'/api/auth/officer/login', [
+            'username' => 'admin', 'password' => 'password',
+        ])->assertOk()->assertJsonPath('user.role', 'seal_admin');
     }
 }

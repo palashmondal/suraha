@@ -232,8 +232,13 @@ class RegistryController extends Controller
         $domain = strtolower(trim((string) $request->query('domain')));
         $base = strtolower((string) config('tenancy.base_domain'));
 
-        // Central host: the national public site + the SEAL console.
-        if ($domain === $base || $domain === 'www.'.$base) {
+        // Every central host: the product's landing page (suraha.net) and the admin console
+        // (admin.suraha.net). Read from central_domains rather than base_domain alone, so a host
+        // added there is issuable without a second edit here — admin.* is one label deep and
+        // matches no upazila, so the checks below would have refused it a certificate outright.
+        $central = array_map('strtolower', (array) config('tenancy.central_domains', []));
+
+        if ($domain === $base || $domain === 'www.'.$base || in_array($domain, $central, true)) {
             return response()->noContent();
         }
 

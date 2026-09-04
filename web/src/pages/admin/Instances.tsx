@@ -117,7 +117,7 @@ export default function Instances() {
                 key={u.id}
                 hover
                 sx={{ cursor: 'pointer' }}
-                onClick={() => navigate(`/instances/${u.id}`)}
+                onClick={() => navigate(`/app/instances/${u.id}`)}
               >
                 <TableCell sx={{ fontWeight: 600 }}>{u.name_bn}</TableCell>
                 <TableCell>{u.district?.name_bn ?? '—'}</TableCell>

@@ -88,7 +88,7 @@ export default function InvestigatingOfficers() {
               <TableRow
                 key={o.id}
                 hover
-                onClick={() => navigate(`/investigators/${o.id}`)}
+                onClick={() => navigate(`/app/investigators/${o.id}`)}
                 sx={{ cursor: 'pointer' }}
               >
                 <TableCell sx={{ fontWeight: 600 }}>{o.name}</TableCell>

@@ -272,7 +272,7 @@ function OfficerForm() {
     setBusy(true);
     try {
       await officerLogin(username, password);
-      navigate('/', { replace: true });
+      navigate('/app', { replace: true });
     } catch (err) {
       show(err);
     } finally {

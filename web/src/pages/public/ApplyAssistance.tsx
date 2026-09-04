@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Alert, Box, Button, Container, MenuItem, Paper, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Container, MenuItem, Paper, TextField } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
 import PublicLayout from './PublicLayout';
+import PageHero from './PageHero';
+import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { FormField, SelectField } from '../../components/form/FormFields';
 import { useUnionOptions } from '../../tenant/useUnionOptions';
 import { api, ApiError } from '../../api/client';
@@ -86,10 +88,8 @@ export default function ApplyAssistance() {
 
   return (
     <PublicLayout>
+      <PageHero title={S.assistance.submitTitle} subtitle={S.assistance.submitLead} icon={<VolunteerActivismOutlinedIcon />} />
       <Container maxWidth="sm" sx={{ py: { xs: 4, md: 6 } }}>
-        <Typography sx={{ fontSize: 26, fontWeight: 800 }}>{S.assistance.submitTitle}</Typography>
-        <Typography sx={{ color: 'text.secondary', mb: 3 }}>{S.assistance.submitLead}</Typography>
-
         {queued ? (
           <QueuedOfflineCard />
         ) : token ? (

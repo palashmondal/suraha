@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { appPath } from '../appPath';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
@@ -102,7 +103,7 @@ export default function TopBar() {
       markNotificationRead(n.id).then(loadNotifs).catch(() => {});
     }
 
-    if (n.link) navigate(n.link);
+    if (n.link) navigate(appPath(n.link));
   };
 
   const doLogout = async () => {
@@ -207,7 +208,7 @@ export default function TopBar() {
         notifications={notifs}
         unreadCount={unread}
         onMarkAll={async () => { await markAllNotificationsRead(); loadNotifs(); }}
-        onViewAll={() => { setNotifAnchor(null); navigate('/notifications'); }}
+        onViewAll={() => { setNotifAnchor(null); navigate('/app/notifications'); }}
         onOpen={openNotification}
       />
 
@@ -272,7 +273,7 @@ export default function TopBar() {
         <MenuItem
           onClick={() => {
             setProfileAnchor(null);
-            navigate('/profile');
+            navigate('/app/profile');
           }}
         >
           <ListItemIcon>
@@ -283,7 +284,7 @@ export default function TopBar() {
         <MenuItem
           onClick={() => {
             setProfileAnchor(null);
-            navigate('/change-password');
+            navigate('/app/change-password');
           }}
         >
           <ListItemIcon>

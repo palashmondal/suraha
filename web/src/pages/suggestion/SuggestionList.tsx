@@ -106,9 +106,9 @@ export default function SuggestionList() {
         columns={columns}
         rows={rows}
         loading={loading}
-        onRowClick={(r) => navigate(`/advice/${r.id}`)}
+        onRowClick={(r) => navigate(`/app/advice/${r.id}`)}
         rowActions={(r) => [
-          { key: 'view', label: S.common.details, icon: <VisibilityOutlinedIcon fontSize="small" />, onClick: () => navigate(`/advice/${r.id}`) },
+          { key: 'view', label: S.common.details, icon: <VisibilityOutlinedIcon fontSize="small" />, onClick: () => navigate(`/app/advice/${r.id}`) },
         ]}
       />
     </Box>

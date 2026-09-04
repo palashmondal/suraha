@@ -83,7 +83,7 @@ export default function InstanceDetail() {
     setErr(null);
     try {
       await api(`/upazilas/${id}`, { method: 'DELETE' });
-      navigate('/instances', { replace: true });
+      navigate('/app/instances', { replace: true });
     } catch (e) {
       setConfirmOpen(false);
       fail(e);
@@ -98,7 +98,7 @@ export default function InstanceDetail() {
     <Box sx={{ maxWidth: 720, mx: 'auto', display: 'grid', gap: 3 }}>
       <Button
         startIcon={<ArrowBackRoundedIcon />}
-        onClick={() => navigate('/instances')}
+        onClick={() => navigate('/app/instances')}
         sx={{ justifySelf: 'start' }}
       >
         {S.instances.back}

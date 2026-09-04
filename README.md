@@ -32,9 +32,18 @@ suraha/
   request subdomain (`galachipa.suraha.net` → tenant `galachipa`) via `stancl/tenancy`. A district
   subdomain (`patuakhali.suraha.net`) resolves no tenant and serves the DC dashboard. Tenant rows
   are scoped by a `tenant_id` global scope (no per-tenant databases). Cross-tenant roles (SEAL/DC)
-  work on the **central host** (`suraha.net`, which is also the national public site) and switch
-  upazila in-app via an `X-Upazila` header — without changing the URL. (The old `admin.*` host is
-  retired.)
+  work on a **central host** and switch upazila in-app via an `X-Upazila` header — without changing
+  the URL. There are two central hosts, both tenant-less:
+
+  | Host | Serves |
+  |---|---|
+  | `suraha.net` | The product's own landing page. SEAL signs in at `suraha.net/login`. |
+  | `admin.suraha.net` | The SEAL console — `/` goes straight to the login. |
+  | `{upazila}.suraha.net` | That upazila's citizen site (apply, track, my submissions) + its officers' app. |
+  | `{district}.suraha.net` | The DC's read-only district dashboard. |
+
+  `admin.*` is listed in `tenancy.central_domains`, which is what stops stancl reading `admin` as
+  an unknown upazila; `tenancy.admin_domains` then separates the console from the landing page.
 - **Auth** — Bearer-token Sanctum. Officers sign in with username/password; citizens with mobile +
   OTP (behind a mockable SMS gateway).
 - **RBAC** — 7 roles enforced server-side: FWA, UP Sochib, UNO, Investigating Officer, DC
@@ -54,13 +63,13 @@ suraha/
 | **নবজাতক (Birth)** | Birth-registration list, statuses, certificate download |
 | **অভিযোগ (Complaints)** | Full lifecycle: file → schedule → assign investigator → findings → resolve, with timeline |
 | **সাক্ষাৎকার (Appointments)** | Citizen booking, UNO approve/reject/schedule |
-| **Public site** | Landing page, complaint/appointment filing, tracking tokens, "my submissions" |
+| **Public site** | Product landing (`suraha.net`) + per-upazila citizen site, complaint/appointment/assistance/suggestion filing, tracking tokens, "my submissions" |
 | **Content** | Awareness image sliders + general info (emergency phones, about) |
 | **তথ্যচিত্র (Reporting)** | Scope-aware analytics (Recharts), multiple chart types |
 | **Notifications** | In-app, role/tenant-scoped bell + full **সকল নোটিফিকেশন** page (mark-read) |
 | **Cross-cutting** | Pagination (10/page, shown only when a list overflows), loading/empty states, instance enable/disable |
 
-Verified by 123 Laravel feature tests across `api/tests/Feature/` (auth/tenancy, admin, dashboards,
+Verified by 170 Laravel feature tests across `api/tests/Feature/` (auth/tenancy, admin, dashboards,
 pregnancy, birth, complaints, appointments, public content, tracking, reporting, notifications).
 
 ---

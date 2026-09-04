@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import {
-  Alert, Box, Button, Container, FormControlLabel, MenuItem, Paper, Switch, TextField, Typography,
+  Alert, Box, Button, Container, FormControlLabel, MenuItem, Paper, Switch, TextField,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
 import PublicLayout from './PublicLayout';
+import PageHero from './PageHero';
+import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import { FormField, SelectField } from '../../components/form/FormFields';
 import { useUnionOptions } from '../../tenant/useUnionOptions';
 import { api, ApiError } from '../../api/client';
@@ -88,10 +90,8 @@ export default function SubmitSuggestion() {
 
   return (
     <PublicLayout>
+      <PageHero title={S.suggestion.submitTitle} subtitle={S.suggestion.submitLead} icon={<ForumOutlinedIcon />} />
       <Container maxWidth="sm" sx={{ py: { xs: 4, md: 6 } }}>
-        <Typography sx={{ fontSize: 26, fontWeight: 800 }}>{S.suggestion.submitTitle}</Typography>
-        <Typography sx={{ color: 'text.secondary', mb: 3 }}>{S.suggestion.submitLead}</Typography>
-
         {queued ? (
           <QueuedOfflineCard />
         ) : token ? (

@@ -58,7 +58,7 @@ export default function SuggestionDetail() {
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 340px' }, gap: 3, alignItems: 'start' }}>
       <Box sx={{ display: 'grid', gap: 2 }}>
         <Paper elevation={0} sx={{ borderRadius: '16px', p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton onClick={() => navigate('/advice')}><ArrowBackRoundedIcon /></IconButton>
+          <IconButton onClick={() => navigate('/app/advice')}><ArrowBackRoundedIcon /></IconButton>
           <Typography sx={{ fontSize: 18, fontWeight: 700, flex: 1 }}>{s.title}</Typography>
           {/* The mark is the UNO's; everyone else sees whether it is set, but only as an icon. */}
           {(isManager || s.is_important) && (

@@ -46,7 +46,7 @@ export default function BirthRegDetail() {
   return (
     <Box sx={{ display: 'grid', gap: 2 }}>
       <Paper elevation={0} sx={{ borderRadius: '16px', p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <IconButton onClick={() => navigate('/birth')}>
+        <IconButton onClick={() => navigate('/app/birth')}>
           <ArrowBackRoundedIcon />
         </IconButton>
         <Typography sx={{ fontSize: 19, fontWeight: 700 }}>
@@ -86,7 +86,7 @@ export default function BirthRegDetail() {
             // The মায়ের প্রসূতি record is where her full history lives; a manual entry has none.
             value={
               r.pregnancy_id ? (
-                <Link component="button" underline="hover" onClick={() => navigate(`/pregnancy/${r.pregnancy_id}`)}>
+                <Link component="button" underline="hover" onClick={() => navigate(`/app/pregnancy/${r.pregnancy_id}`)}>
                   {r.mother_name}
                 </Link>
               ) : (

@@ -115,7 +115,7 @@ export default function PregnancyList() {
       header: S.common.details,
       align: 'right',
       render: (r) => (
-        <Button size="small" onClick={(e: React.MouseEvent) => { e.stopPropagation(); navigate(`/pregnancy/${r.id}`); }}>
+        <Button size="small" onClick={(e: React.MouseEvent) => { e.stopPropagation(); navigate(`/app/pregnancy/${r.id}`); }}>
           {S.common.details}
         </Button>
       ),
@@ -127,7 +127,7 @@ export default function PregnancyList() {
       <PageHeader
         title={S.pregnancy.listTitle}
         search={{ value: q, onChange: setQ, placeholder: S.pregnancy.searchPlaceholder }}
-        onPrimary={canAdd ? () => navigate('/pregnancy/new') : undefined}
+        onPrimary={canAdd ? () => navigate('/app/pregnancy/new') : undefined}
       />
       <Box sx={{ mb: 2 }}>
         <TableTabs tabs={tableTabs} active={status} onChange={setStatus} />
@@ -137,7 +137,7 @@ export default function PregnancyList() {
         rows={rows}
         loading={loading}
         pagination={{ page, pageCount, onPage: setPage }}
-        onRowClick={(r) => navigate(`/pregnancy/${r.id}`)}
+        onRowClick={(r) => navigate(`/app/pregnancy/${r.id}`)}
       />
     </Box>
   );
