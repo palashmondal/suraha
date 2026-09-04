@@ -8,11 +8,14 @@ use App\Enums\AppointmentStatus;
 use App\Enums\Role;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
+use App\Models\AppointmentNote;
 use App\Models\Notification;
 use App\Services\Sms\SmsGateway;
 use App\Support\TrackingToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -31,9 +34,10 @@ class AppointmentController extends Controller
         $this->requireTenantForListing($request->user());
 
         $base = Appointment::query()
+            // Only the columns the তালিকা actually shows, so every hit is visible in its row.
             ->when($request->query('q'), fn ($b, $q) => $b->where(fn ($w) => $w
-                ->where('applicant_name', 'ilike', "%{$q}%")
-                ->orWhere('purpose', 'ilike', "%{$q}%")));
+                ->where('purpose', 'ilike', "%{$q}%")
+                ->orWhere('description', 'ilike', "%{$q}%")));
 
         $status = $request->query('status', 'all');
         $statuses = ['pending', 'approved', 'rejected'];
@@ -61,7 +65,42 @@ class AppointmentController extends Controller
 
     public function show(Appointment $appointment): AppointmentResource
     {
-        return new AppointmentResource($appointment->load('union', 'citizen'));
+        return new AppointmentResource($appointment->load('union', 'citizen', 'notes.author'));
+    }
+
+    /**
+     * UNO: keep a dated note on this সাক্ষাৎকার — what came of the meeting, a follow-up
+     * instruction, anything worth remembering. Notes accumulate; none of them replaces another,
+     * and the citizen is not notified.
+     */
+    public function addNote(Request $request, Appointment $appointment): AppointmentResource
+    {
+        $data = $request->validate(['body' => ['required', 'string', 'max:2000']]);
+
+        $note = $appointment->notes()->make([
+            'body' => $data['body'],
+            'author_id' => $request->user()->id,
+        ]);
+        // A note belongs to its appointment's upazila — never to whatever tenancy the request
+        // happens to have initialized. SEAL reads a detail page from the central "সকল উপজেলা"
+        // view with no tenant resolved, where BelongsToTenant would leave tenant_id null.
+        $note->tenant_id = $appointment->tenant_id;
+        $note->save();
+
+        return new AppointmentResource($appointment->load('union', 'citizen', 'notes.author'));
+    }
+
+    /**
+     * UNO: drop a note written in error. Bound to its own appointment, so a note id belonging to
+     * another সাক্ষাৎকার cannot be deleted through this one.
+     */
+    public function deleteNote(Appointment $appointment, AppointmentNote $note): AppointmentResource
+    {
+        abort_unless($note->appointment_id === $appointment->id, 404);
+
+        $note->delete();
+
+        return new AppointmentResource($appointment->load('union', 'citizen', 'notes.author'));
     }
 
     /** Request an appointment (citizen, or officer on behalf). */
@@ -136,7 +175,7 @@ class AppointmentController extends Controller
         $when = trim(($appointment->appointment_date?->toDateString() ?? '').' '.($appointment->appointment_time ?? ''));
         $message = 'সুরাহা: আপনার সাক্ষাৎকারের আবেদন অনুমোদিত হয়েছে।'
             .($when !== '' ? ' নির্ধারিত সময়: '.$when.'।' : '')
-            .' স্থান: উপজেলা নির্বাহী কর্মকর্তার কার্যালয়।'
+            .' স্থান: '.$appointment->officeBn().'।'
             .(($data['decision_note'] ?? null) ? ' মন্তব্য: '.$data['decision_note'] : '');
         $this->notifyCitizen($appointment, $message);
 
@@ -180,7 +219,98 @@ class AppointmentController extends Controller
                 'appointment_time' => $a->appointment_time,
             ]);
 
-        return response()->json(['appointments' => $appointments]);
+        return response()->json([
+            'appointments' => $appointments,
+            // Paste into Google Calendar → Other calendars → From URL (§8.3, optional).
+            'feed_url' => url('/api/appointments/calendar.ics?t='.self::feedToken(tenant()->id)),
+        ]);
+    }
+
+    /**
+     * The same schedule as an iCalendar feed, so the UNO can subscribe to it from Google Calendar
+     * (Other calendars → From URL) without any Google account linking on our side. Unauthenticated
+     * — Google cannot send a Bearer token — so the URL itself is the secret: a per-upazila HMAC of
+     * the tenant id. Read-only and one-way.
+     */
+    public function calendarFeed(Request $request): Response
+    {
+        $tenant = tenant();
+        abort_unless(
+            $tenant && hash_equals(self::feedToken($tenant->id), (string) $request->query('t')),
+            404,
+        );
+
+        $lines = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Suraha//Appointments//BN',
+            'CALSCALE:GREGORIAN',
+            'METHOD:PUBLISH',
+            'X-WR-CALNAME:'.self::esc('সুরাহা — সাক্ষাৎকার'),
+            'X-WR-TIMEZONE:Asia/Dhaka',
+        ];
+
+        $appointments = Appointment::query()
+            ->where('status', AppointmentStatus::APPROVED)
+            ->whereNotNull('appointment_date')
+            ->get();
+
+        foreach ($appointments as $a) {
+            $date = $a->appointment_date->toDateString();
+
+            if ($a->appointment_time) {
+                $start = Carbon::parse($date.' '.$a->appointment_time, 'Asia/Dhaka');
+                // ponytail: fixed 30-minute slot — the schema stores no duration.
+                $when = [
+                    'DTSTART:'.$start->clone()->utc()->format('Ymd\THis\Z'),
+                    'DTEND:'.$start->clone()->addMinutes(30)->utc()->format('Ymd\THis\Z'),
+                ];
+            } else {
+                $day = Carbon::parse($date);
+                $when = [
+                    'DTSTART;VALUE=DATE:'.$day->format('Ymd'),
+                    'DTEND;VALUE=DATE:'.$day->clone()->addDay()->format('Ymd'),
+                ];
+            }
+
+            $description = implode("\n", array_filter([
+                $a->description,
+                $a->mobile ? 'মোবাইল: '.$a->mobile : null,
+            ]));
+
+            $lines = array_merge($lines, [
+                'BEGIN:VEVENT',
+                'UID:appointment-'.$a->id.'@'.$tenant->id.'.suraha',
+                'DTSTAMP:'.$a->updated_at->clone()->utc()->format('Ymd\THis\Z'),
+                // Bumped on every edit so subscribers replace the event rather than duplicate it.
+                'SEQUENCE:'.$a->updated_at->getTimestamp(),
+                ...$when,
+                'SUMMARY:'.self::esc($a->calendarTitleBn()),
+                'DESCRIPTION:'.self::esc($description),
+                'LOCATION:'.self::esc($a->officeBn()),
+                'END:VEVENT',
+            ]);
+        }
+
+        $lines[] = 'END:VCALENDAR';
+
+        // ponytail: no 75-octet line folding; calendar clients accept long lines in practice.
+        return response(implode("\r\n", $lines)."\r\n", 200, [
+            'Content-Type' => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => 'inline; filename="suraha-appointments.ics"',
+        ]);
+    }
+
+    /** The feed URL's secret. Rotating APP_KEY invalidates every subscription. */
+    private static function feedToken(string $tenantId): string
+    {
+        return substr(hash_hmac('sha256', 'appointment-feed:'.$tenantId, (string) config('app.key')), 0, 32);
+    }
+
+    /** RFC 5545 text escaping. */
+    private static function esc(string $value): string
+    {
+        return str_replace(['\\', "\n", ';', ','], ['\\\\', '\\n', '\\;', '\\,'], $value);
     }
 
     /** Notify the citizen of the decision by SMS (to the request mobile) and email (if on file). */

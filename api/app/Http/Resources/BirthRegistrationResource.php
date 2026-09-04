@@ -37,6 +37,7 @@ class BirthRegistrationResource extends JsonResource
             'permanent_address' => $this->permanent_address,
             'union_id' => $this->union_id,
             'union' => $this->whenLoaded('union', fn () => $this->union?->name_bn),
+            'upazila' => $this->whenLoaded('upazila', fn () => $this->upazila?->name_bn),
             'ward_no' => $this->ward_no,
             'date_of_birth' => $this->date_of_birth?->toDateString(),
             'sex' => $this->sex,

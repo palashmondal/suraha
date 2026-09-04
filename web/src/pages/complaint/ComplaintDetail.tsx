@@ -53,7 +53,7 @@ export default function ComplaintDetail() {
       <Box sx={{ display: 'grid', gap: 2 }}>
         <Paper elevation={0} sx={{ borderRadius: '16px', p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton onClick={() => navigate('/complaint')}><ArrowBackRoundedIcon /></IconButton>
-          <Typography sx={{ fontSize: 18, fontWeight: 700, flex: 1 }}>{S.complaint.listTitle} — {c.title}</Typography>
+          <Typography sx={{ fontSize: 18, fontWeight: 700, flex: 1 }}>{S.complaint.detailTitle} — {c.title}</Typography>
           <StatusPill label={c.status_label} tone={c.status_tone} />
         </Paper>
 

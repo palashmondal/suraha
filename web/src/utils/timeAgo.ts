@@ -18,6 +18,14 @@ export function timeAgo(iso: string | null): string {
   return `${bn(months)} মাস আগে`;
 }
 
+/** Age from a date of birth, always in days — "৪ দিন", "৮০ দিন". Never rolled up to months. */
+export function bnAge(iso: string | null): string {
+  if (!iso) return '—';
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+
+  return Number.isFinite(days) && days >= 0 ? `${bn(days)} দিন` : '—';
+}
+
 // Absolute Bangla date + 12-hour time, e.g. { date: '০৫/০৮/২০২৬', time: 'বিকাল ৩:৪৫' }.
 export function formatDateTime(iso: string | null): { date: string; time: string } {
   if (!iso) return { date: '', time: '' };

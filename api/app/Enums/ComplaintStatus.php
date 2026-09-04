@@ -15,7 +15,7 @@ namespace App\Enums;
  */
 enum ComplaintStatus: string
 {
-    case PENDING = 'pending';       // পর্যালোচনাধীন — awaiting UNO review
+    case PENDING = 'pending';       // অপেক্ষমাণ — awaiting UNO review
     case ASSIGNED = 'assigned';     // তদন্ত কর্মকর্তা নিযুক্ত — under investigation / hearing
     case COMPLETED = 'completed';   // সম্পন্ন
     case REJECTED = 'rejected';     // বাতিল
@@ -23,7 +23,7 @@ enum ComplaintStatus: string
     public function labelBn(): string
     {
         return match ($this) {
-            self::PENDING => 'পর্যালোচনাধীন',
+            self::PENDING => 'অপেক্ষমাণ',
             self::ASSIGNED => 'তদন্ত কর্মকর্তা নিযুক্ত',
             self::COMPLETED => 'সম্পন্ন',
             self::REJECTED => 'বাতিল',

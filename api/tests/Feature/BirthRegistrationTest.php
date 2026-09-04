@@ -71,6 +71,32 @@ class BirthRegistrationTest extends TestCase
         $this->assertSame(5, $tabs['all']['total']);
     }
 
+    /** Search is per-word AND over the columns the তালিকা shows, with Bengali digits folded. */
+    public function test_search_matches_across_the_listed_columns(): void
+    {
+        $unionId = $this->sochib()->union_id;
+        $union = Union::find($unionId);
+        Upazila::find('galachipa')->run(fn () => BirthRegistration::create([
+            'child_name' => 'রাইসা আক্তার',
+            'mother_name' => 'মোছাঃ সালমা',
+            'union_id' => $unionId,
+            'ward_no' => 7,
+        ]));
+
+        Sanctum::actingAs($this->sochib());
+        $names = fn (string $q) => array_column(
+            $this->getJson(self::GALACHIPA.'/api/birth-registrations?q='.urlencode($q))->assertOk()->json('data'),
+            'child_name',
+        );
+
+        // Both terms must match the same row — the union name plus the child's.
+        $this->assertContains('রাইসা আক্তার', $names($union->name_bn.' রাইসা'));
+        // Ward typed as it is displayed, in Bengali digits.
+        $this->assertContains('রাইসা আক্তার', $names('রাইসা ৭'));
+        // A term matching nothing on the row excludes it.
+        $this->assertNotContains('রাইসা আক্তার', $names('রাইসা কুমিল্লা'));
+    }
+
     public function test_sochib_approves_delivered_pregnancy_and_gets_bdris_number(): void
     {
         // Create a fresh delivered pregnancy to approve.

@@ -14,6 +14,7 @@ import PregnancyList from './pages/pregnancy/PregnancyList';
 import PregnancyAdd from './pages/pregnancy/PregnancyAdd';
 import PregnancyDetail from './pages/pregnancy/PregnancyDetail';
 import BirthRegList from './pages/birth/BirthRegList';
+import BirthRegDetail from './pages/birth/BirthRegDetail';
 import ComplaintList from './pages/complaint/ComplaintList';
 import ComplaintDetail from './pages/complaint/ComplaintDetail';
 import InvestigatingOfficers from './pages/complaint/InvestigatingOfficers';
@@ -126,6 +127,7 @@ export default function App() {
       <Route path="/pregnancy/:id/edit" element={<RequireAuth roles={['fwa', 'seal_admin']}><PregnancyAdd /></RequireAuth>} />
       <Route path="/pregnancy/:id" element={<RequireAuth><PregnancyDetail /></RequireAuth>} />
       <Route path="/birth" element={<RequireAuth><BirthRegList /></RequireAuth>} />
+      <Route path="/birth/:id" element={<RequireAuth><BirthRegDetail /></RequireAuth>} />
       <Route path="/complaint" element={<RequireAuth><ComplaintList /></RequireAuth>} />
       <Route path="/investigators" element={<RequireAuth roles={['uno', 'seal_admin']}><InvestigatingOfficers /></RequireAuth>} />
       <Route path="/hearings" element={<RequireAuth roles={['uno', 'seal_admin']}><HearingSchedule /></RequireAuth>} />

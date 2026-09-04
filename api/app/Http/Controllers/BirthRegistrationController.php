@@ -8,6 +8,7 @@ use App\Http\Resources\BirthRegistrationResource;
 use App\Models\BirthRegistration;
 use App\Models\Pregnancy;
 use App\Services\Bdris\BirthRegistrationService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -29,16 +30,18 @@ class BirthRegistrationController extends Controller
         $status = $request->query('status', 'all');
         $q = trim((string) $request->query('q', ''));
 
+        // Words are separate terms, each of which must match somewhere — "রাইসা গাবুয়া" means that
+        // union AND that child, not the one literal string, which matches no column at all.
         $base = BirthRegistration::query()
-            ->when($q !== '', fn ($b) => $b->where(fn ($w) => $w
-                ->where('child_name', 'ilike', "%{$q}%")
-                ->orWhere('mother_name', 'ilike', "%{$q}%")
-                ->orWhere('father_name', 'ilike', "%{$q}%")
-                ->orWhere('registration_no', 'ilike', "%{$q}%")));
+            ->when($q !== '', function (Builder $b) use ($q) {
+                foreach (preg_split('/\s+/u', $q, -1, PREG_SPLIT_NO_EMPTY) as $term) {
+                    $b->where(fn (Builder $w) => $this->searchClause($w, $term));
+                }
+            });
 
         $list = (clone $base)
             ->when(in_array($status, ['pending_entry', 'entered'], true), fn ($b) => $b->where('status', $status))
-            ->with('union')
+            ->with('union', 'upazila')
             ->latest()
             ->paginate(15);
 
@@ -51,6 +54,29 @@ class BirthRegistrationController extends Controller
             ],
             'tabs' => $this->tabCounts($base),
         ]);
+    }
+
+    /**
+     * One term of the search, matched against exactly the columns the নবজাতক তালিকা shows — the
+     * registration number, child, mother, father, উপজেলা, union and ward — and nothing else, so a
+     * hit is always visible in the row it returns.
+     *
+     * The number columns are typed as they are displayed, in Bengali digits, so those are folded
+     * to ASCII first. Status is a tab, not a search term.
+     */
+    private function searchClause(Builder $w, string $q): Builder
+    {
+        $like = '%'.$q.'%';
+        $digits = $this->asciiDigits($q);
+
+        return $w
+            ->where('child_name', 'ilike', $like)
+            ->orWhere('mother_name', 'ilike', $like)
+            ->orWhere('father_name', 'ilike', $like)
+            ->orWhere('registration_no', 'ilike', '%'.$digits.'%')
+            ->when(ctype_digit($digits), fn ($b) => $b->orWhere('ward_no', (int) $digits))
+            ->orWhereHas('union', fn ($u) => $u->where('name_bn', 'ilike', $like)->orWhere('name', 'ilike', $like))
+            ->orWhereHas('upazila', fn ($t) => $t->where('name_bn', 'ilike', $like)->orWhere('name', 'ilike', $like));
     }
 
     /** All three tab totals in one grouped pass instead of three scans of the same rows. */
@@ -73,7 +99,7 @@ class BirthRegistrationController extends Controller
 
     public function show(BirthRegistration $birthRegistration): BirthRegistrationResource
     {
-        return new BirthRegistrationResource($birthRegistration->load('union', 'pregnancy'));
+        return new BirthRegistrationResource($birthRegistration->load('union', 'upazila', 'pregnancy'));
     }
 
     /** Manual entry (§8.2) — created জন্মনিবন্ধন সম্পন্ন হয়নি until submitted to BDRIS. */

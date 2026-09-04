@@ -157,8 +157,7 @@ class PregnancyController extends Controller
     private function searchClause(Builder $w, string $q): Builder
     {
         $like = '%'.$q.'%';
-        $digits = strtr($q, ['০' => '0', '১' => '1', '২' => '2', '৩' => '3', '৪' => '4',
-            '৫' => '5', '৬' => '6', '৭' => '7', '৮' => '8', '৯' => '9']);
+        $digits = $this->asciiDigits($q);
 
         return $w
             ->where('mother_name_bn', 'ilike', $like)

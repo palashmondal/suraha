@@ -52,6 +52,11 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
     Route::get('track/{token}', [\App\Http\Controllers\TrackController::class, 'show'])
         ->middleware('throttle:20,1');
 
+    // The UNO's সাক্ষাৎকার সূচি as an iCalendar feed, for subscribing from Google Calendar (§8.3).
+    // No auth — Google sends no Bearer token; the ?t= HMAC in the URL is the secret.
+    Route::get('appointments/calendar.ics', [AppointmentController::class, 'calendarFeed'])
+        ->middleware('throttle:60,1');
+
     // Public awareness content (§8.5 / §8.6) — landing page + dashboard.
     Route::get('sliders', [\App\Http\Controllers\SliderController::class, 'publicIndex']);
     Route::get('general-info', [\App\Http\Controllers\GeneralInfoController::class, 'publicIndex']);
@@ -153,6 +158,8 @@ Route::middleware(['host', 'tenant.active'])->group(function () {
             Route::middleware('deny.readonly', 'role:uno,seal_admin')->group(function () {
                 Route::post('appointments/{appointment}/approve', [AppointmentController::class, 'approve']);
                 Route::post('appointments/{appointment}/reject', [AppointmentController::class, 'reject']);
+                Route::post('appointments/{appointment}/notes', [AppointmentController::class, 'addNote']);
+                Route::delete('appointments/{appointment}/notes/{note}', [AppointmentController::class, 'deleteNote']);
             });
         });
 

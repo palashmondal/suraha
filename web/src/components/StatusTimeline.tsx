@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
 
 export interface TimelineNode {
@@ -5,6 +6,7 @@ export interface TimelineNode {
   label: string;
   timestamp?: string; // shown under the label once the stage is reached
   done: boolean;
+  action?: ReactNode; // revealed at the row's right edge on hover / keyboard focus
 }
 
 // Vertical status timeline (concept_ui/Frame 1171277088.png / 1321316786.png): the complaint
@@ -19,7 +21,16 @@ export default function StatusTimeline({ nodes }: { nodes: TimelineNode[] }) {
       {nodes.map((n, i) => {
         const isLast = i === nodes.length - 1;
         return (
-          <Box key={n.key} sx={{ display: 'flex', gap: 1.5 }}>
+          <Box
+            key={n.key}
+            sx={{
+              display: 'flex',
+              gap: 1.5,
+              // The action stays out of the way until the row is pointed at; focus-within keeps
+              // it reachable by keyboard, where there is no hover.
+              '&:hover .timeline-action, &:focus-within .timeline-action': { opacity: 1 },
+            }}
+          >
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <Box
                 sx={{
@@ -42,7 +53,7 @@ export default function StatusTimeline({ nodes }: { nodes: TimelineNode[] }) {
                 />
               )}
             </Box>
-            <Box sx={{ pb: isLast ? 0 : 2.5 }}>
+            <Box sx={{ pb: isLast ? 0 : 2.5, flex: 1, minWidth: 0 }}>
               <Typography
                 sx={{ fontSize: 14.5, fontWeight: n.done ? 600 : 500, color: n.done ? 'text.primary' : 'text.secondary' }}
               >
@@ -52,6 +63,11 @@ export default function StatusTimeline({ nodes }: { nodes: TimelineNode[] }) {
                 <Typography sx={{ fontSize: 12.5, color: 'text.secondary' }}>{n.timestamp}</Typography>
               )}
             </Box>
+            {n.action && (
+              <Box className="timeline-action" sx={{ opacity: 0, transition: 'opacity 120ms ease' }}>
+                {n.action}
+              </Box>
+            )}
           </Box>
         );
       })}

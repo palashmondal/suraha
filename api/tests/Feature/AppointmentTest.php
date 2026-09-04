@@ -36,10 +36,18 @@ class AppointmentTest extends TestCase
         Sanctum::actingAs($this->uno());
         $tabs = collect($this->getJson(self::GALACHIPA.'/api/appointments')->json('tabs'))->keyBy('key');
 
-        $this->assertSame(11, $tabs['all']['total']); // 5+4+2
-        $this->assertSame(5, $tabs['pending']['total']);
-        $this->assertSame(4, $tabs['approved']['total']);
-        $this->assertSame(2, $tabs['rejected']['total']);
+        // Counted against the seeded rows rather than hard-coded totals, which went stale every
+        // time the seeder grew. What matters is that সকল is exactly the three tabs put together.
+        $expected = Upazila::find('galachipa')->run(
+            fn () => Appointment::query()->selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status'),
+        );
+
+        foreach (['pending', 'approved', 'rejected'] as $status) {
+            $this->assertGreaterThan(0, $expected[$status], "the seeder should leave some {$status} rows");
+            $this->assertSame((int) $expected[$status], $tabs[$status]['total']);
+        }
+
+        $this->assertSame((int) $expected->sum(), $tabs['all']['total']);
     }
 
     public function test_citizen_can_request_an_appointment(): void
@@ -105,6 +113,83 @@ class AppointmentTest extends TestCase
 
         $this->postJson(self::GALACHIPA."/api/appointments/{$id}/reject", ['decision_note' => 'সময় নেই'])
             ->assertOk()->assertJsonPath('data.status', 'rejected');
+    }
+
+    public function test_uno_keeps_multiple_dated_notes_and_a_citizen_cannot(): void
+    {
+        $id = Upazila::find('galachipa')->run(fn () => Appointment::factory()->create()->id);
+        Sanctum::actingAs($this->uno());
+
+        $this->postJson(self::GALACHIPA."/api/appointments/{$id}/notes", ['body' => 'সাক্ষাৎ সম্পন্ন হয়েছে।'])
+            ->assertOk()->assertJsonPath('data.notes.0.body', 'সাক্ষাৎ সম্পন্ন হয়েছে।');
+
+        // A second note appends rather than replacing — that is the whole point of the timeline.
+        $this->postJson(self::GALACHIPA."/api/appointments/{$id}/notes", ['body' => 'এসিল্যান্ডকে অবহিত করতে হবে।'])
+            ->assertOk()->assertJsonCount(2, 'data.notes')
+            ->assertJsonPath('data.notes.1.body', 'এসিল্যান্ডকে অবহিত করতে হবে।');
+
+        $this->postJson(self::GALACHIPA."/api/appointments/{$id}/notes", [])->assertStatus(422);
+
+        // The notes are the UNO's own; an applicant has no business writing them.
+        Sanctum::actingAs(User::where('role', 'citizen')->firstOrFail());
+        $this->postJson(self::GALACHIPA."/api/appointments/{$id}/notes", ['body' => 'যাই হোক'])
+            ->assertStatus(403);
+    }
+
+    /** A note is the UNO's own memo, not part of the decision — it can be kept at any status. */
+    public function test_notes_can_be_added_at_any_status(): void
+    {
+        Sanctum::actingAs($this->uno());
+
+        foreach (['pending', 'approved', 'rejected'] as $status) {
+            $id = Upazila::find('galachipa')->run(
+                fn () => Appointment::factory()->create(['status' => $status])->id,
+            );
+
+            $this->postJson(self::GALACHIPA."/api/appointments/{$id}/notes", ['body' => "নোট — {$status}"])
+                ->assertOk()
+                ->assertJsonPath('data.status', $status)          // the note leaves the status alone
+                ->assertJsonPath('data.notes.0.body', "নোট — {$status}");
+        }
+    }
+
+    /**
+     * SEAL works from the central host, where the "সকল উপজেলা" view resolves no tenant. The note
+     * must still land in the appointment's own upazila rather than with a null tenant_id.
+     */
+    public function test_seal_can_note_from_the_central_host_without_a_selected_upazila(): void
+    {
+        $id = Upazila::find('galachipa')->run(fn () => Appointment::factory()->create()->id);
+        Sanctum::actingAs(User::where('role', 'seal_admin')->firstOrFail());
+
+        $this->postJson("http://lvh.me/api/appointments/{$id}/notes", ['body' => 'কেন্দ্রীয় নোট'])
+            ->assertOk()
+            ->assertJsonPath('data.notes.0.body', 'কেন্দ্রীয় নোট');
+
+        $this->assertDatabaseHas('appointment_notes', [
+            'appointment_id' => $id,
+            'tenant_id' => 'galachipa',
+        ]);
+    }
+
+    public function test_uno_deletes_a_note_but_not_one_from_another_appointment(): void
+    {
+        [$idA, $idB] = Upazila::find('galachipa')->run(fn () => [
+            Appointment::factory()->create()->id,
+            Appointment::factory()->create()->id,
+        ]);
+        Sanctum::actingAs($this->uno());
+
+        $noteId = $this->postJson(self::GALACHIPA."/api/appointments/{$idA}/notes", ['body' => 'ভুল নোট'])
+            ->json('data.notes.0.id');
+
+        // The note belongs to A, so reaching it through B must not work.
+        $this->deleteJson(self::GALACHIPA."/api/appointments/{$idB}/notes/{$noteId}")->assertNotFound();
+        $this->assertDatabaseHas('appointment_notes', ['id' => $noteId]);
+
+        $this->deleteJson(self::GALACHIPA."/api/appointments/{$idA}/notes/{$noteId}")
+            ->assertOk()->assertJsonCount(0, 'data.notes');
+        $this->assertDatabaseMissing('appointment_notes', ['id' => $noteId]);
     }
 
     public function test_dc_is_read_only(): void

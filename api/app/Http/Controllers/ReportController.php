@@ -141,11 +141,11 @@ class ReportController extends Controller
                 ['name' => 'ডেলিভারী হয়নি', 'value' => $countBy(Pregnancy::class, 'delivery_status', 'not_delivered'), 'tone' => 'danger'],
             ],
             'birth' => [
-                ['name' => 'এন্ট্রি হয়েছে', 'value' => $countBy(BirthRegistration::class, 'status', 'entered'), 'tone' => 'success'],
-                ['name' => 'এন্ট্রি হয়নি', 'value' => $countBy(BirthRegistration::class, 'status', 'pending_entry'), 'tone' => 'pending'],
+                ['name' => 'জন্মনিবন্ধন সম্পন্ন', 'value' => $countBy(BirthRegistration::class, 'status', 'entered'), 'tone' => 'success'],
+                ['name' => 'জন্মনিবন্ধন সম্পন্ন হয়নি', 'value' => $countBy(BirthRegistration::class, 'status', 'pending_entry'), 'tone' => 'pending'],
             ],
             'complaint' => [
-                ['name' => 'পর্যালোচনাধীন', 'value' => $countBy(Complaint::class, 'status', 'pending'), 'tone' => 'pending'],
+                ['name' => 'অপেক্ষমাণ', 'value' => $countBy(Complaint::class, 'status', 'pending'), 'tone' => 'pending'],
                 ['name' => 'তদন্ত কর্মকর্তা নিযুক্ত', 'value' => $countBy(Complaint::class, 'status', 'assigned'), 'tone' => 'info'],
                 ['name' => 'সম্পন্ন', 'value' => $countBy(Complaint::class, 'status', 'completed'), 'tone' => 'success'],
                 ['name' => 'বাতিল', 'value' => $countBy(Complaint::class, 'status', 'rejected'), 'tone' => 'danger'],

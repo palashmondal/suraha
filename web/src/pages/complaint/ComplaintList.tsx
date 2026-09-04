@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box, Link } from '@mui/material';
-import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
+import { Box } from '@mui/material';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { useNavigate } from 'react-router-dom';
 import { bnStrings as S } from '../../i18n';
@@ -27,30 +26,41 @@ const TAB_TONE: Record<string, 'pending' | 'success' | 'info' | 'danger'> = {
   rejected: 'danger',
 };
 
-const mapLink = (c: Complaint) =>
-  c.latitude ? `https://www.openstreetmap.org/?mlat=${c.latitude}&mlon=${c.longitude}#map=16/${c.latitude}/${c.longitude}` : null;
-
 export default function ComplaintList() {
   const navigate = useNavigate();
   const { version } = useSelectedTenant();
   const [status, setStatus] = useState('all');
+  const [q, setQ] = useState('');
   const [rows, setRows] = useState<Complaint[]>([]);
   const [tabs, setTabs] = useState<ComplaintTab[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Server-side, like the মাতৃ and সাক্ষাৎকার lists: the page holds one page of rows, so filtering
+  // what is already loaded would search a slice and call it the answer. Debounced, and a stale
+  // response is dropped if a newer request has gone out since.
   useEffect(() => {
-    setLoading(true);
-    listComplaints({ status })
-      .then((r) => {
-        setRows(r.data);
-        setTabs(r.tabs);
-      })
-      .catch(() => {
-        setRows([]);
-        setTabs([]);
-      })
-      .finally(() => setLoading(false));
-  }, [status, version]);
+    let current = true;
+    const t = setTimeout(() => {
+      setLoading(true);
+      listComplaints({ status, q: q.trim() || undefined })
+        .then((r) => {
+          if (!current) return;
+          setRows(r.data);
+          setTabs(r.tabs);
+        })
+        .catch(() => {
+          if (!current) return;
+          setRows([]);
+          setTabs([]);
+        })
+        .finally(() => current && setLoading(false));
+    }, q ? 250 : 0);
+
+    return () => {
+      current = false;
+      clearTimeout(t);
+    };
+  }, [status, version, q]);
 
   const tableTabs: TableTab[] = tabs.map((t) => ({
     key: t.key,
@@ -64,27 +74,18 @@ export default function ComplaintList() {
     { key: 'complaint_date', header: S.complaint.colDate, render: (r) => (r.complaint_date ? bnDate(r.complaint_date) : '—') },
     { key: 'complaint_time', header: S.complaint.colTime, render: (r) => (r.complaint_time ? bn(r.complaint_time) : '—') },
     { key: 'complainant_name', header: S.complaint.colComplainant },
-    {
-      key: 'place',
-      header: S.complaint.colPlace,
-      render: (r) => (
-        <Box>
-          <Box sx={{ fontSize: 13 }}>{r.address ?? '—'}</Box>
-          {mapLink(r) && (
-            <Link href={mapLink(r)!} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} sx={{ fontSize: 12.5, display: 'inline-flex', alignItems: 'center', gap: 0.25 }}>
-              <PlaceOutlinedIcon sx={{ fontSize: 15 }} /> {S.common.track}
-            </Link>
-          )}
-        </Box>
-      ),
-    },
+    // The map link lives on the detail page; a তালিকা row is for scanning, not for opening maps.
+    { key: 'place', header: S.complaint.colPlace, render: (r) => r.address ?? '—' },
     { key: 'status', header: S.complaint.colStatus, render: (r) => <StatusPill label={r.status_label} tone={r.status_tone} /> },
     { key: 'officer', header: S.complaint.colOfficer, render: (r) => r.investigating_officer ?? '—' },
   ];
 
   return (
     <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-      <PageHeader title={S.complaint.listTitle} onSearch={() => {}} onFilter={() => {}} />
+      <PageHeader
+        title={S.complaint.listTitle}
+        search={{ value: q, onChange: setQ, placeholder: S.complaint.searchPlaceholder }}
+      />
       <Box sx={{ mb: 2 }}>
         <TableTabs tabs={tableTabs} active={status} onChange={setStatus} />
       </Box>

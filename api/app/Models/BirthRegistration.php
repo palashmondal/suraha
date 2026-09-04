@@ -54,6 +54,12 @@ class BirthRegistration extends Model
         return $this->belongsTo(Union::class);
     }
 
+    /** The owning upazila — shown on every row of the নবজাতক তালিকা. */
+    public function upazila(): BelongsTo
+    {
+        return $this->belongsTo(Upazila::class, 'tenant_id');
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

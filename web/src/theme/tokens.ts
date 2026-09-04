@@ -29,7 +29,7 @@ export const palette = {
 
   // Semantic status pills (bg / fg).
   status: {
-    pending: { bg: '#FEF0C7', fg: '#B54708' }, // অপেক্ষমান / এন্ট্রি হয়নি (bg measured)
+    pending: { bg: '#FEF0C7', fg: '#B54708' }, // অপেক্ষমান / জন্মনিবন্ধন সম্পন্ন হয়নি (bg measured)
     success: { bg: '#D1FADF', fg: '#067647' }, // অনুমোদিত / ডেলিভারি হয়েছে
     danger: { bg: '#FEE4E2', fg: '#B42318' }, // ডেলিভারি হয়নি / নাকচ
     info: { bg: '#E6DFEC', fg: '#6750A4' }, // শিডিউল করা হয়েছে (bg measured)

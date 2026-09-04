@@ -207,15 +207,23 @@ export default function Sidebar() {
   const activePill = theme.suraha.activePillBg;
   const activeText = theme.suraha.activePillText;
 
+  // Segment-exact: /appointment must not light up while on /appointment-schedule, but
+  // /appointment/12 must.
   const isRouteActive = (route: string) =>
-    route === '/' ? location.pathname === '/' : location.pathname.startsWith(route);
+    route === '/'
+      ? location.pathname === '/'
+      : location.pathname === route || location.pathname.startsWith(route + '/');
 
   const itemActive = (item: Item) =>
     item.route ? isRouteActive(item.route) : active === item.key;
 
+  // A group stands open whenever the page you are on lives inside it, until you fold it by hand.
+  const groupOpen = (item: Item) =>
+    open[item.key] ?? !! item.children?.some((c) => c.route && isRouteActive(c.route));
+
   const handleItemClick = (item: Item) => {
     if (item.route) navigate(item.route);
-    else if (item.children) setOpen((o) => ({ ...o, [item.key]: !o[item.key] }));
+    else if (item.children) setOpen((o) => ({ ...o, [item.key]: ! groupOpen(item) }));
     else setActive(item.key);
   };
 
@@ -249,7 +257,7 @@ export default function Sidebar() {
   // One row shape for every list, so a section is just a different set of items.
   const renderItem = (item: Item) => {
     const isActive = itemActive(item);
-    const isOpen = open[item.key];
+    const isOpen = groupOpen(item);
 
     return (
       <Box key={item.key}>

@@ -30,10 +30,15 @@ class ReportTest extends TestCase
         Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
         $res = $this->getJson(self::GALACHIPA.'/api/reports')->assertOk();
 
+        $galachipaAppointments = \App\Models\Upazila::find('galachipa')
+            ->run(fn () => \App\Models\Appointment::count());
+
         $res->assertJsonPath('scope.level', 'tenant');
         $this->assertSame(18, $res->json('kpis.pregnancies_total'));
         $this->assertSame(10, $res->json('kpis.complaints_total'));
-        $this->assertSame(11, $res->json('kpis.appointments_total'));
+        // Counted from the seeded rows: the সূচি seed grows this number and a hard-coded
+        // total goes stale with it.
+        $this->assertSame($galachipaAppointments, $res->json('kpis.appointments_total'));
 
         // Single scope → union comparison, no upazila comparison.
         $this->assertIsArray($res->json('by_union'));

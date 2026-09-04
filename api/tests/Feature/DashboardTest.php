@@ -27,13 +27,18 @@ class DashboardTest extends TestCase
         Sanctum::actingAs(User::where('username', 'uno_galachipa')->firstOrFail());
         $res = $this->getJson('http://galachipa.lvh.me/api/dashboard/stats')->assertOk();
 
+        $galachipaAppointments = \App\Models\Upazila::find('galachipa')
+            ->run(fn () => \App\Models\Appointment::count());
+
         $res->assertJsonPath('scope.level', 'tenant')
             ->assertJsonPath('scope.label', 'গলাচিপা');
         // 18 pregnancies seeded in Galachipa.
         $this->assertSame(18, $res->json('pregnancy.total'));
         $this->assertSame(6, $res->json('pregnancy.delivered'));
         $this->assertSame(10, $res->json('complaints.total'));
-        $this->assertSame(11, $res->json('appointments.total'));
+        // Counted from the seeded rows: the সূচি seed grows this number and a hard-coded
+        // total goes stale with it.
+        $this->assertSame($galachipaAppointments, $res->json('appointments.total'));
     }
 
     public function test_seal_aggregate_spans_all_upazilas(): void

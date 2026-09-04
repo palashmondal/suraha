@@ -21,6 +21,7 @@ export interface BirthReg {
   place_of_birth: string | null;
   permanent_address: string | null;
   union: string | null;
+  upazila?: string | null;
   ward_no: number | null;
   date_of_birth: string | null;
   sex: string | null;
@@ -38,6 +39,10 @@ export interface BirthRegList {
   data: BirthReg[];
   meta: { current_page: number; last_page: number; total: number };
   tabs: BirthRegTab[];
+}
+
+export function getBirthReg(id: string | number) {
+  return api<{ data: BirthReg }>(`/birth-registrations/${id}`);
 }
 
 export function listBirthRegs(params: { status?: string; q?: string } = {}) {

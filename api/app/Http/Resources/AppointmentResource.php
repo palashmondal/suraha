@@ -33,7 +33,15 @@ class AppointmentResource extends JsonResource
             'appointment_date' => $this->appointment_date?->toDateString(),
             'appointment_time' => $this->appointment_time,
             'decision_note' => $this->decision_note,
+            'office' => $this->officeBn(),
             'created_at' => $this->created_at?->toDateString(),
+
+            'notes' => $this->whenLoaded('notes', fn () => $this->notes->map(fn ($n) => [
+                'id' => $n->id,
+                'body' => $n->body,
+                'author' => $n->author?->name,
+                'created_at' => $n->created_at?->toDateString(),
+            ])),
         ];
     }
 }
