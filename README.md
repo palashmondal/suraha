@@ -7,9 +7,9 @@ A module-based, multi-tenant government service-delivery platform for Bangladesh
 frontline officer work and citizen services — with an automated **pregnancy → BDRIS birth-certificate**
 pipeline at its core.
 
-- **What & why:** [SURAHA_OVERVIEW.md](SURAHA_OVERVIEW.md) — business model, roles, features, flows.
-- **Full build spec:** [SURAHA_BUILD_PROMPT.md](SURAHA_BUILD_PROMPT.md) — the authoritative spec.
-- **Status & remaining work:** [TODO.md](TODO.md) — milestone audit and the ordered work list.
+- **What & why:** [SURAHA_OVERVIEW.md](docs/SURAHA_OVERVIEW.md) — business model, roles, features, flows.
+- **Full build spec:** [SURAHA_BUILD_PROMPT.md](docs/SURAHA_BUILD_PROMPT.md) — the authoritative spec.
+- **Status & remaining work:** [TODO.md](docs/TODO.md) — milestone audit and the ordered work list.
 - **Design source of truth:** [`concept_ui/`](concept_ui/) + Figma
   (https://www.figma.com/design/eywg5k7XOILjdYc7Gzarqm/Suraha-app).
 
@@ -23,7 +23,8 @@ suraha/
 ├── infra/        Docker Compose + Caddy reverse proxy (on-demand TLS per subdomain)
 ├── scripts/      dev.sh — runs api + web + Caddy and syncs /etc/hosts from the domains table
 ├── concept_ui/   Design reference screenshots
-└── SURAHA_*.md   Overview, build prompt, FWA mobile plan, TODO
+├── docs/         Documentation (overview, build spec, plans, deployment guides)
+└── scripts/      Deployment and development scripts
 ```
 
 ## Architecture
@@ -47,7 +48,7 @@ suraha/
 - **Auth** — Bearer-token Sanctum. Officers sign in with username/password; citizens with mobile +
   OTP (behind a mockable SMS gateway).
 - **RBAC** — 7 roles enforced server-side: FWA, UP Sochib, UNO, Investigating Officer, DC
-  (read-only), SEAL Admin (super-admin), Citizen. See [SURAHA_OVERVIEW.md §4](SURAHA_OVERVIEW.md).
+  (read-only), SEAL Admin (super-admin), Citizen. See [SURAHA_OVERVIEW.md §4](docs/SURAHA_OVERVIEW.md).
 - **Frontend** — React + Vite + MUI, Bangla-only UI with Bangla numerals, installable PWA, and a full
   shared component library (live gallery at `/ui`).
 
@@ -151,7 +152,7 @@ npm run dev      # http://localhost:5175 — needs the API up
 ```
 
 Offline-first Android app for field capture of প্রসূতি records. See
-[`mobile/README.md`](mobile/README.md) and [`FWA_MOBILE_APP_PLAN.md`](FWA_MOBILE_APP_PLAN.md).
+[`mobile/README.md`](mobile/README.md) and [`FWA_MOBILE_APP_PLAN.md`](docs/FWA_MOBILE_APP_PLAN.md).
 
 ### 4. Tenant subdomains
 
@@ -188,7 +189,7 @@ automatically. Three ways to resolve subdomains locally:
 ## Deploy (Docker)
 
 On a VPS. Host-specific runbooks:
-[**AWS EC2**](DEPLOY_AWS.md) (Free-plan credits) · [shared cPanel](DEPLOY_CPANEL.md) (build locally, upload two folders) · [laptop demo, no server](DEMO.md) (Cloudflare Tunnel).
+[**AWS EC2**](docs/DEPLOY_AWS.md) (Free-plan credits) · [shared cPanel](docs/DEPLOY_CPANEL.md) (build locally, upload two folders) · [laptop demo, no server](docs/DEMO.md) (Cloudflare Tunnel).
 
 **DNS (once).** At the registrar, point both records at the VPS:
 
