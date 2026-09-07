@@ -8,10 +8,12 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
-// Every third-party credential lives in the repo-root .env, shared with the web app (whose Vite
-// envDir points at the same file) so a key is set or rotated in one place. Loaded before the
-// framework reads api/.env, which keeps only this app's own plumbing (APP_KEY, DB_*, mail).
-Dotenv::createImmutable(dirname(__DIR__, 2))->safeLoad();
+// Every third-party credential lives in infra/.env, shared with the web app (whose Vite envDir
+// points at the same file) and with docker compose, so a key is set or rotated in one place.
+// Loaded before the framework reads api/.env, which keeps only this app's own plumbing (APP_KEY,
+// DB_*, mail). In the container the file is absent and these arrive as real env vars, so
+// safeLoad() is a no-op there.
+Dotenv::createImmutable(dirname(__DIR__, 2).'/infra')->safeLoad();
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(

@@ -8,9 +8,9 @@ import path from 'node:path';
 // shell, serves it for navigations while offline (navigateFallback), and runtime-caches uploaded
 // images so the installed app opens and remains usable without connectivity.
 export default defineConfig({
-  // Env lives at the repo root, one file shared with the API — see ../.env. Without this Vite
-  // would only look inside web/, and the keys would have to be duplicated.
-  envDir: path.resolve(__dirname, '..'),
+  // Env lives in infra/, one file shared with the API and docker compose — see ../infra/.env.
+  // Without this Vite would only look inside web/, and the keys would have to be duplicated.
+  envDir: path.resolve(__dirname, '../infra'),
   plugins: [
     react(),
     VitePWA({
