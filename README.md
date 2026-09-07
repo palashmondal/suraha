@@ -187,8 +187,8 @@ automatically. Three ways to resolve subdomains locally:
 
 ## Deploy (Docker)
 
-On a VPS. For **shared cPanel hosting** instead, see
-[DEPLOY_CPANEL.md](DEPLOY_CPANEL.md) — build locally, upload two folders.
+On a VPS. Host-specific runbooks:
+[**AWS EC2**](DEPLOY_AWS.md) (Free-plan credits) · [shared cPanel](DEPLOY_CPANEL.md) (build locally, upload two folders) · [laptop demo, no server](DEMO.md) (Cloudflare Tunnel).
 
 **DNS (once).** At the registrar, point both records at the VPS:
 
