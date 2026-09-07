@@ -210,9 +210,10 @@ docker compose exec app php artisan migrate --force
 docker compose exec app php artisan storage:link
 ```
 
-**Seed reference data + one admin.** Do *not* run `db:seed` bare — `DatabaseSeeder` is the dev
-seed and would create demo upazilas and eight officers whose password is `password`. Production
-wants the বিভাগ/জেলা/উপজেলা/ইউনিয়ন catalogue and nothing else:
+**Seed reference data + one admin.** `db:seed` bare runs the demo seed — demo upazilas and eight
+officers — which a pilot server may want (`-e DEMO_PASSWORD=…`, see
+[DEPLOY_AWS.md](docs/DEPLOY_AWS.md)) but a real deployment does not. Production wants the
+বিভাগ/জেলা/উপজেলা/ইউনিয়ন catalogue and nothing else:
 
 ```bash
 for s in DivisionSeeder DistrictSeeder UpazilaRefSeeder UnionRefSeeder; do

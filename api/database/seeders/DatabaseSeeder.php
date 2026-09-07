@@ -58,9 +58,8 @@ class DatabaseSeeder extends Seeder
         $this->officer('tdonto_dumuria', 'তদন্ত কর্মকর্তা, ডুমুরিয়া', Role::INVESTIGATING_OFFICER, tenantId: $dumuria->id, designation: 'তদন্ত কর্মকর্তা');
 
         // ---- Sample citizen in Galachipa -----------------------------
-        User::create([
+        User::updateOrCreate(['phone' => '01700000000'], [
             'name' => 'নাগরিক (নমুনা)',
-            'phone' => '01700000000',
             'role' => Role::CITIZEN->value,
             'tenant_id' => $galachipa->id,
             'phone_verified_at' => now(),
@@ -85,6 +84,12 @@ class DatabaseSeeder extends Seeder
 
     private function upazila(string $id, string $name, string $nameBn, int $districtId): Upazila
     {
+        // Re-runnable: on a server that already has this upazila (auto-provisioned, or a previous
+        // run of this seed) creating it again is a primary-key violation halfway through.
+        if ($existing = Upazila::find($id)) {
+            return $existing;
+        }
+
         $upazila = Upazila::create([
             'id' => $id,
             'name' => $name,
@@ -109,10 +114,15 @@ class DatabaseSeeder extends Seeder
         ?int $wardNo = null,
         ?string $designation = null,
     ): void {
-        User::create([
+        // username is unique, so plain create() aborts the whole seed on a database that already
+        // has one of these officers — notably `admin`, which the production runbook creates by
+        // hand. updateOrCreate makes the seed safe to re-run.
+        //
+        // DEMO_PASSWORD overrides the well-known `password` when this seed is applied anywhere
+        // reachable from the internet. getenv, not env(): after `config:cache` env() returns null.
+        User::updateOrCreate(['username' => $username], [
             'name' => $name,
-            'username' => $username,
-            'password' => Hash::make('password'),
+            'password' => Hash::make(getenv('DEMO_PASSWORD') ?: 'password'),
             'role' => $role->value,
             'tenant_id' => $tenantId,
             'district_id' => $districtId,

@@ -139,8 +139,23 @@ for s in DivisionSeeder DistrictSeeder UpazilaRefSeeder UnionRefSeeder; do
 done
 ```
 
-**Never run `db:seed` bare** — the default `DatabaseSeeder` is the dev seed and would create demo
-upazilas and eight officers whose password is `password`.
+That is all a real deployment wants. `db:seed` bare runs the **demo** seed instead — see below.
+
+### Demo data (pilot/showcase servers only)
+
+To put the full demo on the server — Galachipa and Dumuria, the officers, and sample প্রসূতি,
+জন্ম নিবন্ধন, অভিযোগ and সাক্ষাৎকার records:
+
+```bash
+docker compose exec -T -e DEMO_PASSWORD='pick-a-strong-one' app php artisan db:seed --force
+```
+
+`DEMO_PASSWORD` is not optional on a public host: without it every seeded officer — including
+`admin`, which is the SEAL console — has the password `password`. The seed is re-runnable
+(officers and upazilas are keyed on username/id), but the sample records are not: run it twice
+and you get two sets of demo প্রসূতি and অভিযোগ rows.
+
+Do not run this on a server holding real citizen data. There is no unseed.
 
 ```bash
 docker compose exec app php artisan tinker --execute="
