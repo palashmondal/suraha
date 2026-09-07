@@ -19,6 +19,10 @@ services:
 
   postgres:
     image: postgres:17-alpine
+    # Bound to loopback, NOT 0.0.0.0: the VPS has no firewall in front of it, and an exposed
+    # 5432 is found by scanners within hours. Reach it from a laptop over SSH instead:
+    #   ssh -L 5432:localhost:5432 user@suraha.net
+    ports: ['127.0.0.1:5432:5432']
     environment:
       POSTGRES_DB: ${DB_DATABASE:-suraha}
       POSTGRES_USER: ${DB_USERNAME:-suraha}

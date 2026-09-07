@@ -14,7 +14,12 @@ COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-interaction
 
 COPY . .
-RUN composer dump-autoload --optimize --no-dev --classmap-authoritative \
+# api/.dockerignore strips the contents of these dirs, and that includes the .gitignore files
+# holding them open — so COPY leaves them out of the image entirely and Laravel dies on the
+# first log write. Recreate them here; the framework never makes them itself.
+RUN mkdir -p storage/logs storage/app/public storage/app/private bootstrap/cache \
+      storage/framework/cache/data storage/framework/sessions storage/framework/views \
+ && composer dump-autoload --optimize --no-dev --classmap-authoritative \
  && chown -R www-data:www-data storage bootstrap/cache
 
 ENV SERVER_NAME=:8080

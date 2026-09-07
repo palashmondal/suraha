@@ -221,10 +221,11 @@ cloudflared tunnel delete suraha-demo
 ## 10. Updating
 
 ```bash
-cd ~/suraha && git pull
-cd infra && docker compose build && docker compose up -d
-docker compose exec app php artisan migrate --force
+cd ~/suraha && ./scripts/deploy.sh
 ```
+
+It pulls, rebuilds, restarts, migrates and recaches config/routes, and refuses to start if the
+checkout is dirty or `infra/.env` is missing. `--no-pull` deploys what is already checked out.
 
 Uploads live in the `uploads` volume, the database in `pgdata`, issued certificates in `caddydata`.
 A rebuild touches none of them.

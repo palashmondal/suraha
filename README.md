@@ -238,8 +238,8 @@ MinIO — nothing in the app queues, schedules, or writes to S3, so those would 
 Uploads (slider images, avatars, certificates) sit on Laravel's public disk, kept by the `uploads`
 volume; the database is kept by `pgdata`.
 
-**Updating.** `git pull && docker compose build && docker compose up -d && docker compose exec app
-php artisan migrate --force`.
+**Updating.** `./scripts/deploy.sh` — pulls, rebuilds, restarts, migrates, recaches config and
+routes. Volumes are untouched.
 
 The app resolves the upazila (tenant) from the request host, so one Caddy site block serves the
 central host and every upazila. Adding a new upazila in the admin console needs **no server
