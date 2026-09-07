@@ -6,8 +6,8 @@ import { getHostContext, type HostContext } from '../api/registry';
 let cached: HostContext | null = null;
 let inflight: Promise<HostContext> | null = null;
 
-// The tab title names the upazila on its own subdomain (সুরাহা - গলাচিপা উপজেলা) and marks the
-// central SEAL host as সুরাহা - এডমিন. It is the same on every page of a host, and host context
+// The tab title names the upazila on its own subdomain (সুরাহা - গলাচিপা উপজেলা) and marks a
+// district host as সুরাহা - এডমিন. It is the same on every page of a host, and host context
 // resolves once per page load, so setting it here covers the whole app with no per-route wiring.
 // index.html carries the plain সুরাহা as the pre-hydration default.
 function applyDocumentTitle(ctx: HostContext): void {
@@ -17,9 +17,9 @@ function applyDocumentTitle(ctx: HostContext): void {
     return;
   }
 
-  // The bare central host is the product's own site, so it carries the plain product name;
-  // only the admin console calls itself এডমিন.
-  document.title = ctx.kind === 'central' && ! ctx.is_admin ? 'সুরাহা' : 'সুরাহা - এডমিন';
+  // The central host is the product's own site, so it carries the plain product name; what is
+  // left is a district host, which is a dashboard and nothing else.
+  document.title = ctx.kind === 'central' ? 'সুরাহা' : 'সুরাহা - এডমিন';
 }
 
 function load(): Promise<HostContext> {
@@ -33,7 +33,7 @@ function load(): Promise<HostContext> {
       })
       .catch(() => {
         // Fall back to central so the UI stays usable if the lookup fails.
-        cached = { kind: 'central', is_admin: false, slug: null, name_bn: null, is_active: true };
+        cached = { kind: 'central', slug: null, name_bn: null, is_active: true };
         applyDocumentTitle(cached);
         return cached;
       })

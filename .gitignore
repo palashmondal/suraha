@@ -44,3 +44,6 @@ web/tsconfig.tsbuildinfo
 
 # scripts/dev.sh service logs
 .dev-logs/
+
+# cPanel upload bundle (scripts/build-cpanel.sh) — contains real credentials
+dist-cpanel/

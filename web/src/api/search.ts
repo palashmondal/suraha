@@ -6,6 +6,7 @@ export interface SearchHit {
   mobile: string | null;
   snippet: string | null;
   link: string;
+  date: string | null;     // ISO; when the record came in
   score: number;
 }
 

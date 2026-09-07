@@ -21,30 +21,21 @@ return [
      *
      * Only relevant if you're using the domain or subdomain identification middleware.
      */
-    'central_domains' => [
+    'central_domains' => array_values(array_filter([
         '127.0.0.1',
         'localhost',
-        // suraha.net is the product's own landing page, and SEAL logs in at suraha.net/login.
-        // admin.suraha.net is the dedicated admin host and serves the console directly. Both are
-        // central — no tenant — so SEAL switches upazila in-app via the X-Upazila header, and
-        // neither is read as a tenant subdomain. Only {upazila}.suraha.net resolves as a tenant.
-        // Listing admin.* here is what stops stancl reading `admin` as an unknown upazila (404).
+        // suraha.net is the product's own landing page and, at /app, the SEAL console. It is
+        // central — no tenant — so SEAL switches upazila in-app via the X-Upazila header. Only
+        // {upazila}.suraha.net resolves as a tenant.
         'suraha.net',
-        'admin.suraha.net',
         // Local dev: {upazila}.lvh.me resolves to 127.0.0.1 with no /etc/hosts edits; bare lvh.me
-        // is the central host and admin.lvh.me mirrors the admin one.
+        // is the central host.
         'lvh.me',
-        'admin.lvh.me',
-    ],
-
-    /**
-     * The central domains that ARE the admin console, as opposed to the product landing page.
-     * Both kinds are central (tenant-less); this only decides what `/` serves.
-     */
-    'admin_domains' => [
-        'admin.suraha.net',
-        'admin.lvh.me',
-    ],
+        // Escape hatch for a demo on a throwaway public hostname — e.g. a Cloudflare quick
+        // tunnel's *.trycloudflare.com address. It is central (no tenant), so the SEAL console
+        // at /app still reaches every upazila through the in-app switcher.
+        env('DEMO_CENTRAL_HOST'),
+    ])),
 
     /**
      * Tenancy bootstrappers are executed when tenancy is initialized.

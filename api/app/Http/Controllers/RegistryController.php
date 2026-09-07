@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Middleware\ResolveHost;
 use App\Models\District;
 use App\Models\Division;
 use App\Models\Union;
@@ -21,7 +20,7 @@ class RegistryController extends Controller
     /**
      * Host context for the requesting subdomain — lets the SPA render the right shell without
      * guessing district-vs-upazila from the hostname string:
-     *  - central host (suraha.net)        → { kind: 'central' }
+     *  - central host (suraha.net)        → { kind: 'central' } (product landing; console at /app)
      *  - district host ({district}.suraha.net) → { kind: 'district', slug, upazila_count }
      *  - upazila host ({upazila}.suraha…)     → { kind: 'upazila', slug, name_bn }
      */
@@ -32,7 +31,6 @@ class RegistryController extends Controller
         if ($district) {
             return response()->json([
                 'kind' => 'district',
-                'is_admin' => false,
                 'slug' => $district->slug,
                 'name_bn' => $district->name_bn,
                 'district_bn' => $district->name_bn,
@@ -42,12 +40,8 @@ class RegistryController extends Controller
         }
 
         if (! tenancy()->initialized) {
-            // Both central hosts report kind "central" — everything that scopes by host (the
-            // upazila switcher, union options, login copy) treats them identically. `is_admin`
-            // only decides whether "/" serves the product landing page or the console.
             return response()->json([
                 'kind' => 'central',
-                'is_admin' => ResolveHost::isAdminHost($request->getHost()),
                 'slug' => null,
                 'name_bn' => null,
                 'is_active' => true,
@@ -58,7 +52,6 @@ class RegistryController extends Controller
 
         return response()->json([
             'kind' => 'upazila',
-            'is_admin' => false,
             'slug' => $upazila->getTenantKey(),
             'name_bn' => $upazila->name_bn,
             'district_bn' => $upazila->district?->name_bn,
@@ -232,10 +225,8 @@ class RegistryController extends Controller
         $domain = strtolower(trim((string) $request->query('domain')));
         $base = strtolower((string) config('tenancy.base_domain'));
 
-        // Every central host: the product's landing page (suraha.net) and the admin console
-        // (admin.suraha.net). Read from central_domains rather than base_domain alone, so a host
-        // added there is issuable without a second edit here — admin.* is one label deep and
-        // matches no upazila, so the checks below would have refused it a certificate outright.
+        // Every central host (suraha.net). Read from central_domains rather than base_domain
+        // alone, so a host added there is issuable without a second edit here.
         $central = array_map('strtolower', (array) config('tenancy.central_domains', []));
 
         if ($domain === $base || $domain === 'www.'.$base || in_array($domain, $central, true)) {

@@ -78,18 +78,17 @@ function RequireLogin({ children }: { children: ReactNode }) {
 /**
  * "/" is the public site and nothing else — the officer app lives under /app on every host, so a
  * URL means one thing wherever it is opened. What differs per host is only which public site:
- *   suraha.net            → the product's own landing page
+ *   suraha.net            → the product's own landing page (SEAL's console is at /app, like
+ *                           every other officer's — there is no separate admin host)
  *   {upazila}.suraha.net  → that upazila's citizen site
- *   admin.suraha.net      → none (SEAL's console), so "/" hands straight over to /app
- *   {district}.suraha.net → none either (the DC's dashboard; there is no tenant behind it)
- * /app itself sends a signed-out visitor to the login, so both of those land there when nobody
- * is signed in.
+ *   {district}.suraha.net → none (the DC's dashboard; there is no tenant behind it), so "/" hands
+ *                           straight over to /app, which sends a signed-out visitor to the login.
  */
 function Home() {
   const host = useHostContext();
 
   if (!host) return <Spinner />;
-  if (host.kind === 'district' || host.is_admin) return <Navigate to="/app" replace />;
+  if (host.kind === 'district') return <Navigate to="/app" replace />;
 
   return host.kind === 'central' ? <ProductLanding /> : <UpazilaLanding />;
 }

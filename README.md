@@ -33,17 +33,17 @@ suraha/
   subdomain (`patuakhali.suraha.net`) resolves no tenant and serves the DC dashboard. Tenant rows
   are scoped by a `tenant_id` global scope (no per-tenant databases). Cross-tenant roles (SEAL/DC)
   work on a **central host** and switch upazila in-app via an `X-Upazila` header — without changing
-  the URL. There are two central hosts, both tenant-less:
+  the URL. `suraha.net` is the only central host (tenant-less):
 
-  | Host | Serves |
-  |---|---|
-  | `suraha.net` | The product's own landing page. SEAL signs in at `suraha.net/login`. |
-  | `admin.suraha.net` | The SEAL console — `/` goes straight to the login. |
-  | `{upazila}.suraha.net` | That upazila's citizen site (apply, track, my submissions) + its officers' app. |
-  | `{district}.suraha.net` | The DC's read-only district dashboard. |
+  | Host | `/` | `/app` |
+  |---|---|---|
+  | `suraha.net` | The product's own landing page. | The SEAL console. |
+  | `{upazila}.suraha.net` | That upazila's citizen site (apply, track, my submissions). | Its officers' app. |
+  | `{district}.suraha.net` | → `/app`. | The DC's read-only district dashboard. |
 
-  `admin.*` is listed in `tenancy.central_domains`, which is what stops stancl reading `admin` as
-  an unknown upazila; `tenancy.admin_domains` then separates the console from the landing page.
+  The split is by **path, not host**: `/` is always the public site and `/app` is always the
+  officer app, so a URL means the same thing everywhere. (`admin.suraha.net` was retired when the
+  console moved to `/app` — it served the same pages the central host already serves.)
 - **Auth** — Bearer-token Sanctum. Officers sign in with username/password; citizens with mobile +
   OTP (behind a mockable SMS gateway).
 - **RBAC** — 7 roles enforced server-side: FWA, UP Sochib, UNO, Investigating Officer, DC
@@ -187,6 +187,9 @@ automatically. Three ways to resolve subdomains locally:
 
 ## Deploy (Docker)
 
+On a VPS. For **shared cPanel hosting** instead, see
+[DEPLOY_CPANEL.md](DEPLOY_CPANEL.md) — build locally, upload two folders.
+
 **DNS (once).** At the registrar, point both records at the VPS:
 
 ```
@@ -194,13 +197,48 @@ A    suraha.net      <server-ip>
 A    *.suraha.net    <server-ip>
 ```
 
-**Deploy.**
+**Deploy.** On the VPS (Docker + the compose plugin installed):
 
 ```bash
-cd infra
-cp .env.example .env      # set DB/S3/BDRIS/SMS secrets
-docker compose up -d      # app, web, postgres, redis, worker, scheduler, minio, Caddy proxy
+git clone https://github.com/palashmondal/suraha.git && cd suraha/infra
+cp .env.example .env                                  # then edit: APP_KEY, DB_PASSWORD, SMS/BDRIS
+docker compose build
+docker compose run --rm app php artisan key:generate --show   # paste into .env as APP_KEY
+docker compose up -d                                  # app, web, postgres, Caddy proxy
+docker compose exec app php artisan migrate --force
+docker compose exec app php artisan storage:link
 ```
+
+**Seed reference data + one admin.** Do *not* run `db:seed` bare — `DatabaseSeeder` is the dev
+seed and would create demo upazilas and eight officers whose password is `password`. Production
+wants the বিভাগ/জেলা/উপজেলা/ইউনিয়ন catalogue and nothing else:
+
+```bash
+for s in DivisionSeeder DistrictSeeder UpazilaRefSeeder UnionRefSeeder; do
+  docker compose exec app php artisan db:seed --force --class=$s
+done
+
+docker compose exec -e SEAL_PASSWORD='pick-a-strong-one' app php artisan tinker --execute="
+  App\Models\User::create([
+    'name' => 'সুরাহা অ্যাডমিন',
+    'username' => 'admin',
+    'password' => Illuminate\Support\Facades\Hash::make(getenv('SEAL_PASSWORD')),
+    'role' => App\Enums\Role::SEAL_ADMIN->value,
+    'is_active' => true,
+  ]);"
+```
+
+Then sign in at `https://suraha.net/app` as `admin` and provision the first upazila from the
+console — its subdomain starts serving immediately, no server change.
+
+Four services, no more: **app** (Laravel on FrankenPHP, :8080), **web** (the built SPA on :80),
+**postgres**, and the **Caddy** proxy on :80/:443. There is no Redis, queue worker, scheduler or
+MinIO — nothing in the app queues, schedules, or writes to S3, so those would be idle containers.
+Uploads (slider images, avatars, certificates) sit on Laravel's public disk, kept by the `uploads`
+volume; the database is kept by `pgdata`.
+
+**Updating.** `git pull && docker compose build && docker compose up -d && docker compose exec app
+php artisan migrate --force`.
 
 The app resolves the upazila (tenant) from the request host, so one Caddy site block serves the
 central host and every upazila. Adding a new upazila in the admin console needs **no server

@@ -8,9 +8,12 @@ use App\Models\Appointment;
 use App\Models\Assistance;
 use App\Models\BirthRegistration;
 use App\Models\Complaint;
+use App\Models\ComplaintEvent;
+use App\Models\Note;
 use App\Models\Pregnancy;
 use App\Models\Suggestion;
 use App\Models\User;
+use App\Support\ScopeResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -35,15 +38,26 @@ use Illuminate\Http\Request;
  */
 class SearchController extends Controller
 {
+    /** Where a note's parent record lives, by notable_type. */
+    private const NOTE_LINKS = [
+        Appointment::class => ['সাক্ষাৎকার নোট', '/appointment/'],
+        Assistance::class => ['সহায়তা নোট', '/humanitarian/'],
+        Suggestion::class => ['পরামর্শ নোট', '/advice/'],
+    ];
+
     /** How many suggestions the box shows. */
-    private const LIMIT = 6;
+    private const LIMIT = 10;
 
     /** Per-module candidate cap before ranking, so a common term cannot pull the whole table. */
     private const PER_MODULE = 25;
 
     public function index(Request $request): JsonResponse
     {
-        $this->requireTenant();
+        // SEAL on "সকল উপজেলা" is not missing an upazila — it is asking across all of them, and
+        // VisibleTenantScope already narrows every module to what the viewer may see.
+        $this->requireTenantForListing($request->user());
+
+        [$tenantIds] = ScopeResolver::resolve($request->user());
 
         $term = trim((string) $request->query('q', ''));
 
@@ -73,7 +87,22 @@ class SearchController extends Controller
                 fn (Suggestion $s) => ['label' => 'নাগরিক পরামর্শ', 'name' => $s->is_confidential ? 'গোপনীয়' : $s->applicant_name, 'mobile' => $s->is_confidential ? null : $s->mobile, 'snippet' => $s->title, 'link' => '/advice/'.$s->id]) : collect())
             ->concat($canCasework ? $this->hunt(Suggestion::query()->where('is_confidential', false), $term, ['applicant_name' => 3, 'mobile' => 3],
                 fn (Suggestion $s) => ['label' => 'নাগরিক পরামর্শ', 'name' => $s->applicant_name, 'mobile' => $s->mobile, 'snippet' => $s->title, 'link' => '/advice/'.$s->id]) : collect())
-            ->concat($canCasework ? $this->hunt(User::where('tenant_id', tenant()->getTenantKey())->where('role', '!=', 'citizen'), $term, ['name' => 3, 'phone' => 3, 'username' => 3, 'name_en' => 2, 'email' => 2, 'designation' => 1],
+            // Officers' own running notes and the complaint timeline: what an office wrote down
+            // is as searchable as what a citizen filed.
+            ->concat($canCasework ? $this->hunt(Note::with('notable'), $term, ['body' => 1],
+                function (Note $n) {
+                    [$label, $prefix] = self::NOTE_LINKS[$n->notable_type] ?? ['নোট', null];
+
+                    // A confidential পরামর্শ hides its author everywhere, this box included.
+                    $name = $n->notable?->is_confidential ? 'গোপনীয়' : $n->notable?->applicant_name;
+
+                    return ['label' => $label, 'name' => $name, 'mobile' => null,
+                        'snippet' => $n->body, 'link' => $prefix ? $prefix.$n->notable_id : '/app'];
+                }) : collect())
+            ->concat($canCasework ? $this->hunt(ComplaintEvent::query(), $term, ['comment' => 1],
+                fn (ComplaintEvent $e) => ['label' => 'অভিযোগ কার্যক্রম', 'name' => null, 'mobile' => null,
+                    'snippet' => $e->comment, 'link' => '/complaint/'.$e->complaint_id]) : collect())
+            ->concat($canCasework ? $this->hunt(User::whereIn('tenant_id', $tenantIds)->where('role', '!=', 'citizen'), $term, ['name' => 3, 'phone' => 3, 'username' => 3, 'name_en' => 2, 'email' => 2, 'designation' => 1],
                 fn (User $u) => ['label' => 'কর্মকর্তা', 'name' => $u->name, 'mobile' => $u->phone, 'snippet' => $u->designation ?? $u->role_label_bn, 'link' => '/users']) : collect());
 
         $results = $hits
@@ -124,7 +153,9 @@ class SearchController extends Controller
                 $score += $at === 0 ? $weight * 2 : $weight;
             }
 
-            return $shape($row) + ['score' => $score];
+            // Every module has a created_at, and "when it came in" is what dates a hit — so the
+            // date is attached here rather than in each of the eight shapes.
+            return $shape($row) + ['score' => $score, 'date' => $row->created_at?->toDateString()];
         });
     }
 }

@@ -9,7 +9,6 @@ import {
   MenuItem,
   Tooltip,
   Typography,
-  useTheme,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -19,7 +18,6 @@ import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneR
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
-import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
 import LockResetRoundedIcon from '@mui/icons-material/LockResetRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
@@ -28,37 +26,27 @@ import { useColorMode } from '../theme/ColorModeContext';
 import { startTour } from '../tour/tour';
 import NotificationMenu from '../components/NotificationMenu';
 import UnifiedSearch from '../components/UnifiedSearch';
+import UpazilaSwitcher from './UpazilaSwitcher';
+import { SIDEBAR_WIDTH } from './Sidebar';
+
+/** Width of the search pill; half of it is the offset that puts it on the window's centre. */
+const SEARCH_W = 480;
+const BAR_PX = 24; // the bar's own horizontal padding (px: 3)
 import { getNotifications, markAllNotificationsRead, markNotificationRead, type AppNotification } from '../api/notifications';
 import { useAuth } from '../auth/AuthContext';
 import { useSelectedTenant } from '../tenant/SelectedTenantContext';
-import { useHostContext } from '../tenant/host';
-import { api } from '../api/client';
-import type { SwitchableUpazila } from '../api/registry';
 
 export default function TopBar() {
-  const theme = useTheme();
   const navigate = useNavigate();
   const { mode, toggle } = useColorMode();
   const { user, logout } = useAuth();
-  const { selectedUpazilaId, selectedUpazilaLabel, setSelectedUpazila } = useSelectedTenant();
-  const host = useHostContext();
+  const { selectedUpazilaId } = useSelectedTenant();
 
-  // The switcher makes sense wherever a cross-tenant user has no fixed tenant: SEAL on the
-  // central host, the DC on its district host. Both pick an upazila via the X-Upazila header.
-  // On a upazila subdomain the tenant is pinned by the URL, so NO ONE sees the switcher.
   // The same box for everyone who has a list to search; the API scopes results to what the
-  // role may open, so an FWA never sees a complaint they cannot read.
-  const canSearch = user ? ['uno', 'fwa', 'up_sochib'].includes(user.role) : false;
-  const isAggregateHost = host?.kind === 'central' || host?.kind === 'district';
-  const canSwitch = user ? user.scope !== 'tenant' && isAggregateHost : false;
+  // role may open, so an FWA never sees a complaint they cannot read. SEAL searches on "সকল
+  // উপজেলা" too — there the endpoint spans every upazila it oversees.
+  const canSearch = user ? ['uno', 'fwa', 'up_sochib', 'seal_admin'].includes(user.role) : false;
 
-  // Upazila switcher — real list from the registry (SEAL: all, DC: own district, §4).
-  // Cross-tenant roles default to the aggregate view ("সকল উপজেলা") until they pick one upazila.
-  // The displayed label comes from the persisted selection so it survives per-navigation remounts
-  // (no flash back to "সকল উপজেলা").
-  const current = selectedUpazilaLabel ?? S.common.allUpazilas;
-  const [upazilas, setUpazilas] = useState<SwitchableUpazila[]>([]);
-  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
   const [profileAnchor, setProfileAnchor] = useState<null | HTMLElement>(null);
   const [notifAnchor, setNotifAnchor] = useState<null | HTMLElement>(null);
   const [notifs, setNotifs] = useState<AppNotification[]>([]);
@@ -73,26 +61,6 @@ export default function TopBar() {
     loadNotifs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedUpazilaId]);
-
-  const label = (u: SwitchableUpazila) => `${u.name_bn} উপজেলা${u.district ? `, ${u.district}` : ''}`;
-
-  useEffect(() => {
-    if (!canSwitch) return;
-    api<{ upazilas: SwitchableUpazila[] }>('/registry/switchable-upazilas')
-      .then((r) => setUpazilas(r.upazilas))
-      .catch(() => setUpazilas([]));
-  }, [canSwitch]);
-
-  const chooseUpazila = (u: SwitchableUpazila) => {
-    // Persist id (X-Upazila) + label so both data scope and the switcher label survive navigation.
-    setSelectedUpazila(u.id, label(u));
-    setAnchor(null);
-  };
-
-  const chooseAll = () => {
-    setSelectedUpazila(null); // clears X-Upazila → API returns the cross-tenant aggregate
-    setAnchor(null);
-  };
 
   // Opening a notification takes you to the record it is about. Marking it read is fire-and-
   // forget: the navigation should not wait on it, and a failure there is not worth blocking on.
@@ -118,70 +86,30 @@ export default function TopBar() {
         height: 72,
         px: 3,
         // Three columns, not a flex row: flex-grow shares out the FREE space, so a heavy right
-        // side (the profile block) still drags the middle left of centre. Two minmax(0,1fr)
-        // columns are equal by construction, which puts the middle column on the true centre
-        // whatever sits beside it.
+        // side (the profile block) would still drag the middle off centre.
         display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 560px) minmax(0, 1fr)',
+        // The left column is sized so the middle lands on the WINDOW's centre line, not the
+        // bar's — the bar starts after the sidebar, so centring inside it looks shifted right.
+        // All of it is CSS, so it re-centres on resize and on folding the sidebar with no JS.
+        gridTemplateColumns: `max(0px, calc(50vw - var(--sidebar-w, ${SIDEBAR_WIDTH}px) - ${BAR_PX + SEARCH_W / 2}px)) auto minmax(0, 1fr)`,
         alignItems: 'center',
         gap: 2,
         bgcolor: 'background.default',
       }}
     >
-      {/* Left column, deliberately empty — it is the counterweight that centres the middle. */}
-      <Box />
+      {/* Left: the upazila switcher for the cross-tenant roles — nothing for everyone else,
+          in which case the empty column is the counterweight that centres the middle. */}
+      <Box sx={{ minWidth: 0, display: 'flex', alignItems: 'center' }}>
+        <UpazilaSwitcher />
+      </Box>
 
-      {/* Middle: the UNO's search, or the upazila switcher for the roles that have one. */}
+      {/* Middle: the search box, for the roles that have a list to search. */}
       <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
-      {canSearch && <Box data-tour="search" sx={{ minWidth: 0, flex: 1 }}><UnifiedSearch /></Box>}
-
-      {canSwitch && (
-        <>
-          <Box
-            data-tour="search"
-            onClick={(e) => setAnchor(e.currentTarget)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              px: 2,
-              py: 1.1,
-              minWidth: 420,
-              borderRadius: 999,
-              cursor: 'pointer',
-              bgcolor: theme.suraha.switcher,
-            }}
-          >
-            <LocationOnOutlinedIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-            <Typography sx={{ flex: 1, fontSize: 15, fontWeight: 500 }}>{current}</Typography>
-            <KeyboardArrowDownRoundedIcon sx={{ color: 'text.secondary' }} />
-          </Box>
-          <Menu
-            anchorEl={anchor}
-            open={Boolean(anchor)}
-            onClose={() => setAnchor(null)}
-            slotProps={{ paper: { sx: { minWidth: 420, borderRadius: '12px', mt: 1 } } }}
-          >
-            <MenuItem selected={!selectedUpazilaId} onClick={chooseAll}>
-              {S.common.allUpazilas}
-            </MenuItem>
-            {upazilas.map((u) => (
-              <MenuItem
-                key={u.id}
-                selected={u.id === selectedUpazilaId}
-                onClick={() => chooseUpazila(u)}
-              >
-                {label(u)}
-              </MenuItem>
-            ))}
-          </Menu>
-        </>
-      )}
-
+      {canSearch && <Box data-tour="search" sx={{ minWidth: 0, width: SEARCH_W, maxWidth: '100%' }}><UnifiedSearch /></Box>}
       </Box>
 
       {/* Right column: the controls, pushed to the far edge. */}
-      <Box sx={{ minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 2, whiteSpace: 'nowrap' }}>
       {/* Replay the guided intro (§ tour) — the first-run tour points here as its last step. */}
       <Tooltip title={S.tour.start}>
         <IconButton data-tour="help" aria-label={S.tour.start} onClick={() => startTour()}>
@@ -235,7 +163,14 @@ export default function TopBar() {
           },
         }}
       >
-        <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'right', lineHeight: 1.25 }}>
+        <Box
+          sx={{
+            display: { xs: 'none', sm: 'block' },
+            textAlign: 'right',
+            lineHeight: 1.25,
+            flexShrink: 0, // the name gets the room it needs; it never wraps or gets clipped
+          }}
+        >
           <Typography
             className="profile-name"
             sx={{ fontSize: 16.5, fontWeight: 700, transition: 'color 120ms ease' }}

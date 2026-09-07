@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -20,7 +20,6 @@ import InsertChartOutlinedRoundedIcon from '@mui/icons-material/InsertChartOutli
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import PregnantWomanRoundedIcon from '@mui/icons-material/PregnantWomanRounded';
 import ChildFriendlyOutlinedIcon from '@mui/icons-material/ChildFriendlyOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
@@ -36,6 +35,8 @@ import SmsOutlinedIcon from '@mui/icons-material/SmsOutlined';
 import LocalPhoneOutlinedIcon from '@mui/icons-material/LocalPhoneOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
+import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import { bnStrings as S } from '../i18n';
 import { useAuth } from '../auth/AuthContext';
 
@@ -113,11 +114,11 @@ const districtsChild: Child = { key: 'districts', icon: <MapOutlinedIcon fontSiz
 // about text, not among the case-handling modules above.
 const generalSection: Child[] = [
   { key: 'phones', icon: <LocalPhoneOutlinedIcon fontSize="small" />, label: S.nav.phones, route: '/app/general-info' },
-  { key: 'about', icon: <InfoOutlinedIcon fontSize="small" />, label: S.nav.aboutUpazila, route: '/app/general-info' },
+  { key: 'about', icon: <DescriptionOutlinedIcon fontSize="small" />, label: S.nav.aboutUpazila, route: '/app/general-info' },
   { key: 'slider', icon: <CampaignOutlinedIcon fontSize="small" />, label: S.nav.slider, route: '/app/sliders' },
 ];
 
-function SectionHeader({ label, action, collapsed }: { label: string; action?: React.ReactNode; collapsed?: boolean }) {
+function SectionHeader({ label, collapsed }: { label: string; collapsed?: boolean }) {
   // On the rail there is no room for a caption, so the grouping is carried by a rule instead.
   if (collapsed) return <Divider sx={{ mx: 2, my: 1.5 }} />;
 
@@ -135,7 +136,6 @@ function SectionHeader({ label, action, collapsed }: { label: string; action?: R
       <Typography sx={{ fontSize: 13, fontWeight: 600, color: 'text.secondary' }}>
         {label}
       </Typography>
-      {action}
     </Box>
   );
 }
@@ -174,6 +174,16 @@ export default function Sidebar() {
       return false;
     }
   });
+
+  // The top bar centres its search on the WINDOW, not on itself, so it has to know how much of
+  // the window the sidebar is eating. A CSS variable carries that without a context or a prop
+  // through AppShell, and it follows both the fold and any resize for free.
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      '--sidebar-w',
+      `${collapsed ? SIDEBAR_RAIL : SIDEBAR_WIDTH}px`,
+    );
+  }, [collapsed]);
 
   const toggleCollapsed = () => {
     setCollapsed((c) => {
@@ -241,21 +251,6 @@ export default function Sidebar() {
     '&:hover': { bgcolor: isActive ? activePill : theme.palette.action.hover },
     '& .MuiListItemIcon-root': { color: isActive ? activeText : 'text.secondary', minWidth: 38 },
   });
-
-  const renderChild = (c: Child) => (
-    <Tooltip key={c.key} title={collapsed ? c.label : ''} placement="right">
-      <ListItemButton
-        sx={{
-          ...rowSx(c.route ? isRouteActive(c.route) : active === c.key),
-          ...(collapsed && { justifyContent: 'center', mx: 1, px: 0 }),
-        }}
-        onClick={() => (c.route ? navigate(c.route) : setActive(c.key))}
-      >
-        <ListItemIcon sx={collapsed ? { minWidth: 0 } : { minWidth: 34 }}>{c.icon}</ListItemIcon>
-        {! collapsed && <ListItemText primary={c.label} primaryTypographyProps={{ fontSize: 14.5 }} />}
-      </ListItemButton>
-    </Tooltip>
-  );
 
   // One row shape for every list, so a section is just a different set of items.
   const renderItem = (item: Item) => {
@@ -333,7 +328,7 @@ export default function Sidebar() {
           alignItems: 'center',
           justifyContent: collapsed ? 'center' : 'flex-start',
           gap: collapsed ? 0.25 : 1.25,
-          px: collapsed ? 0.5 : 2.5,
+          px: collapsed ? 0.5 : 2,
           py: 2,
           cursor: 'pointer',
           '&:hover .brand-word': { color: 'primary.main' },
@@ -344,8 +339,8 @@ export default function Sidebar() {
           src="/logo.png"
           alt={S.appName}
           sx={{
-            width: collapsed ? 50 : 52,
-            height: collapsed ? 50 : 52,
+            width: collapsed ? 60 : 64,
+            height: collapsed ? 60 : 64,
             transition: 'width 180ms ease, height 180ms ease',
           }}
         />
@@ -354,7 +349,8 @@ export default function Sidebar() {
           noWrap
           sx={{
             flex: collapsed ? 'none' : 1,
-            fontSize: collapsed ? 17 : 27,
+            textAlign: 'center',
+            fontSize: collapsed ? 19 : 32,
             fontWeight: 700,
             lineHeight: 1.2,
             transition: 'color 120ms ease',
@@ -400,28 +396,23 @@ export default function Sidebar() {
         </>
       )}
 
-      {/* ড্যাশবোর্ড পরিচালনা — only officer-managers (UNO / SEAL) */}
-      {(user?.role === 'uno' || user?.role === 'seal_admin') && (
-        <>
-          <SectionHeader label={S.nav.sectionOfficer} collapsed={collapsed} />
-          <List disablePadding>
-{management.map(renderChild)}
-          </List>
-        </>
-      )}
-
-      {/* সাধারণ তথ্য section — managed by UNO / SEAL */}
+      {/* ড্যাশবোর্ড পরিচালনা and উপজেলা তথ্য — groups like any other, so they fold with the
+          rest instead of standing as two permanently open captioned lists. */}
       {isManager && (
-        <>
-          <SectionHeader
-            label={S.nav.sectionGeneral}
-            collapsed={collapsed}
-            action={<AddRoundedIcon sx={{ fontSize: 20, color: 'text.secondary' }} />}
-          />
-          <List disablePadding sx={{ pb: 3 }}>
-{generalSection.map(renderChild)}
-          </List>
-        </>
+        <List disablePadding sx={{ pb: 3 }}>
+          {renderItem({
+            key: 'manage',
+            label: S.nav.sectionOfficer,
+            icon: <TuneRoundedIcon />,
+            children: management,
+          })}
+          {renderItem({
+            key: 'general',
+            label: S.nav.sectionGeneral,
+            icon: <InfoOutlinedIcon />,
+            children: generalSection,
+          })}
+        </List>
       )}
       </Box>
 

@@ -1,0 +1,90 @@
+====================================================================
+ সুরাহা — DEMO LOGINS
+ Demo data only. Every password below is "password".
+ Do NOT use these on a real installation.
+====================================================================
+
+WHERE TO GO
+--------------------------------------------------------------------
+  suraha.net                  Product landing page
+  suraha.net/app              SEAL admin console (sign in as: admin)
+
+  galachipa.suraha.net        গলাচিপা citizen site
+  galachipa.suraha.net/app    গলাচিপা officer app
+
+  dumuria.suraha.net          ডুমুরিয়া citizen site
+  dumuria.suraha.net/app      ডুমুরিয়া officer app
+
+  patuakhali.suraha.net/app   পটুয়াখালী DC dashboard (read-only)
+  khulna.suraha.net/app       খুলনা DC dashboard (read-only)
+
+  Rule: "/" is always the public citizen site, "/app" is always the
+  officer app — on every host.
+
+
+OFFICER LOGINS          password for all:  password
+--------------------------------------------------------------------
+
+  CROSS-UPAZILA
+
+  admin              সুরাহা অ্যাডমিন (SEAL Admin)
+                     → suraha.net/app
+                     Sees every upazila. Provisions new ones.
+                     Switches upazila from the sidebar.
+
+  dc_patuakhali      জেলা প্রশাসক, পটুয়াখালী
+                     → patuakhali.suraha.net/app
+                     Read-only district aggregate. Covers গলাচিপা.
+
+  dc_khulna          জেলা প্রশাসক, খুলনা
+                     → khulna.suraha.net/app
+                     Read-only district aggregate. Covers ডুমুরিয়া.
+
+
+  গলাচিপা (galachipa.suraha.net/app)
+
+  uno_galachipa      ইউএনও, গলাচিপা
+                     Upazila head. Approves, schedules সাক্ষাৎকার,
+                     assigns investigators, creates officer accounts.
+
+  sochib_galachipa   ইউপি সচিব, গলাচিপা
+                     Approves প্রসূতি records → triggers BDRIS
+                     birth registration. Sees own union only.
+
+  fwa_galachipa      পরিবার কল্যাণ সহকারী
+                     Field worker. Files প্রসূতি records.
+                     Sees only her own entries.
+
+  tdonto_galachipa   তদন্ত কর্মকর্তা
+                     Investigates assigned অভিযোগ, files findings.
+
+
+  ডুমুরিয়া (dumuria.suraha.net/app)
+
+  sochib_dumuria     ইউপি সচিব, ডুমুরিয়া
+  tdonto_dumuria     তদন্ত কর্মকর্তা, ডুমুরিয়া
+
+                     (No UNO here on purpose — it demonstrates the
+                     "add a UNO" flow from the admin console.)
+
+
+CITIZEN LOGIN  (no password — mobile + OTP)
+--------------------------------------------------------------------
+
+  Go to    galachipa.suraha.net  →  লগইন
+  Enter    any Bangladeshi mobile number, e.g. 01700000000
+  The OTP appears ON SCREEN next to the message, like "(dev: 483210)".
+  No real SMS is sent during the demo.
+
+  Existing demo citizen:  01700000000
+  Any new number creates a fresh citizen account on the spot.
+
+
+WHAT IS IN THE DEMO DATABASE
+--------------------------------------------------------------------
+  2 upazilas (গলাচিপা, ডুমুরিয়া) across 2 districts
+  26 unions · 11 officer/citizen accounts
+  136 প্রসূতি records · 114 অভিযোগ
+  6 months of activity history, so the charts are not empty
+
+  Reset anytime:   cd api && php artisan migrate:fresh --seed

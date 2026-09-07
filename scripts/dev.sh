@@ -5,7 +5,7 @@
 #   ./scripts/dev.sh
 #
 # It:
-#   1. ensures suraha.net + admin.suraha.net + every upazila and district subdomain resolve to
+#   1. ensures suraha.net + every upazila and district subdomain resolve to
 #      127.0.0.1 (adds any missing /etc/hosts entries — needs sudo),
 #   2. applies pending DB migrations (safe/idempotent) — needs Postgres running:
 #      `brew services start postgresql@17`,
@@ -13,8 +13,7 @@
 #   4. starts the Caddy reverse proxy on :80/:443 (trusted HTTPS via Caddy's internal CA).
 #
 # Then open one of:
-#   https://suraha.net              the product's landing page (SEAL logs in at /login)
-#   https://admin.suraha.net        the SEAL admin console
+#   https://suraha.net              the product's landing page (SEAL console at /app)
 #   https://galachipa.suraha.net    an upazila's citizen site + officer app
 #   https://patuakhali.suraha.net   a district's DC dashboard
 #
@@ -113,7 +112,7 @@ echo
 echo "    Open →  https://$BASE_DOMAIN"
 for h in "${hosts_needed[@]:1}"; do echo "            https://$h"; done
 echo
-echo "    suraha.net = product landing (login at /login) · admin.suraha.net = SEAL console"
+echo "    suraha.net = product landing · /app = officer app (SEAL console here)"
 echo "    {upazila}.suraha.net = citizen site · {district}.suraha.net = DC dashboard"
 echo "    (Ctrl+C stops the API, web, and proxy.)"
 echo

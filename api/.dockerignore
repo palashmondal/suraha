@@ -1,0 +1,13 @@
+vendor/
+.env
+tests/
+.phpunit.result.cache
+# Dev artefacts and local uploads (488MB of them) — never belong in the image. In production
+# storage/app/public is a Docker volume, and the framework dirs are recreated at boot.
+storage/app/public/*
+storage/app/private/*
+storage/logs/*
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*.php

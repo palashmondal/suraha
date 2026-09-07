@@ -1,0 +1,33 @@
+# Public demo proxy — fronts the PRODUCTION web build, not the Vite dev server, so the demo
+# survives a tunnel's latency and a page reload. Started by scripts/demo.sh.
+#
+# Listens on :8080, NOT :80 — no sudo, and nothing to collide with. Cloudflare Tunnel dials
+# this port and terminates TLS itself, so no certificates are needed here at all.
+{
+	auto_https off
+	# No admin socket: scripts/dev.sh may already hold Caddy's default :2019, and the demo has
+	# nothing to administer.
+	admin off
+	log {
+		level ERROR
+	}
+}
+
+:8080 {
+	# `handle` blocks, not bare directives: try_files is a rewrite and runs BEFORE reverse_proxy,
+	# so an unguarded try_files rewrites /api/... to /index.html and the SPA answers the API.
+	# handle blocks are mutually exclusive — the first match wins and the rest never run.
+	@laravel path /api/* /storage/* /up
+	handle @laravel {
+		# The tunnel preserves the original Host header, so {upazila}.suraha.net still
+		# resolves the tenant.
+		reverse_proxy 127.0.0.1:8000
+	}
+
+	# Everything else → the built SPA, with client-side routing.
+	handle {
+		root * {env.SURAHA_WEB_DIST}
+		try_files {path} /index.html
+		file_server
+	}
+}

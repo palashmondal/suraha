@@ -1,53 +1,29 @@
 # Suraha — deployment topology (SURAHA_BUILD_PROMPT §12.2).
-# Docker Compose on a single Linux VPS. Docker is NOT installed on the current dev
-# machine, so this is provided as the deploy target; run `docker compose up` where Docker
-# is available. Secrets come from infra/.env (see infra/.env.example).
+# Docker Compose on a single Linux VPS. Secrets come from infra/.env (see infra/.env.example).
 services:
   app:
     build: { context: ../api, dockerfile: ../infra/php.Dockerfile }
     env_file: [.env]
-    depends_on: [postgres, redis]
+    depends_on: [postgres]
+    # Uploaded files (slider images, avatars, generated certificates) go to Laravel's public
+    # disk. Without this volume every rebuild would delete them.
+    volumes: [uploads:/app/storage/app/public]
     restart: unless-stopped
 
   web:
-    build: { context: ../web, dockerfile: ../infra/web.Dockerfile }
-    restart: unless-stopped
-
-  worker:
-    build: { context: ../api, dockerfile: ../infra/php.Dockerfile }
-    command: php artisan horizon
-    env_file: [.env]
-    depends_on: [redis, postgres]
-    restart: unless-stopped
-
-  scheduler:
-    build: { context: ../api, dockerfile: ../infra/php.Dockerfile }
-    command: sh -c "while true; do php artisan schedule:run; sleep 60; done"
-    env_file: [.env]
-    depends_on: [redis, postgres]
+    build:
+      context: ../web
+      dockerfile: ../infra/web.Dockerfile
+      args: [VITE_GOOGLE_MAPS_KEY]
     restart: unless-stopped
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     environment:
       POSTGRES_DB: ${DB_DATABASE:-suraha}
       POSTGRES_USER: ${DB_USERNAME:-suraha}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
     volumes: [pgdata:/var/lib/postgresql/data]
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-
-  # Optional: S3-compatible object storage for attachments + certificates.
-  minio:
-    image: minio/minio:latest
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: ${S3_KEY:-suraha}
-      MINIO_ROOT_PASSWORD: ${S3_SECRET:-secret1234}
-    volumes: [miniodata:/data]
     restart: unless-stopped
 
   # Reverse proxy. TLS is issued per-hostname on demand (HTTP-01), gated by the API — see
@@ -63,5 +39,5 @@ services:
 
 volumes:
   pgdata:
-  miniodata:
+  uploads:
   caddydata:

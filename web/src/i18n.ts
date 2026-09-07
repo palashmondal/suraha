@@ -34,7 +34,7 @@ export const bnStrings = {
     sectionServices: 'নাগরিক সেবা',
     sectionOfficer: 'ড্যাশবোর্ড পরিচালনা',
     designation: 'পদবী',
-    sectionGeneral: 'সাধারণ তথ্য',
+    sectionGeneral: 'উপজেলা তথ্য',
     phones: 'প্রয়োজনীয় ফোন নাম্বার',
     aboutUpazila: 'উপজেলা সম্পর্কিত',
     instances: 'উপজেলা তালিকা',

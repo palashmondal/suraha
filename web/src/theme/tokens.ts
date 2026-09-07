@@ -42,7 +42,7 @@ export const palette = {
     surface: '#FFFFFF', // white content panel + list/stat cards
     sidebar: '#F7F2FA', // lavender (matches page)
     cardBody: '#F7F2FA', // summary-card body behind tiles
-    switcher: '#E6E0E9', // top-bar upazila switcher (M3 surfaceVariant)
+    switcher: '#E6E0E9', // sidebar upazila switcher (M3 surfaceVariant)
     border: '#E7E2EB', // subtle tile/card outline (measured)
     textPrimary: '#1D1B20', // M3 onSurface
     textSecondary: '#49454F', // M3 onSurfaceVariant
