@@ -70,6 +70,8 @@ class DatabaseSeeder extends Seeder
         $this->call(PregnancySeeder::class);
         $this->call(BirthRegistrationSeeder::class);
         $this->call(ComplaintSeeder::class);
+        $this->call(AssistanceSeeder::class);
+        $this->call(SuggestionSeeder::class);
         $this->call(AppointmentSeeder::class);
         $this->call(AttachmentSeeder::class);
         $this->call(PublicContentSeeder::class);

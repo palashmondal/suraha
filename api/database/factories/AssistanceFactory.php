@@ -7,6 +7,7 @@ namespace Database\Factories;
 use App\Enums\AssistanceKind;
 use App\Enums\AssistanceStatus;
 use App\Models\Assistance;
+use App\Models\Union;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /** @extends Factory<Assistance> */
@@ -37,6 +38,9 @@ class AssistanceFactory extends Factory
             'applicant_name' => fake()->randomElement(self::NAMES),
             'title' => $title,
             'description' => $description,
+            // Every আবেদন comes from somewhere in the upazila; without this the ইউনিয়ন
+            // row on the detail page is empty for every row this factory makes.
+            'union_id' => Union::inRandomOrder()->value('id'),
             'ward_no' => fake()->numberBetween(1, 9),
             'mobile' => '01'.fake()->numerify('#########'),
             'address' => 'গ্রাম: '.fake()->randomElement(['চরকাজল', 'পানপট্টি', 'ডাকুয়া', 'গোলখালী']),
