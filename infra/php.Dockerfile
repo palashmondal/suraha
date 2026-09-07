@@ -3,8 +3,9 @@
 FROM dunglas/frankenphp:php8.4
 
 # pdo_pgsql: the only DB. intl: Bangla collation/normalisation. zip: composer. opcache: speed.
+# pcntl: required by laravel/horizon — composer install fails the platform check without it.
 # No gd — QR codes and barcodes are rendered as SVG (app/Support/CertificateAssets.php).
-RUN install-php-extensions pdo_pgsql intl zip opcache
+RUN install-php-extensions pdo_pgsql intl zip opcache pcntl
 
 WORKDIR /app
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
